@@ -27,6 +27,46 @@ A continuación se presenta el desglose de las principales librerías utilizadas
 
 ---
 
+## 🏗️ Arquitectura del Proyecto: Feature-Sliced Layout
+
+El proyecto sigue el patrón de arquitectura **Feature-Sliced Layout** diseñado para aplicaciones modernas con Next.js 16 (App Router) y React Server Components:
+
+### 📌 Principios de la Arquitectura
+
+1. **Módulos de Dominio (`src/features/<domain>/`)**:
+   - Cada dominio de negocio (ej. `home`, `user`, `report`) agrupa sus propias consultas (`<domain>-queries.ts`), Server Actions (`<domain>-actions.ts`) y componentes UI (`components/`).
+2. **Co-locación de Componentes y Skeletons**:
+   - Cada archivo de componente exporta tanto el componente real como su esqueleto de carga (ej. `HomeCard` y `HomeCardSkeleton` en `home-card.tsx`).
+3. **Páginas Composicionales (`src/app/`)**:
+   - Las rutas dentro de `app/` solo componen características y administran los límites de `<Suspense>`. Las páginas se mantienen síncronas y sin lógica directa de datos.
+4. **Organización de Componentes (`src/components/`)**:
+   - `src/components/ui/`: Primitivos y átomos de UI (Shadcn UI / Radix).
+   - `src/components/`: Componentes globales de la app (*app-shell singletons* como `language-toggle.tsx`). No se emplean carpetas genéricas sin concepto como `common/`.
+
+### 📂 Estructura del Código (`src/`)
+
+```
+src/
+├── app/                            # Rutas, layouts y composición de páginas
+│   ├── layout.tsx
+│   └── page.tsx
+├── features/                       # Módulos de dominio de la aplicación
+│   └── home/
+│       ├── components/
+│       │   └── home-card.tsx       # Componente principal y su Skeleton
+│       ├── home-queries.ts         # Consultas de servidor (server-only)
+│       └── home-actions.ts         # Acciones de servidor ('use server')
+├── components/                     # Componentes compartidos de UI y Shell
+│   ├── ui/                         # Componentes reutilizables (Shadcn UI)
+│   └── language-toggle.tsx         # Componente global de selección de idioma
+├── context/                        # Proveedores de contexto de React
+│   └── language-context.tsx
+└── lib/                            # Utilidades globales del proyecto
+    └── utils.ts
+```
+
+---
+
 ## ⚙️ Comandos de Desarrollo
 
 ```bash

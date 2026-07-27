@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LanguageToggle } from "@/components/common/language-toggle";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LanguageToggle } from "@/components/language-toggle";
 import { useTranslations } from "next-intl";
 import { ExternalLink, BookOpen, FileCode, Sparkles } from "lucide-react";
 
@@ -121,6 +122,29 @@ export function HomeCard() {
           <BookOpen className="size-4 mr-2" />
           {t("documentation")}
         </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
+export function HomeCardSkeleton() {
+  return (
+    <Card className="w-full shadow-lg border">
+      <CardHeader className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-5 w-24" />
+          <Skeleton className="h-8 w-20 rounded-full" />
+        </div>
+        <Skeleton className="h-8 w-3/4" />
+        <Skeleton className="h-5 w-full" />
+      </CardHeader>
+      <CardContent className="flex flex-col sm:flex-row gap-3 pt-2">
+        <Skeleton className="h-11 flex-1" />
+        <Skeleton className="h-11 flex-1" />
+      </CardContent>
+      <CardFooter className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+        <Skeleton className="h-11 flex-1" />
+        <Skeleton className="h-11 flex-1" />
       </CardFooter>
     </Card>
   );
