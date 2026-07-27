@@ -1,0 +1,58 @@
+name: Despliegue Vercel (Client)
+
+on:
+  push:
+    branches:
+      - main
+      - frontend
+    paths:
+      - 'client/**' # Se ejecuta solo si hay cambios en el frontend
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  Deploy-Development:
+    if: github.ref == 'refs/heads/frontend'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./client
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Instalar Vercel CLI
+        run: npm install --global vercel@latest
+        
+      - name: Pull variables de entorno (Preview)
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        
+      - name: Construir proyecto
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        
+      - name: Desplegar y Asignar URL Estática
+        run: |
+          DEPLOY_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          vercel alias set $DEPLOY_URL physaflow-dev.vercel.app --token=${{ secrets.VERCEL_TOKEN }}
+
+  Deploy-Production:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./client
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Instalar Vercel CLI
+        run: npm install --global vercel@latest
+        
+      - name: Pull variables de entorno (Producción)
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        
+      - name: Construir proyecto
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        
+      - name: Desplegar a Producción
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
