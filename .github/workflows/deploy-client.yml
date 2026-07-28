@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - frontend
+      - develop 
     paths:
       - 'client/**' # Se ejecuta solo si hay cambios en el frontend
 
@@ -14,7 +14,7 @@ env:
 
 jobs:
   Deploy-Development:
-    if: github.ref == 'refs/heads/frontend'
+    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     defaults:
       run:
