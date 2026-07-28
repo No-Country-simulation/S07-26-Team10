@@ -1,0 +1,11 @@
+{
+  "title": "Admin Panel",
+  "description": "Enter your authorized credentials to access report management",
+  "emailLabel": "Email Address",
+  "passwordLabel": "Password",
+  "signIn": "Sign In",
+  "signingIn": "Signing in...",
+  "authError": "Authentication Error",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password"
+}
