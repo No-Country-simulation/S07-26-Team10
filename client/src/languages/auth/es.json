@@ -1,0 +1,11 @@
+{
+  "title": "Panel de Administración",
+  "description": "Ingresa tus credenciales autorizadas para acceder a la gestión de reportes",
+  "emailLabel": "Correo Electrónico",
+  "passwordLabel": "Contraseña",
+  "signIn": "Iniciar Sesión",
+  "signingIn": "Iniciando sesión...",
+  "authError": "Error de autenticación",
+  "showPassword": "Mostrar contraseña",
+  "hidePassword": "Ocultar contraseña"
+}

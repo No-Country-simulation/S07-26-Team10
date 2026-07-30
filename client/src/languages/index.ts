@@ -1,16 +1,24 @@
 import commonEs from "./common/es.json";
 import commonEn from "./common/en.json";
-import homeCardEs from "./home/card/es.json";
-import homeCardEn from "./home/card/en.json";
+import homeEs from "./home/es.json";
+import homeEn from "./home/en.json";
+import navEs from "./nav/es.json";
+import navEn from "./nav/en.json";
+import authEs from "./auth/es.json";
+import authEn from "./auth/en.json";
 
 export const esMessages = {
   Common: commonEs,
-  HomePage: homeCardEs,
+  HomePage: homeEs,
+  Nav: navEs,
+  LoginPage: authEs,
 };
 
 export const enMessages = {
   Common: commonEn,
-  HomePage: homeCardEn,
+  HomePage: homeEn,
+  Nav: navEn,
+  LoginPage: authEn,
 };
 
 export const messagesMap = {
