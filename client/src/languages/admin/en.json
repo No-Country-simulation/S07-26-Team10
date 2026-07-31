@@ -1,0 +1,58 @@
+{
+  "title": "Administration Panel",
+  "cmsTitle": "CMS ADMIN",
+  "moduleInit": "START MODULE",
+  "moduleId": "ID: PF-ADM-00",
+  "titlePrefix": "Panel of ",
+  "titleSuffix": "administration",
+  "description": "Select an option from the sidebar menu to manage the content of ",
+  "descriptionBold": "Stranded Capacity Report",
+  "descriptionSuffix": ". From here you can monitor energy metrics, update taxonomies, and manage technical resources.",
+  "nav": {
+    "sections": "Sections",
+    "taxonomy": "Taxonomy",
+    "resources": "Resources",
+    "references": "References"
+  },
+  "databaseCard": {
+    "liveStatus": "LIVE STATUS",
+    "title": "Database",
+    "description": "Active synchronization with regional capacity nodes.",
+    "synced": "84% Synchronized",
+    "version": "v.1.0.4"
+  },
+  "changesCard": {
+    "recentActivity": "RECENT ACTIVITY",
+    "title": "Recent Changes",
+    "description": "Technical reference update completed 2 hours ago.",
+    "pendingReview": "Pending Review"
+  },
+  "editorialNote": {
+    "tag": "EDITORIAL NOTE",
+    "quote": "\"Technical precision is the foundation of editorial authority. Every change made in this panel is reflected in the structural integrity of the global report.\""
+  },
+  "userInfo": {
+    "currentUserLabel": "CURRENT USER",
+    "currentUserValue": "Principal Administrator",
+    "lastAccessLabel": "LAST ACCESS",
+    "lastAccessValue": "12 Oct 2023 – 09:42",
+    "secureConnection": "Secure Connection (SSL)"
+  },
+  "footer": {
+    "systemTitle": "PhysaFlow — Administration System",
+    "version": "Version 1.0"
+  },
+  "actions": {
+    "logout": "Sign out"
+  },
+  "pages": {
+    "sectionsTitle": "Sections Management",
+    "sectionsDesc": "Manage and organize report sections.",
+    "taxonomyTitle": "Taxonomy Management",
+    "taxonomyDesc": "Define and structure system categories and tags.",
+    "resourcesTitle": "Resources Management",
+    "resourcesDesc": "Manage files, documents, and technical assets.",
+    "referencesTitle": "References Management",
+    "referencesDesc": "Manage sources and references of the Stranded Capacity Report."
+  }
+}
