@@ -1,0 +1,105 @@
+@theme {
+  --color-paper-000: #fcf9f5;
+  --color-paper-100: #f6f3ef;
+
+  --color-ink-900: #1c1c1a;
+
+  --color-forest-900: #012d1d;
+  --color-forest-700: #1b4332;
+  --color-forest-100: #86af99;
+
+  --color-gold-600: #765a15;
+  --color-gold-500: #e6c273;
+  --color-gold-200: #fed887;
+}
+
+:root {
+  --surface: var(--color-paper-000);
+  --surface-low: var(--color-paper-100);
+  --on-surface: var(--color-ink-900);
+
+  --primary-container: var(--color-forest-700);
+  --on-primary-container: var(--color-forest-100);
+
+  --secondary-fixed: var(--color-gold-500);
+  --secondary-container: var(--color-gold-200);
+  --on-secondary-container: var(--color-forest-900);
+
+  --background: var(--surface);
+  --foreground: var(--on-surface);
+  --card: var(--surface);
+  --card-foreground: var(--on-surface);
+  --popover: var(--surface);
+  --popover-foreground: var(--on-surface);
+  --primary: var(--color-forest-900);
+  --primary-foreground: var(--color-paper-000);
+  --secondary: var(--color-gold-600);
+  --secondary-foreground: var(--color-paper-000);
+  --muted: var(--surface-low);
+  --muted-foreground: color-mix(in oklab, var(--color-ink-900) 58%, var(--color-paper-000));
+  --accent: var(--secondary-container);
+  --accent-foreground: var(--on-secondary-container);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: color-mix(in oklab, var(--color-ink-900) 12%, var(--color-paper-000));
+  --input: color-mix(in oklab, var(--color-ink-900) 16%, var(--color-paper-000));
+  --ring: var(--color-gold-500);
+  --chart-1: var(--color-forest-700);
+  --chart-2: var(--color-gold-500);
+  --chart-3: var(--color-forest-100);
+  --chart-4: var(--color-gold-600);
+  --chart-5: var(--color-forest-900);
+  --radius: 0.625rem;
+  --sidebar: var(--surface-low);
+  --sidebar-foreground: var(--on-surface);
+  --sidebar-primary: var(--color-forest-900);
+  --sidebar-primary-foreground: var(--color-paper-000);
+  --sidebar-accent: var(--secondary-container);
+  --sidebar-accent-foreground: var(--on-secondary-container);
+  --sidebar-border: color-mix(in oklab, var(--color-ink-900) 12%, var(--color-paper-000));
+  --sidebar-ring: var(--color-gold-500);
+}
+
+.dark {
+  --surface: var(--color-forest-900);
+  --surface-low: color-mix(in oklab, var(--color-forest-900) 86%, var(--color-paper-000));
+  --on-surface: var(--color-paper-000);
+
+  --primary-container: var(--color-forest-700);
+  --on-primary-container: var(--color-forest-100);
+
+  --secondary-fixed: var(--color-gold-500);
+  --secondary-container: var(--color-gold-200);
+  --on-secondary-container: var(--color-ink-900);
+
+  --background: var(--surface);
+  --foreground: var(--on-surface);
+  --card: var(--surface-low);
+  --card-foreground: var(--on-surface);
+  --popover: var(--surface-low);
+  --popover-foreground: var(--on-surface);
+  --primary: var(--color-forest-100);
+  --primary-foreground: var(--color-forest-900);
+  --secondary: var(--color-gold-500);
+  --secondary-foreground: var(--color-ink-900);
+  --muted: color-mix(in oklab, var(--color-paper-000) 8%, transparent);
+  --muted-foreground: color-mix(in oklab, var(--color-paper-000) 62%, transparent);
+  --accent: color-mix(in oklab, var(--color-gold-500) 18%, transparent);
+  --accent-foreground: var(--color-gold-200);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: color-mix(in oklab, var(--color-paper-000) 14%, transparent);
+  --input: color-mix(in oklab, var(--color-paper-000) 18%, transparent);
+  --ring: var(--color-gold-500);
+  --chart-1: var(--color-forest-100);
+  --chart-2: var(--color-gold-200);
+  --chart-3: var(--color-gold-500);
+  --chart-4: var(--color-forest-700);
+  --chart-5: var(--color-paper-100);
+  --sidebar: var(--surface-low);
+  --sidebar-foreground: var(--on-surface);
+  --sidebar-primary: var(--color-forest-100);
+  --sidebar-primary-foreground: var(--color-forest-900);
+  --sidebar-accent: color-mix(in oklab, var(--color-gold-500) 18%, transparent);
+  --sidebar-accent-foreground: var(--color-gold-200);
+  --sidebar-border: color-mix(in oklab, var(--color-paper-000) 12%, transparent);
+  --sidebar-ring: var(--color-gold-500);
+}
