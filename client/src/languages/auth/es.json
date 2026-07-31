@@ -1,11 +1,20 @@
 {
-  "title": "Panel de Administración",
-  "description": "Ingresa tus credenciales autorizadas para acceder a la gestión de reportes",
-  "emailLabel": "Correo Electrónico",
-  "passwordLabel": "Contraseña",
-  "signIn": "Iniciar Sesión",
-  "signingIn": "Iniciando sesión...",
+  "title": "Acceso administrativo",
+  "descriptionPrefix": "Ingrese sus credenciales para administrar el contenido del ",
+  "descriptionHighlight": "Stranded Capacity Report",
+  "descriptionSuffix": ".",
+  "emailLabel": "CORREO ELECTRÓNICO",
+  "emailPlaceholder": "ejemplo@physaflow.com",
+  "passwordLabel": "CONTRASEÑA",
+  "forgotPassword": "¿Olvidó su contraseña?",
+  "rememberMe": "Mantener sesión iniciada",
+  "signIn": "INGRESAR",
+  "signingIn": "INGRESANDO...",
   "authError": "Error de autenticación",
   "showPassword": "Mostrar contraseña",
-  "hidePassword": "Ocultar contraseña"
+  "hidePassword": "Ocultar contraseña",
+  "footerVersion": "VERSIÓN 1.0",
+  "footerSystemTitle": "PHYSAFLOW — SISTEMA DE ADMINISTRACIÓN",
+  "footerSsl": "SSL ENCRYPTED",
+  "footerRestricted": "ACCESO RESTRINGIDO"
 }

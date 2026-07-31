@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center min-h-screen bg-linear-to-b from-background via-muted/30 to-background p-4 sm:p-8 font-sans">
+    <div className="flex flex-col flex-1 items-center justify-center min-h-screen bg-background p-4 sm:p-8 font-sans">
       <main className="w-full max-w-md flex flex-col items-center">
         <Suspense fallback={<LoginCardSkeleton />}>
           <LoginCard />
