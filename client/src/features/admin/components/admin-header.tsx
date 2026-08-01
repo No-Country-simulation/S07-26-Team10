@@ -21,7 +21,7 @@ export function AdminHeader({ userRole = "Administrador" }: AdminHeaderProps) {
         <span className="font-bold text-lg tracking-tight text-foreground">
           PhysaFlow
         </span>
-        <span className="text-xs font-mono tracking-wider uppercase text-muted-foreground/80 pt-0.5">
+        <span className="hidden sm:inline text-xs font-mono tracking-wider uppercase text-muted-foreground/80 pt-0.5">
           {t("cmsTitle")}
         </span>
       </Link>
