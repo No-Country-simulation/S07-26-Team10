@@ -1,5 +1,5 @@
 from typing import Any
-
+from app.core.constants import HTTP_500_INTERNAL_SERVER_ERROR
 
 class AppException(Exception):
     """
@@ -8,7 +8,7 @@ class AppException(Exception):
     Todas las excepciones personalizadas deben heredar de esta clase.
     """
 
-    status_code: int = 500
+    status_code: int = HTTP_500_INTERNAL_SERVER_ERROR
     error: str = "Application Error"
 
     def __init__(
