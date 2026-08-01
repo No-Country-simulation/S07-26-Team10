@@ -1,0 +1,257 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Zap,
+  Server,
+  Network,
+  PlusCircle,
+  Pencil,
+  GripVertical,
+  Settings,
+  Layers,
+} from "lucide-react";
+import { getCategoriesAction } from "../../actions/taxonomy-actions";
+import type { CategoryItem } from "../../schemas/taxonomy-schema";
+
+export function TaxonomyManagement() {
+  const t = useTranslations("AdminPage.taxonomy");
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await getCategoriesAction();
+        setCategories(data);
+      } catch (err) {
+        console.error("Failed to load taxonomy categories", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  const getCategoryIcon = (catName: string) => {
+    const lower = catName.toLowerCase();
+    if (lower.includes("facility")) {
+      return <Zap className="size-4 text-emerald-700 dark:text-emerald-400" />;
+    }
+    if (lower.includes("it")) {
+      return <Server className="size-4 text-emerald-700 dark:text-emerald-400" />;
+    }
+    if (lower.includes("workload")) {
+      return <Network className="size-4 text-emerald-700 dark:text-emerald-400" />;
+    }
+    return <Layers className="size-4 text-emerald-700 dark:text-emerald-400" />;
+  };
+
+  return (
+    <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-2">
+      {/* Header section matching mockup */}
+      <div className="space-y-1">
+        <div className="flex items-center gap-2 text-xs font-mono font-semibold text-amber-700 dark:text-amber-500 uppercase tracking-widest">
+          <span className="w-6 h-[2px] bg-amber-600/70 inline-block" />
+          <span>{t("headerTag")}</span>
+        </div>
+        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+          {t("title")}
+        </h1>
+        <p className="text-sm text-muted-foreground max-w-3xl pt-1 leading-relaxed">
+          {t("subtitle")}
+        </p>
+      </div>
+
+      {/* Section 1: Categorías principales */}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-3">
+          <div>
+            <h2 className="text-xl font-bold text-foreground tracking-tight">
+              {t("mainCategoriesTitle")}
+            </h2>
+            <p className="text-xs text-muted-foreground italic font-serif">
+              {t("mainCategoriesSubtitle")}
+            </p>
+          </div>
+          <Link href="/admin/taxonomy/categories/new">
+            <Button className="bg-emerald-950 text-emerald-100 hover:bg-emerald-900 rounded-lg text-xs font-semibold tracking-wider px-4 py-2 shadow-sm gap-1.5 uppercase">
+              {t("newCategoryBtn")}
+            </Button>
+          </Link>
+        </div>
+
+        {/* Categories Table */}
+        <Card className="border border-border/60 bg-card shadow-xs rounded-2xl overflow-hidden">
+          <Table>
+            <TableHeader className="bg-muted/40">
+              <TableRow className="border-b border-border/50">
+                <TableHead className="font-bold text-xs text-foreground/80 py-3">{t("colCategory")}</TableHead>
+                <TableHead className="font-bold text-xs text-foreground/80 py-3">{t("colDescription")}</TableHead>
+                <TableHead className="font-bold text-xs text-foreground/80 py-3 text-center w-24">{t("colOrder")}</TableHead>
+                <TableHead className="font-bold text-xs text-foreground/80 py-3 text-center w-28">{t("colStatus")}</TableHead>
+                <TableHead className="font-bold text-xs text-foreground/80 py-3 text-right w-24">{t("colActions")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="p-4">
+                    <Skeleton className="h-12 w-full rounded-xl" />
+                  </TableCell>
+                </TableRow>
+              ) : (
+                categories.map((cat) => (
+                  <TableRow key={cat.id} className="border-b border-border/40 hover:bg-muted/20">
+                    <TableCell className="font-semibold text-sm text-foreground py-3">
+                      <div className="flex items-center gap-2.5">
+                        <span className="size-2 rounded-full bg-emerald-900 dark:bg-emerald-400" />
+                        <span>{cat.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground py-3">
+                      {cat.description}
+                    </TableCell>
+                    <TableCell className="text-xs font-mono font-semibold text-center py-3">
+                      {cat.display_order.toString().padStart(2, "0")}
+                    </TableCell>
+                    <TableCell className="text-center py-3">
+                      <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-[10px] tracking-wider uppercase px-2.5 py-0.5 rounded-full border-0">
+                        {cat.active ? "ACTIVO" : "INACTIVO"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right py-3">
+                      <Link href={`/admin/taxonomy/categories/${cat.id}`}>
+                        <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-foreground">
+                          <Pencil className="size-3.5" />
+                        </Button>
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </Card>
+      </div>
+
+      {/* Section 2: Conceptos por categoría */}
+      <div className="space-y-5 pt-2">
+        <div>
+          <h2 className="text-xl font-bold text-foreground tracking-tight">
+            {t("conceptsTitle")}
+          </h2>
+          <p className="text-xs text-muted-foreground italic font-serif">
+            {t("conceptsSubtitle")}
+          </p>
+        </div>
+
+        {/* Category Cards with concepts */}
+        {loading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-36 w-full rounded-2xl" />
+            <Skeleton className="h-36 w-full rounded-2xl" />
+          </div>
+        ) : (
+          categories.map((cat) => (
+            <Card key={`cat-card-${cat.id}`} className="border border-border/60 bg-card shadow-xs rounded-2xl p-6 relative overflow-hidden">
+              {/* Subtle background icon decoration */}
+              <div className="absolute right-4 top-4 opacity-5 pointer-events-none">
+                {getCategoryIcon(cat.name)}
+              </div>
+
+              {/* Card Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-xl bg-emerald-950/10 dark:bg-emerald-400/10 text-emerald-900 dark:text-emerald-400 flex items-center justify-center border border-emerald-900/20">
+                    {getCategoryIcon(cat.name)}
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-foreground">{cat.name}</h3>
+                    <p className="text-[11px] font-mono font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-500">
+                      {t("conceptsCount", { count: cat.concepts.length })}
+                    </p>
+                  </div>
+                </div>
+
+                <Link href="/admin/taxonomy/concepts/new">
+                  <Button variant="outline" size="sm" className="rounded-xl border-amber-700/30 text-amber-800 dark:text-amber-400 hover:bg-amber-500/10 text-xs font-semibold tracking-wider gap-1.5 px-3 py-1.5 uppercase">
+                    <PlusCircle className="size-3.5" />
+                    <span>{t("newConceptBtn")}</span>
+                  </Button>
+                </Link>
+              </div>
+
+              {/* Concepts List or Empty State */}
+              {cat.concepts.length === 0 ? (
+                <div className="border border-dashed border-border/70 rounded-xl p-8 text-center flex flex-col items-center justify-center gap-2 bg-muted/20">
+                  <div className="text-muted-foreground/40 font-mono text-lg font-bold">[ ]</div>
+                  <p className="text-xs text-muted-foreground">
+                    {t("emptyConceptsText")}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {cat.concepts.map((concept) => {
+                    const sectionTitleMap: Record<string, string> = {
+                      "sec-001-intro": "INTRODUCCIÓN",
+                      "sec-002-tax": "TAXONOMÍA",
+                      "sec-003-meth": "METODOLOGÍA",
+                    };
+                    const sectionName = sectionTitleMap[concept.section_id] || concept.section_id;
+
+                    return (
+                      <div
+                        key={concept.id}
+                        className="flex items-center justify-between p-3.5 rounded-xl border border-border/50 bg-background/80 hover:border-border transition-all shadow-2xs"
+                      >
+                        <div>
+                          <h4 className="text-xs font-bold text-foreground">{concept.name}</h4>
+                          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mt-0.5">
+                            {t("sectionPrefix")} {sectionName} · {t("orderPrefix")} {concept.display_order}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <Button variant="ghost" size="icon" className="size-7 text-muted-foreground/70 hover:text-foreground">
+                            <GripVertical className="size-3.5" />
+                          </Button>
+                          <Link href={`/admin/taxonomy/concepts/${concept.id}`}>
+                            <Button variant="ghost" size="icon" className="size-7 text-muted-foreground/70 hover:text-foreground">
+                              <Settings className="size-3.5" />
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </Card>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function TaxonomyManagementSkeleton() {
+  return (
+    <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-2">
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-36 rounded-md" />
+        <Skeleton className="h-8 w-64 rounded-md" />
+        <Skeleton className="h-4 w-96 rounded-md" />
+      </div>
+      <Skeleton className="h-64 w-full rounded-2xl" />
+      <Skeleton className="h-48 w-full rounded-2xl" />
+    </div>
+  );
+}
