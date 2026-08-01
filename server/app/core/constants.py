@@ -3,9 +3,12 @@ from http import HTTPStatus
 
 # API
 API_PREFIX = "/api/v1"
+API_VERSION = "1.0.0"
+API_TITLE = "PhysaFlow API"
 
 # Authentication
 TOKEN_TYPE = "Bearer"
+ADMIN_ROLE_NAME = "admin"
 
 # Pagination
 DEFAULT_PAGE_SIZE = 20
