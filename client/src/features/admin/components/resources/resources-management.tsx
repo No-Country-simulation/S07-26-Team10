@@ -80,16 +80,18 @@ export function ResourcesManagement() {
 
   return (
     <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-2">
-      {/* Top Banner / Breadcrumb Header */}
-      <div className="rounded-2xl bg-emerald-950 text-emerald-100 p-6 sm:p-8 shadow-md space-y-2 relative overflow-hidden">
-        <div className="text-xs font-mono tracking-widest text-emerald-400 uppercase font-semibold">
-          {t("breadcrumb")}
+      {/* Header section matching taxonomy style */}
+      <div className="space-y-1">
+        <div className="flex items-center gap-2 text-xs font-mono font-semibold text-amber-700 dark:text-amber-500 uppercase tracking-widest">
+          <span className="w-6 h-[2px] bg-amber-600/70 inline-block" />
+          <span>{t("breadcrumb")}</span>
         </div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <p className="text-sm text-emerald-200/90 max-w-2xl leading-relaxed">
-            {t("subtitle")}
-          </p>
-        </div>
+        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+          {t("title")}
+        </h1>
+        <p className="text-sm text-muted-foreground max-w-3xl pt-1 leading-relaxed">
+          {t("subtitle")}
+        </p>
       </div>
 
       {/* KPI Stats Cards */}

@@ -102,7 +102,7 @@
     }
   },
   "resources": {
-    "breadcrumb": "CMS > Recursos",
+    "breadcrumb": "Recursos",
     "title": "Recursos Visuales y Archivos",
     "subtitle": "Gestiona los recursos visuales y descargables del reporte. Mantén la integridad técnica y la accesibilidad en cada activo.",
     "newResourceBtn": "+ NUEVO RECURSO",

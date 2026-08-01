@@ -31,22 +31,29 @@ export function SectionsManagement() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-6xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {t("pages.sectionsTitle")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("pages.sectionsDesc")}
-          </p>
+    <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-2">
+      {/* Header section matching taxonomy style */}
+      <div className="space-y-1">
+        <div className="flex items-center gap-2 text-xs font-mono font-semibold text-amber-700 dark:text-amber-500 uppercase tracking-widest">
+          <span className="w-6 h-[2px] bg-amber-600/70 inline-block" />
+          <span>GESTIÓN DE ESTRUCTURA</span>
         </div>
-        <Link href="/admin/sections/new">
-          <Button className="gap-2 rounded-xl shadow-xs">
-            <PlusCircle className="size-4" />
-            <span>{t("pages.newSection")}</span>
-          </Button>
-        </Link>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+              {t("pages.sectionsTitle")}
+            </h1>
+            <p className="text-sm text-muted-foreground max-w-3xl pt-1 leading-relaxed">
+              {t("pages.sectionsDesc")}
+            </p>
+          </div>
+          <Link href="/admin/sections/new">
+            <Button className="bg-emerald-950 text-emerald-100 hover:bg-emerald-900 rounded-lg text-xs font-semibold tracking-wider px-4 py-2 shadow-sm gap-1.5 uppercase shrink-0">
+              <PlusCircle className="size-4" />
+              <span>{t("pages.newSection")}</span>
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Card className="border border-border/60 bg-card shadow-xs rounded-2xl p-6">

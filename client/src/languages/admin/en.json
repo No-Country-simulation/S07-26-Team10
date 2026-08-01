@@ -102,7 +102,7 @@
     }
   },
   "resources": {
-    "breadcrumb": "CMS > Resources",
+    "breadcrumb": "Resources",
     "title": "Visual Assets & Files",
     "subtitle": "Manage visual assets and downloadable files for the report. Maintain technical integrity and accessibility for every asset.",
     "newResourceBtn": "+ NEW RESOURCE",
