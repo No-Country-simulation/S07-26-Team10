@@ -1,0 +1,270 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  DownloadCloud,
+  CheckCircle2,
+  HardDrive,
+  Plus,
+  Pencil,
+  Trash2,
+  Info,
+  Check,
+  X,
+  FileText,
+  Copy,
+} from "lucide-react";
+import { getResourcesAction, deleteResourceAction } from "../../actions/resources-actions";
+import { getSectionsAction } from "../../actions/sections-actions";
+import type { ResourceItem } from "../../schemas/resource-schema";
+import type { SectionItem } from "../../schemas/section-schema";
+
+export function ResourcesManagement() {
+  const t = useTranslations("AdminPage.resources");
+  const [resources, setResources] = useState<ResourceItem[]>([]);
+  const [sections, setSections] = useState<SectionItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [resData, secData] = await Promise.all([
+          getResourcesAction(),
+          getSectionsAction(),
+        ]);
+        setResources(resData);
+        setSections(secData);
+      } catch (err) {
+        console.error("Failed to load resources data", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    if (confirm("¿Desea eliminar este recurso?")) {
+      await deleteResourceAction(id);
+      setResources((prev) => prev.filter((r) => r.id !== id));
+    }
+  };
+
+  const getSectionTitle = (secId: string, index: number) => {
+    const found = sections.find((s) => s.id === secId);
+    if (found) return found.title;
+    // Fallback labels matching mockup
+    if (secId === "sec-001-intro") return "Introducción";
+    if (secId === "sec-002-tax") return "Taxonomía";
+    return `Sección ${index + 1}`;
+  };
+
+  // Group resources by section_id
+  const groupedResources = sections.map((sec, idx) => ({
+    section: sec,
+    sectionIndex: idx + 1,
+    items: resources.filter((r) => r.section_id === sec.id),
+  }));
+
+  // Statistics calculations
+  const totalResources = resources.length;
+  const downloadableCount = resources.filter((r) => r.downloadable).length;
+  const missingAltCount = resources.filter((r) => !r.alt_text || r.alt_text.trim() === "").length;
+
+  return (
+    <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-2">
+      {/* Top Banner / Breadcrumb Header */}
+      <div className="rounded-2xl bg-emerald-950 text-emerald-100 p-6 sm:p-8 shadow-md space-y-2 relative overflow-hidden">
+        <div className="text-xs font-mono tracking-widest text-emerald-400 uppercase font-semibold">
+          {t("breadcrumb")}
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <p className="text-sm text-emerald-200/90 max-w-2xl leading-relaxed">
+            {t("subtitle")}
+          </p>
+        </div>
+      </div>
+
+      {/* KPI Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        {/* Stat 1 */}
+        <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-4 flex flex-col justify-between">
+          <span className="text-xs text-muted-foreground font-medium">{t("statTotal")}</span>
+          <div className="flex items-baseline gap-2 mt-2">
+            <span className="text-3xl font-extrabold text-foreground">{loading ? "-" : totalResources}</span>
+            <span className="text-[10px] font-mono text-muted-foreground">{t("statTotalSub")}</span>
+          </div>
+        </Card>
+
+        {/* Stat 2 */}
+        <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-4 flex flex-col justify-between">
+          <span className="text-xs text-muted-foreground font-medium">{t("statDownloadable")}</span>
+          <div className="flex items-center gap-3 mt-2">
+            <span className="text-3xl font-extrabold text-foreground">{loading ? "-" : downloadableCount}</span>
+            <div className="w-16 h-2 rounded-full bg-amber-500/20 overflow-hidden">
+              <div className="h-full bg-amber-700 w-3/4 rounded-full" />
+            </div>
+          </div>
+        </Card>
+
+        {/* Stat 3 */}
+        <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-4 flex flex-col justify-between">
+          <span className="text-xs text-muted-foreground font-medium">{t("statMissingAlt")}</span>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-3xl font-extrabold text-foreground">{loading ? "-" : missingAltCount}</span>
+            <CheckCircle2 className="size-5 text-emerald-600 dark:text-emerald-400" />
+          </div>
+        </Card>
+
+        {/* Stat 4 */}
+        <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-4 flex flex-col justify-between">
+          <span className="text-xs text-muted-foreground font-medium">{t("statStorage")}</span>
+          <div className="flex items-baseline gap-1 mt-2">
+            <span className="text-2xl font-extrabold text-foreground">42.8</span>
+            <span className="text-[11px] font-mono text-muted-foreground">MB / 1GB</span>
+          </div>
+        </Card>
+      </div>
+
+      {/* Sections and Resources List */}
+      {loading ? (
+        <div className="space-y-6">
+          <Skeleton className="h-48 w-full rounded-2xl" />
+          <Skeleton className="h-48 w-full rounded-2xl" />
+        </div>
+      ) : (
+        groupedResources.map((group) => (
+          <div key={group.section.id} className="space-y-3 pt-2">
+            {/* Section Header Title */}
+            <div className="flex items-baseline gap-3 border-b border-border/40 pb-2">
+              <h2 className="text-2xl font-extrabold text-foreground tracking-tight">
+                {group.section.title}
+              </h2>
+              <span className="text-xs font-mono font-semibold text-muted-foreground/80 uppercase tracking-widest">
+                {String(group.sectionIndex).padStart(2, "0")} / SECCIÓN
+              </span>
+            </div>
+
+            {/* Resources Table for Section */}
+            <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl overflow-hidden">
+              <Table>
+                <TableHeader className="bg-muted/30">
+                  <TableRow className="border-b border-border/50">
+                    <TableHead className="font-bold text-xs text-foreground/80 py-3">{t("colTitle")}</TableHead>
+                    <TableHead className="font-bold text-xs text-foreground/80 py-3 text-center w-28">{t("colType")}</TableHead>
+                    <TableHead className="font-bold text-xs text-foreground/80 py-3 text-center w-32">{t("colDownloadable")}</TableHead>
+                    <TableHead className="font-bold text-xs text-foreground/80 py-3">{t("colAltText")}</TableHead>
+                    <TableHead className="font-bold text-xs text-foreground/80 py-3 text-right w-24">{t("colActions")}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {group.items.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-6 text-xs text-muted-foreground italic">
+                        No hay recursos registrados para esta sección.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    group.items.map((item) => (
+                      <TableRow key={item.id} className="border-b border-border/40 hover:bg-muted/20">
+                        <TableCell className="font-bold text-sm text-foreground py-3.5">
+                          {item.title}
+                        </TableCell>
+                        <TableCell className="text-center py-3.5">
+                          <Badge className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 font-semibold text-[11px] px-2.5 py-0.5 rounded-full border-0">
+                            {item.type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center py-3.5 text-xs font-medium">
+                          {item.downloadable ? (
+                            <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-bold">
+                              <DownloadCloud className="size-3.5" /> {t("yes")}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-muted-foreground/70">
+                              <X className="size-3.5" /> {t("no")}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground max-w-xs truncate py-3.5">
+                          {item.alt_text || "-"}
+                        </TableCell>
+                        <TableCell className="text-right py-3.5">
+                          <div className="flex items-center justify-end gap-1">
+                            {item.file_url && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                title="Copiar enlace del archivo"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(item.file_url || "");
+                                }}
+                                className="size-8 text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-400"
+                              >
+                                <Copy className="size-3.5" />
+                              </Button>
+                            )}
+                            <Link href={`/admin/resources/${item.id}`}>
+                              <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-foreground">
+                                <Pencil className="size-3.5" />
+                              </Button>
+                            </Link>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(item.id!)}
+                              className="size-8 text-muted-foreground hover:text-destructive"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </Card>
+          </div>
+        ))
+      )}
+
+      {/* Style Guide Info Card at Bottom */}
+      <Card className="border border-border/60 bg-muted/20 shadow-2xs rounded-2xl p-6 flex gap-4 items-start">
+        <div className="size-9 rounded-full bg-background border border-border/60 flex items-center justify-center text-muted-foreground shrink-0 mt-0.5">
+          <Info className="size-4" />
+        </div>
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground leading-relaxed italic font-serif">
+            {t("styleNoteQuote")}
+          </p>
+          <p className="text-[11px] font-mono text-muted-foreground/80 font-semibold pt-1">
+            — {t("styleNoteAuthor")}
+          </p>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+export function ResourcesManagementSkeleton() {
+  return (
+    <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-2">
+      <Skeleton className="h-32 w-full rounded-2xl" />
+      <div className="grid grid-cols-4 gap-4">
+        <Skeleton className="h-20 w-full rounded-2xl" />
+        <Skeleton className="h-20 w-full rounded-2xl" />
+        <Skeleton className="h-20 w-full rounded-2xl" />
+        <Skeleton className="h-20 w-full rounded-2xl" />
+      </div>
+      <Skeleton className="h-64 w-full rounded-2xl" />
+    </div>
+  );
+}

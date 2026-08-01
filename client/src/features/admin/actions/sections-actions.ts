@@ -6,8 +6,8 @@ import { createSectionSchema, type CreateSectionInput, type SectionItem } from "
 let sectionsStore: SectionItem[] = [
   {
     id: "sec-001-intro",
-    title: "Introducción y Alcance General",
-    slug: "introduccion-y-alcance-general",
+    title: "Introducción",
+    slug: "introduccion",
     description: "Análisis exhaustivo sobre la capacidad no utilizada e infraestructura energética ociosa.",
     introduction: "# Introducción\n\nEl **Stranded Capacity Report 2026** presenta un análisis detallado.",
     methodology: "# Metodología de Cálculo\n\nPara estimar la Capacidad Ociosa.",
@@ -17,25 +17,14 @@ let sectionsStore: SectionItem[] = [
   },
   {
     id: "sec-002-tax",
-    title: "Taxonomía de Datos Energéticos",
-    slug: "taxonomia-datos-energeticos",
+    title: "Taxonomía",
+    slug: "taxonomia",
     description: "Clasificación jerárquica de métricas de rendimiento.",
     introduction: "Introducción al módulo de taxonomía...",
     methodology: "Metodología aplicada...",
     citation_text: "Physa Energy Analytics. Taxonomía de datos.",
     created_at: new Date(Date.now() - 43200000).toISOString(),
     updated_at: new Date(Date.now() - 43200000).toISOString(),
-  },
-  {
-    id: "sec-003-meth",
-    title: "Metodología de Captura Térmica",
-    slug: "metodologia-captura-termica",
-    description: "Modelos cuantitativos de eficiencia en cooling.",
-    introduction: "Introducción a la metodología térmica...",
-    methodology: "Metodología de cálculo térmico...",
-    citation_text: "Physa Energy Analytics. Metodología térmica.",
-    created_at: new Date(Date.now() - 21600000).toISOString(),
-    updated_at: new Date(Date.now() - 21600000).toISOString(),
   }
 ];
 

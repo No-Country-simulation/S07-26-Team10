@@ -65,6 +65,49 @@
     "referencesTitle": "References Management",
     "referencesDesc": "Manage sources and references of the Stranded Capacity Report."
   },
+  "resources": {
+    "breadcrumb": "CMS > Resources",
+    "title": "Visual Assets & Files",
+    "subtitle": "Manage visual assets and downloadable files for the report. Maintain technical integrity and accessibility for every asset.",
+    "newResourceBtn": "+ NEW RESOURCE",
+    "statTotal": "Total Resources",
+    "statTotalSub": "+2 this month",
+    "statDownloadable": "Downloadables",
+    "statMissingAlt": "Missing Alt Text",
+    "statStorage": "Storage Usage",
+    "colTitle": "Resource Title",
+    "colType": "Type",
+    "colDownloadable": "Downloadable",
+    "colAltText": "Alt Text (Mandatory)",
+    "colActions": "Actions",
+    "yes": "Yes",
+    "no": "No",
+    "styleNoteQuote": "\"Accessibility is not optional. Every visual resource must be understandable for all users, ensuring that alt text describes not only content, but technical context.\"",
+    "styleNoteAuthor": "PhysaFlow Editorial Style Guide",
+    "resourceForm": {
+      "breadcrumbBase": "Resources",
+      "breadcrumbEdit": "Edit resource",
+      "breadcrumbNew": "New resource",
+      "createTitle": "Create new resource",
+      "editTitle": "Edit resource: {title}",
+      "subtitle": "Upload or link media assets and documents associated with a report section.",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "saveResource": "Save resource",
+      "sectionLabel": "Linked Section",
+      "typeLabel": "Resource Type",
+      "typePlaceholder": "e.g. Diagram, Chart, Image, Document...",
+      "titleLabel": "Resource Title",
+      "titlePlaceholder": "e.g. Architecture Diagram",
+      "descLabel": "Description",
+      "descPlaceholder": "Technical resource summary...",
+      "fileUrlLabel": "File / Asset URL",
+      "fileUrlPlaceholder": "/uploads/architecture-diagram.png",
+      "altTextLabel": "Alternative Text (Alt Text)",
+      "altTextPlaceholder": "Describe image for screen readers...",
+      "downloadableLabel": "Allow File Download"
+    }
+  },
   "taxonomy": {
     "headerTag": "ARCHITECTURE MANAGEMENT",
     "title": "Manage taxonomy",
@@ -120,7 +163,7 @@
       "categoryLabel": "Parent Category",
       "sectionLabel": "Linked Section",
       "sectionPlaceholder": "e.g. INTRODUCTION",
-      "orderLabel": "Display Order"
+      "orderLabel": "Order of Display"
     }
   },
   "sectionForm": {

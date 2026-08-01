@@ -30,6 +30,10 @@ import {
   Trash2,
 } from "lucide-react";
 
+import { getResourcesBySectionAction } from "@/features/admin/actions/resources-actions";
+import type { ResourceItem } from "@/features/admin/schemas/resource-schema";
+import { DownloadCloud, FolderPlus, Copy } from "lucide-react";
+
 interface SectionFormProps {
   initialData?: SectionItem;
   isEditMode?: boolean;
@@ -52,6 +56,15 @@ export function SectionForm({ initialData, isEditMode = false }: SectionFormProp
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Associated section resources state
+  const [sectionResources, setSectionResources] = useState<ResourceItem[]>([]);
+
+  React.useEffect(() => {
+    if (initialData?.id) {
+      getResourcesBySectionAction(initialData.id).then(setSectionResources);
+    }
+  }, [initialData?.id]);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [autoSlug, setAutoSlug] = useState(true);
   const [displayOrder, setDisplayOrder] = useState<number>(1);
@@ -393,6 +406,71 @@ export function SectionForm({ initialData, isEditMode = false }: SectionFormProp
               </div>
             </CardContent>
           </Card>
+
+          {/* Card 03: Recursos Asociados a esta Sección (Visible solo al editar o con aviso en creación) */}
+          {isEditMode ? (
+            <Card className="border border-border/60 bg-card shadow-xs rounded-2xl p-6">
+              <CardHeader className="p-0 mb-4 pb-3 border-b border-border/40 flex flex-row items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <FolderPlus className="size-4 text-emerald-700 dark:text-emerald-400" />
+                  <CardTitle className="text-base font-semibold">Recursos Visuales y Documentos</CardTitle>
+                </div>
+                <Link href={`/admin/resources/new?sectionId=${initialData?.id || ""}`}>
+                  <Button type="button" variant="outline" size="sm" className="rounded-xl border-emerald-900/30 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/10 text-xs font-semibold gap-1.5 px-3 py-1">
+                    <FolderPlus className="size-3.5" />
+                    <span>+ Agregar Recurso</span>
+                  </Button>
+                </Link>
+              </CardHeader>
+
+              <CardContent className="p-0">
+                {sectionResources.length === 0 ? (
+                  <div className="p-6 text-center border border-dashed border-border/60 rounded-xl bg-muted/20 text-xs text-muted-foreground">
+                    No hay recursos adjuntos a esta sección. Utilice el botón superior para asociar diagramas e imágenes.
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {sectionResources.map((res) => (
+                      <div key={res.id} className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-background/60">
+                        <div>
+                          <h5 className="text-xs font-bold text-foreground">{res.title}</h5>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">{res.description || res.alt_text}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono font-semibold uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+                            {res.type}
+                          </span>
+                          {res.file_url && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              title="Copiar enlace del archivo"
+                              onClick={() => {
+                                navigator.clipboard.writeText(res.file_url || "");
+                              }}
+                              className="size-7 text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-400"
+                            >
+                              <Copy className="size-3.5" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border border-border/60 bg-muted/20 shadow-xs rounded-2xl p-5">
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <FolderPlus className="size-5 text-muted-foreground/60 shrink-0" />
+                <p>
+                  <strong className="text-foreground">Recursos Visuales:</strong> Primero guarde la sección para poder vincular diagramas, gráficos e imágenes.
+                </p>
+              </div>
+            </Card>
+          )}
         </div>
 
         {/* Right Sidebar Area (4 Cols) */}
