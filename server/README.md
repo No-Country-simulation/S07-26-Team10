@@ -1,20 +1,20 @@
 # PhysaFlow Backend
 
-Backend del proyecto **PhysaFlow – Stranded Capacity Report**, desarrollado con **FastAPI** siguiendo una arquitectura modular por funcionalidades (Feature-Based Architecture).
+Backend del proyecto **PhysaFlow – Stranded Capacity Report**, desarrollado con **FastAPI** siguiendo una **arquitectura modular por funcionalidades (Feature-Based Architecture)**.
 
-El objetivo de este backend es proporcionar una API REST para gestionar el contenido del reporte, el panel de administración y futuras funcionalidades del proyecto.
+El objetivo de este backend es proporcionar una API REST para gestionar el contenido del reporte, el panel de administración y servir como base para futuras funcionalidades del proyecto.
 
 ---
 
 # Descripción del proyecto
 
-PhysaFlow busca convertirse en la principal referencia mundial sobre **Stranded Capacity** en centros de datos.
+PhysaFlow busca convertirse en una referencia sobre **Stranded Capacity** en centros de datos.
 
-Este backend permitirá administrar de forma centralizada:
+Este backend permite administrar de forma centralizada:
 
 - Reportes
 - Secciones
-- Recursos (imágenes, gráficos, archivos)
+- Recursos
 - Referencias bibliográficas
 - Categorías
 - Conceptos
@@ -22,7 +22,7 @@ Este backend permitirá administrar de forma centralizada:
 - Roles
 - Autenticación
 
-Además, servirá como base para futuras versiones del CMS de PhysaFlow.
+La API está diseñada para ser escalable, mantenible y fácilmente extensible mediante módulos independientes.
 
 ---
 
@@ -35,56 +35,60 @@ Además, servirá como base para futuras versiones del CMS de PhysaFlow.
 - Alembic
 - Pydantic v2
 - JWT Authentication
-- Swagger / OpenAPI
+- Passlib + bcrypt
 - Uvicorn
-- Docker
+- Swagger / OpenAPI
 
 ---
 
 # Arquitectura
 
-El proyecto utiliza una **arquitectura modular por funcionalidades (Feature-Based Architecture)**.
+El proyecto utiliza una **Feature-Based Architecture**, donde cada funcionalidad posee sus propios componentes.
 
-Cada módulo contiene toda la lógica relacionada con una funcionalidad específica.
-
-Ejemplo:
+Cada módulo incluye:
 
 ```text
-modules/
-    reports/
-        router.py
-        service.py
-        repository.py
-        model.py
-        schema.py
+module/
+├── model.py
+├── schema.py
+├── repository.py
+├── service.py
+└── router.py
 ```
 
-Esto facilita:
+Esta organización facilita:
 
 - Separación de responsabilidades.
 - Escalabilidad.
-- Mantenimiento.
+- Bajo acoplamiento.
 - Trabajo colaborativo.
+- Mantenimiento a largo plazo.
 
 ---
 
 # Estructura del proyecto
 
 ```text
-physaflow-backend/
-
-├── app/
+app/
+├── api/
+│   └── v1/
+│       ├── endpoints/
+│       └── router.py
 │
 ├── core/
 │   ├── config.py
+│   ├── constants.py
 │   ├── database.py
-│   ├── security.py
 │   ├── dependencies.py
-│   └── constants.py
+│   └── security.py
 │
-├── api/
-│   └── v1/
-│       └── router.py
+├── db/
+│   ├── __init__.py
+│   └── models.py
+│
+├── exceptions/
+│
+├── middleware/
 │
 ├── modules/
 │   ├── auth/
@@ -97,79 +101,152 @@ physaflow-backend/
 │   ├── categories/
 │   └── concepts/
 │
-├── exceptions/
-│
-├── middleware/
-│
 ├── shared/
-│   ├── base.py
-│   ├── responses.py
-│   └── utils.py
+│   ├── schemas/
+│   └── utils/
 │
-├── tests/
-│
-├── alembic/
-│
-├── .env
-├── .env.example
-├── requirements.txt
-├── alembic.ini
-└── README.md
+└── main.py
+
+alembic/
+tests/
+requirements.txt
+README.md
 ```
 
 ---
-
 # Funcionalidades del MVP
 
-## Público
+## Portal público
 
-- Visualización del reporte.
-- Listado de secciones.
-- Consulta de conceptos.
-- Recursos descargables.
-- Referencias bibliográficas.
+- Visualización del reporte principal.
+- Navegación entre secciones e índice del reporte.
+- Consulta del contenido de las secciones.
+- Visualización de recursos (imágenes, gráficos y diagramas).
+- Exploración de la taxonomía mediante categorías y conceptos.
+- Descarga de recursos publicados.
+- Consulta de referencias bibliográficas.
+- Consulta del formato recomendado para citar el reporte.
 
-## Administración
+## Panel de administración
 
 - Autenticación mediante JWT.
-- Gestión de usuarios.
-- Gestión de roles.
-- CRUD de reportes.
-- CRUD de secciones.
-- CRUD de recursos.
-- CRUD de categorías.
-- CRUD de conceptos.
-- CRUD de referencias.
+- Gestión de usuarios y roles.
+- Administración de reportes.
+- Administración de secciones.
+- Administración de recursos.
+- Administración de categorías.
+- Administración de conceptos.
+- Administración de referencias bibliográficas.
 
 ---
 
 # Base de datos
 
-Motor:
+**Motor**
 
 - PostgreSQL
 
-ORM:
+**ORM**
 
 - SQLAlchemy 2.0
 
-Migraciones:
+**Migraciones**
 
 - Alembic
 
 ---
 
+# Instalación
+
+## 1. Clonar el repositorio
+
+```bash
+git clone <repository-url>
+cd server
+```
+
+## 2. Crear entorno virtual
+
+Linux/macOS
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+Windows
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+```
+
+---
+
+## 3. Instalar dependencias
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## 4. Configurar variables de entorno
+
+Crear un archivo:
+
+```text
+.env
+```
+
+Ejemplo:
+
+```env
+APP_NAME=PhysaFlow API
+APP_VERSION=1.0.0
+
+DEBUG=True
+
+DATABASE_URL=postgresql+psycopg://USER:PASSWORD@HOST:5432/DATABASE
+
+SECRET_KEY=your-secret-key
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+```
+
+---
+
+## 5. Ejecutar migraciones
+
+```bash
+alembic upgrade head
+```
+
+---
+
+## 6. Iniciar el servidor
+
+```bash
+uvicorn app.main:app --reload
+```
+
+La API estará disponible en:
+
+```
+http://127.0.0.1:8000
+```
+
+---
+
 # Documentación
 
-La API contará con documentación automática mediante Swagger.
-
-Disponible en:
+Swagger UI
 
 ```
 /docs
 ```
 
-Y documentación ReDoc en:
+ReDoc
 
 ```
 /redoc
@@ -177,16 +254,16 @@ Y documentación ReDoc en:
 
 ---
 
-# Convenciones
+# Convenciones del proyecto
 
-- Arquitectura modular.
-- Separación entre Router, Service y Repository.
-- Validaciones mediante Pydantic.
+- Arquitectura modular por funcionalidades.
+- Separación en Router, Service y Repository.
 - Modelos con SQLAlchemy.
-- Migraciones mediante Alembic.
+- Validaciones mediante Pydantic.
+- Migraciones con Alembic.
 - Excepciones personalizadas.
+- Tipado completo.
 - Respuestas JSON consistentes.
-- Código documentado y tipado.
 
 ---
 
@@ -194,6 +271,22 @@ Y documentación ReDoc en:
 
 - JWT Authentication.
 - Hash de contraseñas con bcrypt.
-- Control de roles.
+- Control de acceso basado en roles.
 - Variables de entorno mediante `.env`.
 
+---
+
+# Calidad de código
+
+El proyecto utiliza herramientas para mantener un código consistente.
+
+- Black
+- Ruff
+- isort
+- Pytest
+
+---
+
+# Estado del proyecto
+
+Actualmente se encuentra en desarrollo como backend del MVP de **PhysaFlow – Stranded Capacity Report**.
