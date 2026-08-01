@@ -31,8 +31,10 @@ import {
 } from "lucide-react";
 
 import { getResourcesBySectionAction } from "@/features/admin/actions/resources-actions";
+import { getReferencesBySectionAction } from "@/features/admin/actions/references-actions";
 import type { ResourceItem } from "@/features/admin/schemas/resource-schema";
-import { DownloadCloud, FolderPlus, Copy } from "lucide-react";
+import type { ReferenceItem } from "@/features/admin/schemas/reference-schema";
+import { DownloadCloud, FolderPlus, Copy, BookMarked } from "lucide-react";
 
 interface SectionFormProps {
   initialData?: SectionItem;
@@ -57,12 +59,14 @@ export function SectionForm({ initialData, isEditMode = false }: SectionFormProp
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Associated section resources state
+  // Associated section resources and references state
   const [sectionResources, setSectionResources] = useState<ResourceItem[]>([]);
+  const [sectionReferences, setSectionReferences] = useState<ReferenceItem[]>([]);
 
   React.useEffect(() => {
     if (initialData?.id) {
       getResourcesBySectionAction(initialData.id).then(setSectionResources);
+      getReferencesBySectionAction(initialData.id).then(setSectionReferences);
     }
   }, [initialData?.id]);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -467,6 +471,54 @@ export function SectionForm({ initialData, isEditMode = false }: SectionFormProp
                 <FolderPlus className="size-5 text-muted-foreground/60 shrink-0" />
                 <p>
                   <strong className="text-foreground">Recursos Visuales:</strong> Primero guarde la sección para poder vincular diagramas, gráficos e imágenes.
+                </p>
+              </div>
+            </Card>
+          )}
+          {/* Card 04: Referencias Bibliográficas Asociadas a esta Sección */}
+          {isEditMode ? (
+            <Card className="border border-border/60 bg-card shadow-xs rounded-2xl p-6">
+              <CardHeader className="p-0 mb-4 pb-3 border-b border-border/40 flex flex-row items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <BookMarked className="size-4 text-emerald-700 dark:text-emerald-400" />
+                  <CardTitle className="text-base font-semibold">Referencias Bibliográficas (APA 7)</CardTitle>
+                </div>
+                <Link href={`/admin/references/new?sectionId=${initialData?.id || ""}`}>
+                  <Button type="button" variant="outline" size="sm" className="rounded-xl border-emerald-900/30 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/10 text-xs font-semibold gap-1.5 px-3 py-1">
+                    <BookMarked className="size-3.5" />
+                    <span>+ Agregar Referencia</span>
+                  </Button>
+                </Link>
+              </CardHeader>
+
+              <CardContent className="p-0">
+                {sectionReferences.length === 0 ? (
+                  <div className="p-6 text-center border border-dashed border-border/60 rounded-xl bg-muted/20 text-xs text-muted-foreground">
+                    No hay referencias asociadas a esta sección. Utilice el botón superior para vincular citas APA 7.
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {sectionReferences.map((ref) => (
+                      <div key={ref.id} className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-background/60">
+                        <div>
+                          <h5 className="text-xs font-bold text-foreground">{ref.authors} ({ref.year})</h5>
+                          <p className="text-[11px] italic font-serif text-emerald-900 dark:text-emerald-300 mt-0.5">{ref.title}</p>
+                        </div>
+                        <span className="text-[10px] font-mono font-semibold uppercase px-2 py-0.5 rounded-md bg-muted/60 text-muted-foreground border border-border/40">
+                          {ref.source}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border border-border/60 bg-muted/20 shadow-xs rounded-2xl p-5">
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <BookMarked className="size-5 text-muted-foreground/60 shrink-0" />
+                <p>
+                  <strong className="text-foreground">Referencias Bibliográficas:</strong> Primero guarde la sección para poder vincular citas APA 7.
                 </p>
               </div>
             </Card>
