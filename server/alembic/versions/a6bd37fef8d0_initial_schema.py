@@ -1,8 +1,8 @@
 """initial schema
 
-Revision ID: bceea994f0e9
+Revision ID: a6bd37fef8d0
 Revises: 
-Create Date: 2026-08-02 21:22:57.535135
+Create Date: 2026-08-03 00:13:18.310491
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'bceea994f0e9'
+revision: str = 'a6bd37fef8d0'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -100,6 +100,7 @@ def upgrade() -> None:
     sa.Column('title', sa.String(length=255), nullable=True),
     sa.Column('description', sa.Text(), nullable=True),
     sa.Column('file_url', sa.String(length=500), nullable=False),
+    sa.Column('cloudinary_public_id', sa.String(length=255), nullable=True),
     sa.Column('alt_text', sa.String(length=255), nullable=True),
     sa.Column('downloadable', sa.Boolean(), server_default='false', nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
