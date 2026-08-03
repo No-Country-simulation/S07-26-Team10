@@ -51,6 +51,11 @@ class Resource(Base):
         nullable=False,
     )
 
+    cloudinary_public_id: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
+
     alt_text: Mapped[str | None] = mapped_column(
         String(255),
         nullable=True,
