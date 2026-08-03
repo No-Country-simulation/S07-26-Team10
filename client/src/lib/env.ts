@@ -1,41 +1,33 @@
 import "server-only";
-import { z } from "zod";
 
-const sanitizeEmpty = (val: unknown) =>
-  typeof val === "string" && val.trim() === "" ? undefined : val;
+function sanitizeApiUrl(val: string | undefined): string {
+  if (!val) return "";
+  let trimmed = val.trim();
+  if (!trimmed) return "";
 
-const envSchema = z.object({
-  NEXT_PUBLIC_API_URL: z.preprocess(
-    sanitizeEmpty,
-    z.string().url("NEXT_PUBLIC_API_URL debe ser una URL válida").optional(),
-  ),
-});
-
-function validateEnv() {
-  const rawEnv = {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-  };
-
-  const parsed = envSchema.safeParse(rawEnv);
-
-  if (!parsed.success) {
-    const errorMessages = parsed.error.issues
-      .map((issue) => `Variable '${issue.path.join(".")}': ${issue.message}`)
-      .join("\n");
-
-    console.error(
-      "[Config Error] Error de configuración en variables de entorno (.env):\n" +
-        errorMessages,
-    );
-
-    throw new Error(
-      `[Config Error] Faltan variables de entorno obligatorias o son inválidas en el archivo .env:\n${errorMessages}`,
-    );
+  if (!/^https?:\/\//i.test(trimmed)) {
+    trimmed = `http://${trimmed}`;
   }
 
+  try {
+    const url = new URL(trimmed);
+    return url.toString();
+  } catch {
+    console.warn(
+      `[Config Warning] NEXT_PUBLIC_API_URL no es una URL válida: "${val}". Se usará cadena vacía.`,
+    );
+    return "";
+  }
+}
+
+function validateEnv() {
+  const rawApiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const apiUrl = sanitizeApiUrl(rawApiUrl);
+
   return {
-    apiUrl: parsed.data.NEXT_PUBLIC_API_URL ?? "",
+    apiUrl,
   };
 }
 
 export const env = validateEnv();
+
