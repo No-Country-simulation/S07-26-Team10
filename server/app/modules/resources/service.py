@@ -1,5 +1,5 @@
 import uuid
-
+import logging
 from app.exceptions import NotFoundException
 from app.modules.resources.model import Resource
 from app.modules.resources.repository import ResourceRepository
@@ -10,23 +10,27 @@ from app.modules.resources.schema import (
     ResourceUpdate,
 )
 from app.modules.sections.repository import SectionRepository
+from app.modules.uploads.service import UploadService
+from app.shared.enums.resource_type import ResourceType
 
-
+logger = logging.getLogger(__name__)
 class ResourceService:
     """
     Servicio de lógica de negocio para resources.
 
-    No importa ni llama a Cloudinary.
-    Solo administra metadata del recurso.
+    Administra metadata del recurso y delega la eliminación
+    de archivos en Cloudinary a UploadService.
     """
 
     def __init__(
         self,
         repository: ResourceRepository,
         section_repository: SectionRepository,
+        upload_service: UploadService,
     ) -> None:
         self.repository = repository
         self.section_repository = section_repository
+        self.upload_service = upload_service
 
 
     def get_resource(
@@ -146,6 +150,7 @@ class ResourceService:
 
         Reglas:
         - El resource debe existir.
+        - Si cloudinary_public_id cambia, se elimina el archivo anterior.
         """
 
         resource = self.repository.get_by_id(resource_id)
@@ -158,6 +163,16 @@ class ResourceService:
         update_data = data.model_dump(
             exclude_unset=True,
         )
+
+        if (
+            "cloudinary_public_id" in update_data
+            and update_data["cloudinary_public_id"] != resource.cloudinary_public_id
+            and resource.cloudinary_public_id is not None
+        ):
+            self._try_delete_from_cloudinary(
+                resource.cloudinary_public_id,
+                resource.type,
+            )
 
         for field, value in update_data.items():
             setattr(resource, field, value)
@@ -174,8 +189,8 @@ class ResourceService:
         """
         Elimina un resource de la base de datos.
 
-        Nota: la eliminación del archivo en Cloudinary se manejará
-        en una futura integración usando cloudinary_public_id.
+        Si existe cloudinary_public_id, intenta eliminar el archivo
+        de Cloudinary antes de borrar el registro.
         """
 
         resource = self.repository.get_by_id(resource_id)
@@ -183,6 +198,12 @@ class ResourceService:
         if not resource:
             raise NotFoundException(
                 message="Recurso no encontrado.",
+            )
+
+        if resource.cloudinary_public_id:
+            self._try_delete_from_cloudinary(
+                resource.cloudinary_public_id,
+                resource.type,
             )
 
         self.repository.delete(resource)
@@ -202,3 +223,48 @@ class ResourceService:
             raise NotFoundException(
                 message="Sección no encontrada.",
             )
+
+
+    def _try_delete_from_cloudinary(
+        self,
+        public_id: str,
+        resource_type: ResourceType,
+    ) -> None:
+        """
+        Intenta eliminar un archivo de Cloudinary.
+
+        Si la eliminación falla, no impide la operación en curso.
+        """
+
+        cloudinary_resource_type = self._get_cloudinary_resource_type(
+            resource_type,
+        )
+
+        try:
+            self.upload_service.delete(
+                public_id=public_id,
+                resource_type=cloudinary_resource_type,
+            )
+        except Exception:
+            logger.exception(
+                "Error deleting Cloudinary resource '%s'.",
+                public_id,
+            )
+
+
+    @staticmethod
+    def _get_cloudinary_resource_type(
+        resource_type: ResourceType,
+    ) -> str:
+        """
+        Traduce el ResourceType del dominio al resource_type
+        esperado por Cloudinary.
+
+        - IMAGE, GRAPH, DIAGRAM → "image"
+        - FILE → "raw"
+        """
+
+        if resource_type == ResourceType.FILE:
+            return "raw"
+
+        return "image"

@@ -18,7 +18,9 @@ from app.modules.resources.schema import (
 )
 from app.modules.resources.service import ResourceService
 from app.modules.sections.repository import SectionRepository
+from app.modules.uploads.service import UploadService
 from app.modules.users.model import User
+from app.shared.services.cloudinary import CloudinaryService
 
 
 router = APIRouter(
@@ -37,7 +39,14 @@ def get_resource_service(
     repository = ResourceRepository(db)
     section_repository = SectionRepository(db)
 
-    return ResourceService(repository, section_repository)
+    cloudinary_service = CloudinaryService()
+    upload_service = UploadService(cloudinary_service)
+
+    return ResourceService(
+        repository,
+        section_repository,
+        upload_service,
+    )
 
 
 # ==========================

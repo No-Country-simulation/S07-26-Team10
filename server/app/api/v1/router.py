@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.core.constants import API_PREFIX
 from app.modules.auth.router import router as auth_router
 from app.modules.categories.router import router as categories_router
+from app.modules.concepts.router import router as concepts_router
 from app.modules.references.router import router as references_router
 from app.modules.reports.router import router as reports_router
 from app.modules.resources.router import router as resources_router
@@ -14,6 +15,7 @@ api_router = APIRouter(prefix=API_PREFIX)
 
 api_router.include_router(auth_router)
 api_router.include_router(categories_router)
+api_router.include_router(concepts_router)
 api_router.include_router(references_router)
 api_router.include_router(reports_router)
 api_router.include_router(resources_router)

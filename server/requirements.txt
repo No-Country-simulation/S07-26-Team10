@@ -53,3 +53,4 @@ uvicorn==0.52.0
 uvloop==0.22.1
 watchfiles==1.2.0
 websockets==17.0
+cloudinary==1.45.0
