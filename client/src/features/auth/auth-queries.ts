@@ -1,7 +1,9 @@
 import "server-only";
 import { cache } from "react";
 import { cookies } from "next/headers";
-import { AuthUser } from "./auth-types";
+import { AUTH_ME_PATH } from "./auth-api";
+import { getApiUrl } from "@/lib/api-url";
+import { AuthUser, CurrentUserResponse } from "./auth-types";
 import { env } from "@/lib/env";
 
 /**
@@ -16,8 +18,42 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
     return null;
   }
 
+  if (env.apiUrl) {
+    try {
+      const response = await fetch(getApiUrl(AUTH_ME_PATH), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+      });
+
+      if (response.ok) {
+        const user = (await response.json()) as CurrentUserResponse;
+
+        if (!user.is_active) {
+          return null;
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: "admin",
+        };
+      }
+
+      if (response.status === 401) {
+        cookieStore.delete("auth_token");
+      }
+    } catch (error) {
+      console.error("Error fetching current user from API:", error);
+    }
+
+    return null;
+  }
+
   try {
-    // Attempt parsing token if JWT payload format (header.payload.signature)
     const parts = token.split(".");
     if (parts.length === 3) {
       const payloadBase64 = parts[1];
@@ -27,17 +63,16 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
 
       return {
         id: parsed.sub || parsed.id || "admin-1",
-        email: parsed.email || env.adminEmail,
-        name: parsed.name || "Administrador",
+        email: parsed.email || "",
+        name: parsed.name || "Usuario",
         role: parsed.role || "admin",
       };
     }
 
-    // Fallback if token is simple string format
     return {
       id: "admin-1",
-      email: env.adminEmail,
-      name: "Administrador",
+      email: "",
+      name: "Usuario",
       role: "admin",
     };
   } catch (error) {
