@@ -79,7 +79,8 @@ export const getHomeIntro = cache(
   async (lang: "es" | "en" = "es"): Promise<HomeIntroData> => {
     const targetLang = lang === "en" ? "en" : "es";
 
-    if (env.apiUrl) {
+    // Desactivado temporalmente hasta que el endpoint del backend esté disponible
+    if (false && env.apiUrl) {
       try {
         const response = await fetch(
           `${env.apiUrl}/reports/main?lang=${targetLang}`,
