@@ -1,4 +1,3 @@
-from app.modules.roles.model import Role
 from app.modules.users.model import User
 from app.modules.reports.model import Report
 from app.modules.sections.model import Section

@@ -2,13 +2,13 @@
 
 Backend del proyecto **PhysaFlow – Stranded Capacity Report**, desarrollado con **FastAPI** siguiendo una **arquitectura modular por funcionalidades (Feature-Based Architecture)**.
 
-El objetivo de este backend es proporcionar una API REST para gestionar el contenido del reporte, el panel de administración y servir como base para futuras funcionalidades del proyecto.
+El objetivo de este backend es proporcionar una **API REST** para administrar el contenido editorial del reporte, la taxonomía de **Stranded Capacity** y el panel de administración, sirviendo como base para la evolución futura del proyecto.
 
 ---
 
 # Descripción del proyecto
 
-PhysaFlow busca convertirse en una referencia sobre **Stranded Capacity** en centros de datos.
+PhysaFlow busca convertirse en una referencia sobre **Stranded Capacity** en centros de datos mediante la publicación de un reporte técnico de acceso público.
 
 Este backend permite administrar de forma centralizada:
 
@@ -18,8 +18,7 @@ Este backend permite administrar de forma centralizada:
 - Referencias bibliográficas
 - Categorías
 - Conceptos
-- Usuarios
-- Roles
+- Usuarios administradores
 - Autenticación
 
 La API está diseñada para ser escalable, mantenible y fácilmente extensible mediante módulos independientes.
@@ -93,7 +92,6 @@ app/
 ├── modules/
 │   ├── auth/
 │   ├── users/
-│   ├── roles/
 │   ├── reports/
 │   ├── sections/
 │   ├── resources/
@@ -114,29 +112,55 @@ README.md
 ```
 
 ---
+
 # Funcionalidades del MVP
 
 ## Portal público
 
 - Visualización del reporte principal.
-- Navegación entre secciones e índice del reporte.
+- Navegación entre las secciones del reporte.
+- Visualización del índice del reporte.
 - Consulta del contenido de las secciones.
-- Visualización de recursos (imágenes, gráficos y diagramas).
-- Exploración de la taxonomía mediante categorías y conceptos.
+- Exploración de la taxonomía del reporte organizada mediante categorías y conceptos.
+- Visualización de recursos (imágenes, gráficos, diagramas y archivos).
 - Descarga de recursos publicados.
 - Consulta de referencias bibliográficas.
 - Consulta del formato recomendado para citar el reporte.
 
 ## Panel de administración
 
-- Autenticación mediante JWT.
-- Gestión de usuarios y roles.
+- Autenticación del administrador mediante JWT.
+- Gestión de usuarios administradores.
 - Administración de reportes.
 - Administración de secciones.
 - Administración de recursos.
 - Administración de categorías.
 - Administración de conceptos.
 - Administración de referencias bibliográficas.
+
+---
+
+# Modelo de datos
+
+El modelo de datos está centrado en la entidad **Report**, que agrupa tanto el contenido editorial como la taxonomía del proyecto.
+
+```text
+Report
+├── Sections
+│   └── Resources
+├── Categories
+│   └── Concepts
+└── References
+```
+
+La estructura editorial (**Sections**) y la estructura taxonómica (**Categories** y **Concepts**) se modelan de forma independiente, permitiendo desacoplar el contenido del reporte de la clasificación del conocimiento.
+
+Los recursos asociados a una sección utilizan el tipo enumerado **ResourceType**:
+
+- IMAGE
+- GRAPH
+- DIAGRAM
+- FILE
 
 ---
 
@@ -167,14 +191,14 @@ cd server
 
 ## 2. Crear entorno virtual
 
-Linux/macOS
+### Linux / macOS
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 ```
 
-Windows
+### Windows
 
 ```bash
 python -m venv .venv
@@ -232,7 +256,7 @@ uvicorn app.main:app --reload
 
 La API estará disponible en:
 
-```
+```text
 http://127.0.0.1:8000
 ```
 
@@ -240,15 +264,15 @@ http://127.0.0.1:8000
 
 # Documentación
 
-Swagger UI
+## Swagger UI
 
-```
+```text
 /docs
 ```
 
-ReDoc
+## ReDoc
 
-```
+```text
 /redoc
 ```
 
@@ -257,28 +281,29 @@ ReDoc
 # Convenciones del proyecto
 
 - Arquitectura modular por funcionalidades.
-- Separación en Router, Service y Repository.
-- Modelos con SQLAlchemy.
-- Validaciones mediante Pydantic.
-- Migraciones con Alembic.
+- Separación de responsabilidades mediante Router, Service y Repository.
+- Modelos implementados con SQLAlchemy 2.0.
+- Validaciones mediante Pydantic v2.
+- Migraciones administradas con Alembic.
 - Excepciones personalizadas.
 - Tipado completo.
 - Respuestas JSON consistentes.
+- Organización del código basada en módulos independientes.
 
 ---
 
 # Seguridad
 
-- JWT Authentication.
+- Autenticación mediante JWT.
 - Hash de contraseñas con bcrypt.
-- Control de acceso basado en roles.
+- Acceso restringido a usuarios administradores autenticados.
 - Variables de entorno mediante `.env`.
 
 ---
 
 # Calidad de código
 
-El proyecto utiliza herramientas para mantener un código consistente.
+El proyecto utiliza herramientas para mantener un código consistente y de alta calidad.
 
 - Black
 - Ruff
@@ -289,4 +314,6 @@ El proyecto utiliza herramientas para mantener un código consistente.
 
 # Estado del proyecto
 
-Actualmente se encuentra en desarrollo como backend del MVP de **PhysaFlow – Stranded Capacity Report**.
+El proyecto se encuentra en desarrollo como backend del MVP de **PhysaFlow – Stranded Capacity Report**.
+
+Actualmente proporciona la infraestructura necesaria para administrar el contenido editorial del reporte, la taxonomía de **Stranded Capacity**, los recursos asociados y el panel de administración mediante una API REST desarrollada con FastAPI.
