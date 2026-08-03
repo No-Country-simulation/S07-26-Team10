@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/features/auth/auth-queries";
 import { AdminHeader } from "@/features/admin/components/admin-header";
 import { AdminSidebar } from "@/features/admin/components/admin-sidebar";
@@ -23,9 +25,15 @@ export default async function AdminLayout({
 }) {
   const user = await getCurrentUser();
 
+  if (!user) {
+    const cookieStore = await cookies();
+    cookieStore.delete("auth_token");
+    redirect("/login");
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      <AdminHeader userRole={user?.role || "Administrador"} userName={user?.name || user?.email} />
+      <AdminHeader userRole={user.role} userName={user.name || user.email} />
 
       <div className="flex-1 flex flex-col md:flex-row w-full">
         <AdminSidebar />
