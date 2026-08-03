@@ -2,17 +2,21 @@ import "server-only";
 
 function sanitizeApiUrl(val: string | undefined): string {
   if (!val) return "";
-  let trimmed = val.trim();
+  // Limpia comillas circundantes (común en configuraciones de Vercel/env) y espacios
+  let trimmed = val.trim().replace(/^["']|["']$/g, "").trim();
   if (!trimmed) return "";
 
   if (!/^https?:\/\//i.test(trimmed)) {
-    trimmed = `http://${trimmed}`;
+    trimmed = `https://${trimmed}`;
   }
 
   try {
-    const url = new URL(trimmed);
-    return url.toString();
+    new URL(trimmed);
+    return trimmed;
   } catch {
+    if (/^https?:\/\//i.test(trimmed)) {
+      return trimmed;
+    }
     console.warn(
       `[Config Warning] NEXT_PUBLIC_API_URL no es una URL válida: "${val}". Se usará cadena vacía.`,
     );
