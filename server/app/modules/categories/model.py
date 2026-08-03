@@ -1,9 +1,12 @@
 import uuid
 
 from sqlalchemy import Boolean
+from sqlalchemy import DateTime
+from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import Text
+from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -21,6 +24,12 @@ class Category(Base):
         default=uuid.uuid4,
     )
 
+    report_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("reports.id"),
+        nullable=False,
+    )
+
     name: Mapped[str] = mapped_column(
         String(150),
         nullable=False,
@@ -36,13 +45,33 @@ class Category(Base):
         nullable=True,
     )
 
-    active: Mapped[bool] = mapped_column(
+    published: Mapped[bool] = mapped_column(
         Boolean,
-        default=True,
         nullable=False,
+        default=True,
+        server_default="true",
+    )
+
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+
+    updated_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    report: Mapped["Report"] = relationship(
+        "Report",
+        back_populates="categories",
     )
 
     concepts: Mapped[list["Concept"]] = relationship(
         "Concept",
         back_populates="category",
+        cascade="all, delete-orphan",
     )

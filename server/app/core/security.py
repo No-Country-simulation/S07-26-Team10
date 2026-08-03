@@ -28,23 +28,30 @@ def verify_password(
 
 
 def create_access_token(
-    data: dict[str, Any],
+    subject: str,
     expires_delta: timedelta | None = None,
 ) -> str:
+    """
+    Genera un JWT de acceso.
 
-    payload = data.copy()
+    El subject representa el identificador único
+    del usuario autenticado.
+    """
 
     expire = (
         datetime.now(timezone.utc)
         + (
             expires_delta
             or timedelta(
-                minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+                minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
             )
         )
     )
 
-    payload.update({"exp": expire})
+    payload = {
+        "sub": subject,
+        "exp": expire,
+    }
 
     return jwt.encode(
         payload,
@@ -53,7 +60,9 @@ def create_access_token(
     )
 
 
-def decode_access_token(token: str) -> dict[str, Any]:
+def decode_access_token(
+    token: str,
+) -> dict[str, Any]:
     try:
         return jwt.decode(
             token,

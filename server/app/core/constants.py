@@ -8,7 +8,6 @@ API_TITLE = "PhysaFlow API"
 
 # Authentication
 TOKEN_TYPE = "Bearer"
-ADMIN_ROLE_NAME = "admin"
 
 # Pagination
 DEFAULT_PAGE_SIZE = 20

@@ -2,11 +2,19 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.constants import HTTP_200_OK
-from app.core.dependencies import get_current_user, get_db
-from app.modules.auth.repository import AuthRepository
-from app.modules.auth.schema import LoginRequest, TokenResponse, UserRead
+from app.core.dependencies import (
+    get_current_user,
+    get_db,
+)
+from app.modules.auth.schema import (
+    CurrentUserResponse,
+    LoginRequest,
+    TokenResponse,
+)
 from app.modules.auth.service import AuthService
 from app.modules.users.model import User
+from app.modules.users.repository import UserRepository
+
 
 router = APIRouter(
     prefix="/auth",
@@ -14,9 +22,15 @@ router = APIRouter(
 )
 
 
-def get_auth_service(db: Session = Depends(get_db)) -> AuthService:
-    """Factory de AuthService inyectado vía Depends."""
-    repository = AuthRepository(db)
+def get_auth_service(
+    db: Session = Depends(get_db),
+) -> AuthService:
+    """
+    Factory para inyectar AuthService.
+    """
+
+    repository = UserRepository(db)
+
     return AuthService(repository)
 
 
@@ -25,27 +39,34 @@ def get_auth_service(db: Session = Depends(get_db)) -> AuthService:
     response_model=TokenResponse,
     status_code=HTTP_200_OK,
     summary="Iniciar sesión",
-    description="Autentica al usuario con email y contraseña, devuelve un token JWT.",
+    description="Autentica un usuario y devuelve un JWT.",
+    responses={
+        401: {
+            "description": "Credenciales inválidas o usuario inactivo",
+        },
+    },
 )
 def login(
     data: LoginRequest,
     service: AuthService = Depends(get_auth_service),
 ) -> TokenResponse:
-    return service.authenticate(
-        email=data.email,
-        password=data.password,
-    )
+    return service.login(data)
 
 
 @router.get(
     "/me",
-    response_model=UserRead,
+    response_model=CurrentUserResponse,
     status_code=HTTP_200_OK,
-    summary="Obtener usuario autenticado",
-    description="Devuelve la información del usuario autenticado actual.",
+    summary="Usuario autenticado",
+    description="Obtiene la información del usuario autenticado.",
+    responses={
+        401: {
+            "description": "Token inválido o expirado",
+        },
+    },
 )
-def get_me(
+def me(
     current_user: User = Depends(get_current_user),
     service: AuthService = Depends(get_auth_service),
-) -> UserRead:
-    return service.get_current_user_data(current_user)
+) -> CurrentUserResponse:
+    return service.me(current_user)

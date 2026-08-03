@@ -39,6 +39,7 @@ class Section(Base):
         String(255),
         unique=True,
         nullable=False,
+        index=True,
     )
 
     content: Mapped[str | None] = mapped_column(
@@ -53,17 +54,20 @@ class Section(Base):
 
     published: Mapped[bool] = mapped_column(
         Boolean,
-        default=False,
         nullable=False,
+        default=False,
+        server_default="false",
     )
 
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),
+        nullable=False,
         server_default=func.now(),
     )
 
     updated_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),
+        nullable=False,
         server_default=func.now(),
         onupdate=func.now(),
     )
@@ -73,12 +77,8 @@ class Section(Base):
         back_populates="sections",
     )
 
-    concepts: Mapped[list["Concept"]] = relationship(
-        "Concept",
-        back_populates="section",
-    )
-
     resources: Mapped[list["Resource"]] = relationship(
         "Resource",
         back_populates="section",
+        cascade="all, delete-orphan",
     )

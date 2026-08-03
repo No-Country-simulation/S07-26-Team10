@@ -2,18 +2,17 @@ import uuid
 from collections.abc import Generator
 
 from fastapi import Depends
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from app.core.constants import ADMIN_ROLE_NAME
 from app.core.database import SessionLocal
 from app.core.security import decode_access_token
-from app.exceptions import ForbiddenException, UnauthorizedException
+from app.exceptions import UnauthorizedException
 from app.modules.users.model import User
 from app.modules.users.repository import UserRepository
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+security = HTTPBearer()
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -21,30 +20,34 @@ def get_db() -> Generator[Session, None, None]:
 
     try:
         yield db
-
     finally:
         db.close()
 
 
-def get_current_user(
-    token: str = Depends(oauth2_scheme),
+def get_user_repository(
     db: Session = Depends(get_db),
+) -> UserRepository:
+    """
+    Provee una instancia de UserRepository.
+    """
+    return UserRepository(db)
+
+
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    repository: UserRepository = Depends(get_user_repository),
 ) -> User:
     """
-    Dependencia que extrae y valida el usuario autenticado desde el token JWT.
-
-    Lanza UnauthorizedException si:
-    - El token es inválido o expirado.
-    - El payload no contiene un subject válido.
-    - El usuario no existe en la base de datos.
-    - El usuario está inactivo.
+    Obtiene el usuario autenticado a partir del JWT.
     """
+
+    token = credentials.credentials
 
     payload = decode_access_token(token)
 
-    sub: str | None = payload.get("sub")
+    sub = payload.get("sub")
 
-    if not sub:
+    if sub is None:
         raise UnauthorizedException(
             message="Token inválido o expirado.",
         )
@@ -56,10 +59,9 @@ def get_current_user(
             message="Token inválido o expirado.",
         )
 
-    repository = UserRepository(db)
     user = repository.get_by_id(user_id)
 
-    if not user:
+    if user is None:
         raise UnauthorizedException(
             message="Token inválido o expirado.",
         )
@@ -70,20 +72,3 @@ def get_current_user(
         )
 
     return user
-
-
-def get_current_admin(
-    current_user: User = Depends(get_current_user),
-) -> User:
-    """
-    Dependencia que verifica que el usuario autenticado tenga rol de administrador.
-
-    Lanza ForbiddenException si el rol no es admin.
-    """
-
-    if current_user.role.name != ADMIN_ROLE_NAME:
-        raise ForbiddenException(
-            message="No tiene permisos para realizar esta acción.",
-        )
-
-    return current_user

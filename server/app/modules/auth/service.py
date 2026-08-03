@@ -1,61 +1,82 @@
-from app.core.constants import ADMIN_ROLE_NAME, TOKEN_TYPE
-from app.core.security import create_access_token, verify_password
-from app.exceptions import ForbiddenException, UnauthorizedException
-from app.modules.auth.repository import AuthRepository
-from app.modules.auth.schema import TokenResponse, UserRead
+from app.core.security import (
+    create_access_token,
+    verify_password,
+)
+from app.exceptions import UnauthorizedException
+from app.modules.auth.schema import (
+    CurrentUserResponse,
+    LoginRequest,
+    TokenResponse,
+)
 from app.modules.users.model import User
+from app.modules.users.repository import UserRepository
 
 
 class AuthService:
-    """Servicio de lógica de negocio para autenticación."""
+    """
+    Servicio de autenticación.
+    """
 
-    def __init__(self, repository: AuthRepository) -> None:
+    def __init__(
+        self,
+        repository: UserRepository,
+    ) -> None:
         self.repository = repository
 
-    def authenticate(self, email: str, password: str) -> TokenResponse:
+
+    def login(
+        self,
+        data: LoginRequest,
+    ) -> TokenResponse:
         """
-        Valida credenciales y genera un token de acceso.
+        Autentica un usuario y genera un JWT.
 
         Reglas:
         - El usuario debe existir.
-        - La contraseña debe ser correcta.
+        - La contraseña debe ser válida.
         - El usuario debe estar activo.
-        - No se revela si el error fue por email o contraseña (anti-enumeración).
         """
 
-        user = self.repository.get_user_by_email(email)
+        user = self.repository.get_by_email(
+            data.email,
+        )
 
-        if not user or not verify_password(password, user.password):
+        if user is None:
+            raise UnauthorizedException(
+                message="Credenciales inválidas.",
+            )
+
+        if not verify_password(
+            data.password,
+            user.password,
+        ):
             raise UnauthorizedException(
                 message="Credenciales inválidas.",
             )
 
         if not user.is_active:
             raise UnauthorizedException(
-                message="Credenciales inválidas.",
+                message="Usuario inactivo.",
             )
 
-        token_data = {"sub": str(user.id)}
-        access_token = create_access_token(data=token_data)
+        access_token = create_access_token(
+            subject=str(user.id),
+        )
 
         return TokenResponse(
             access_token=access_token,
-            token_type=TOKEN_TYPE,
+            token_type="bearer",
         )
 
-    def get_current_user_data(self, user: User) -> UserRead:
-        """Serializa los datos del usuario autenticado."""
 
-        return UserRead.model_validate(user)
-
-    def require_admin(self, user: User) -> None:
+    def me(
+        self,
+        current_user: User,
+    ) -> CurrentUserResponse:
         """
-        Verifica que el usuario tenga rol de administrador.
-
-        Lanza ForbiddenException si el rol no coincide.
+        Devuelve la información del usuario autenticado.
         """
 
-        if user.role.name != ADMIN_ROLE_NAME:
-            raise ForbiddenException(
-                message="No tiene permisos para realizar esta acción.",
-            )
+        return CurrentUserResponse.model_validate(
+            current_user,
+        )

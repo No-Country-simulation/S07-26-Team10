@@ -1,9 +1,11 @@
 import uuid
 
+from sqlalchemy import DateTime
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import Text
+from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -19,12 +21,6 @@ class Concept(Base):
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,
-    )
-
-    section_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey("sections.id"),
-        nullable=False,
     )
 
     category_id: Mapped[uuid.UUID] = mapped_column(
@@ -48,9 +44,17 @@ class Concept(Base):
         nullable=True,
     )
 
-    section: Mapped["Section"] = relationship(
-        "Section",
-        back_populates="concepts",
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+
+    updated_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
     )
 
     category: Mapped["Category"] = relationship(

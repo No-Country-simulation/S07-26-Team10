@@ -30,19 +30,10 @@ class Report(Base):
         String(255),
         unique=True,
         nullable=False,
+        index=True,
     )
 
-    description: Mapped[str | None] = mapped_column(
-        Text,
-        nullable=True,
-    )
-
-    introduction: Mapped[str | None] = mapped_column(
-        Text,
-        nullable=True,
-    )
-
-    methodology: Mapped[str | None] = mapped_column(
+    summary: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
     )
@@ -54,11 +45,13 @@ class Report(Base):
 
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),
+        nullable=False,
         server_default=func.now(),
     )
 
     updated_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),
+        nullable=False,
         server_default=func.now(),
         onupdate=func.now(),
     )
@@ -66,9 +59,17 @@ class Report(Base):
     sections: Mapped[list["Section"]] = relationship(
         "Section",
         back_populates="report",
+        cascade="all, delete-orphan",
     )
 
     references: Mapped[list["Reference"]] = relationship(
         "Reference",
         back_populates="report",
+        cascade="all, delete-orphan",
+    )
+
+    categories: Mapped[list["Category"]] = relationship(
+        "Category",
+        back_populates="report",
+        cascade="all, delete-orphan",
     )
