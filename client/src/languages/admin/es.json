@@ -12,7 +12,8 @@
     "sections": "Secciones",
     "taxonomy": "Taxonomía",
     "resources": "Recursos",
-    "references": "Referencias"
+    "references": "Referencias",
+    "reports": "Reportes"
   },
   "databaseCard": {
     "liveStatus": "LIVE STATUS",
@@ -63,7 +64,9 @@
     "resourcesTitle": "Gestión de Recursos",
     "resourcesDesc": "Administra archivos, documentos y activos técnicos.",
     "referencesTitle": "Gestión de Referencias",
-    "referencesDesc": "Gestiona fuentes y referencias del Stranded Capacity Report."
+    "referencesDesc": "Gestiona fuentes y referencias del Stranded Capacity Report.",
+    "reportsTitle": "Gestión de Reportes",
+    "reportsDesc": "Administra los reportes técnicos del sistema."
   },
   "references": {
     "headerTag": "MÓDULO DE CITACIÓN",
@@ -249,5 +252,44 @@
     "deleteConfirmTitle": "¿Eliminar sección?",
     "deleteConfirmDesc": "Esta acción no se puede deshacer. Se eliminará la sección y todo su contenido asociado.",
     "deleting": "Eliminando..."
+  },
+  "reports": {
+    "headerTag": "MÓDULO DE REPORTES",
+    "title": "Administrar reportes",
+    "subtitle": "Gestiona los reportes técnicos del sistema. Crea, edita y organiza los documentos de análisis de capacidad energética.",
+    "newReportBtn": "NUEVO REPORTE",
+    "statTotal": "Total Reportes",
+    "statTotalSub": "registrados",
+    "statPublished": "Publicados",
+    "statLastUpdate": "Última Versión",
+    "tableTitle": "Registro de Reportes",
+    "tableCountLabel": "REPORTES",
+    "colTitle": "Título / Citación",
+    "colSummary": "Resumen",
+    "colSlug": "Slug",
+    "colActions": "Acciones",
+    "noReports": "No hay reportes registrados aún.",
+    "quoteNote": "\"La documentación técnica rigurosa es el pilar de la transparencia energética. Cada reporte representa un compromiso con la precisión y la trazabilidad de los datos.\"",
+    "quoteAuthor": "EQUIPO DE DOCUMENTACIÓN TÉCNICA",
+    "reportForm": {
+      "breadcrumbBase": "Reportes",
+      "breadcrumbEdit": "Editar reporte",
+      "breadcrumbNew": "Nuevo reporte",
+      "createTitle": "Crear nuevo reporte",
+      "editTitle": "Editar reporte: {title}",
+      "subtitle": "Defina los parámetros del reporte técnico. El slug se generará automáticamente a partir del título.",
+      "cancel": "Cancelar",
+      "saving": "Guardando...",
+      "saveReport": "Guardar reporte",
+      "cardTitle": "Parámetros del Reporte",
+      "titleLabel": "Título del Reporte",
+      "titlePlaceholder": "Ej. Stranded Capacity Report 2026",
+      "summaryLabel": "Resumen Ejecutivo",
+      "summaryPlaceholder": "Descripción general del contenido y alcance del reporte...",
+      "citationLabel": "Texto de Citación",
+      "citationPlaceholder": "Ej. Physa Energy Analytics. (2026). Stranded Capacity Report.",
+      "slugLabel": "Slug (URL)",
+      "slugHelper": "Generado automáticamente por el servidor a partir del título."
+    }
   }
 }
