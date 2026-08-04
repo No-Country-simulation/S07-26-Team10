@@ -9,6 +9,7 @@ import {
   GitFork,
   Folder,
   BookOpen,
+  FileText,
   Menu,
   X,
 } from "lucide-react";
@@ -41,6 +42,11 @@ const navItems: NavItem[] = [
     href: "/admin/references",
     labelKey: "nav.references",
     icon: BookOpen,
+  },
+  {
+    href: "/admin/reports",
+    labelKey: "nav.reports",
+    icon: FileText,
   },
 ];
 
