@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/features/auth/auth-queries";
 import { AdminHeader } from "@/features/admin/components/admin-header";
@@ -26,9 +25,7 @@ export default async function AdminLayout({
   const user = await getCurrentUser();
 
   if (!user) {
-    const cookieStore = await cookies();
-    cookieStore.delete("auth_token");
-    redirect("/login");
+    redirect("/login?expired=true");
   }
 
   return (
