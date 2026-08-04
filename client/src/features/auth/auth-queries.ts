@@ -44,7 +44,7 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
       }
 
       if (response.status === 401) {
-        cookieStore.delete("auth_token");
+        return null;
       }
     } catch (error) {
       console.error("Error fetching current user from API:", error);
@@ -60,6 +60,10 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
       const normalizedBase64 = payloadBase64.replace(/-/g, "+").replace(/_/g, "/");
       const jsonPayload = Buffer.from(normalizedBase64, "base64").toString("utf-8");
       const parsed = JSON.parse(jsonPayload);
+
+      if (parsed.exp && parsed.exp * 1000 < Date.now()) {
+        return null;
+      }
 
       return {
         id: parsed.sub || parsed.id || "admin-1",
