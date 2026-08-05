@@ -5,6 +5,7 @@ import { logoutAction } from "@/features/auth/auth-actions";
 import { Button } from "@/components/ui/button";
 import { User, LogOut } from "lucide-react";
 import { LanguageToggle } from "@/components/language-toggle";
+import { VersionToggle } from "@/components/version-toggle";
 import Link from "next/link";
 
 interface AdminHeaderProps {
@@ -27,6 +28,7 @@ export function AdminHeader({ userRole = "Administrador" }: AdminHeaderProps) {
       </Link>
 
       <div className="flex items-center gap-3">
+        <VersionToggle />
         <LanguageToggle />
 
         <div className="flex items-center gap-2 bg-muted/40 px-3 py-1 rounded-full border border-border/40 text-xs font-medium text-foreground">

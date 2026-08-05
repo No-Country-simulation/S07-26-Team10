@@ -28,6 +28,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useLanguage } from "@/context/language-context";
+import { useVersion, parseReportSlug } from "@/context/version-context";
 import { getReportsAction, deleteReportAction } from "../../actions/reports-actions";
 import type { ReportItem } from "../../schemas/report-schema";
 
@@ -36,7 +38,9 @@ function getLatestVersion(reports: ReportItem[]): string {
 
   const parsed = reports
     .map((r) => {
-      const match = (r.title || r.slug || "").match(/^(?:v)?([0-9.]+)/i);
+      const p = parseReportSlug(r.slug || r.title || "");
+      if (p) return { title: r.title || r.slug, versionStr: p.version.replace(/^v/i, "") };
+      const match = (r.title || r.slug || "").match(/^(?:v)?([0-9.-]+)/i);
       return match ? { title: r.title || r.slug, versionStr: match[1] } : null;
     })
     .filter(Boolean) as { title: string; versionStr: string }[];
@@ -47,8 +51,8 @@ function getLatestVersion(reports: ReportItem[]): string {
   }
 
   parsed.sort((a, b) => {
-    const partsA = a.versionStr.split(".").map(Number);
-    const partsB = b.versionStr.split(".").map(Number);
+    const partsA = a.versionStr.split(/[\.-]/).map(Number);
+    const partsB = b.versionStr.split(/[\.-]/).map(Number);
     const maxLen = Math.max(partsA.length, partsB.length);
     for (let i = 0; i < maxLen; i++) {
       const numA = isNaN(partsA[i]) ? 0 : partsA[i];
@@ -63,6 +67,8 @@ function getLatestVersion(reports: ReportItem[]): string {
 
 export function ReportsManagement() {
   const t = useTranslations("AdminPage.reports");
+  const { language } = useLanguage();
+  const { refreshReports } = useVersion();
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -74,6 +80,7 @@ export function ReportsManagement() {
       try {
         const data = await getReportsAction();
         setReports(data);
+        await refreshReports();
       } catch (err) {
         console.error("Failed to load reports data", err);
       } finally {
@@ -81,7 +88,7 @@ export function ReportsManagement() {
       }
     }
     loadData();
-  }, []);
+  }, [refreshReports]);
 
   const confirmDelete = async () => {
     if (!deleteReportId) return;
@@ -89,6 +96,7 @@ export function ReportsManagement() {
     try {
       await deleteReportAction(deleteReportId);
       setReports((prev) => prev.filter((r) => r.id !== deleteReportId));
+      await refreshReports();
     } catch (err) {
       console.error("Failed to delete report", err);
     } finally {
@@ -97,7 +105,21 @@ export function ReportsManagement() {
     }
   };
 
-  const filteredReports = reports.filter((item) => {
+  const languageFilteredReports = reports.filter((item) => {
+    const slugStr = item.slug || item.title || "";
+    const parsed = parseReportSlug(slugStr);
+    if (parsed) {
+      return parsed.lang === language;
+    }
+    const titleLower = (item.title || "").toLowerCase();
+    const slugLower = (item.slug || "").toLowerCase();
+    if (titleLower.includes("-es") || titleLower.includes("-en") || slugLower.includes("-es") || slugLower.includes("-en")) {
+      return titleLower.endsWith(`-${language}`) || slugLower.endsWith(`-${language}`) || titleLower.includes(`-${language}`);
+    }
+    return true;
+  });
+
+  const filteredReports = languageFilteredReports.filter((item) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase().trim();
     return (
@@ -108,7 +130,7 @@ export function ReportsManagement() {
     );
   });
 
-  const totalReports = reports.length;
+  const totalLanguageReports = languageFilteredReports.length;
 
   return (
     <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-2">
@@ -139,7 +161,7 @@ export function ReportsManagement() {
         <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-4 flex flex-col justify-between">
           <span className="text-xs text-muted-foreground font-medium">{t("statTotal")}</span>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-3xl font-extrabold text-foreground">{loading ? "-" : totalReports}</span>
+            <span className="text-3xl font-extrabold text-foreground">{loading ? "-" : totalLanguageReports}</span>
             <span className="text-[10px] font-mono text-muted-foreground">{t("statTotalSub")}</span>
           </div>
         </Card>
@@ -147,7 +169,7 @@ export function ReportsManagement() {
         <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-4 flex flex-col justify-between">
           <span className="text-xs text-muted-foreground font-medium">{t("statPublished")}</span>
           <div className="flex items-center gap-3 mt-2">
-            <span className="text-3xl font-extrabold text-foreground">{loading ? "-" : totalReports}</span>
+            <span className="text-3xl font-extrabold text-foreground">{loading ? "-" : totalLanguageReports}</span>
             <div className="w-16 h-2 rounded-full bg-emerald-500/20 overflow-hidden">
               <div className="h-full bg-emerald-700 w-full rounded-full" />
             </div>
@@ -159,7 +181,7 @@ export function ReportsManagement() {
           <div className="flex items-center gap-2 mt-2">
             <CalendarDays className="size-4 text-muted-foreground/60" />
             <span className="text-sm font-bold font-mono text-foreground">
-              {loading ? "-" : getLatestVersion(reports)}
+              {loading ? "-" : getLatestVersion(languageFilteredReports)}
             </span>
           </div>
         </Card>
