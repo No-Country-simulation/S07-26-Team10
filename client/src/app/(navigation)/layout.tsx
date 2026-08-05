@@ -7,7 +7,7 @@ export default function NavigationLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground selection:bg-foreground selection:text-background font-sans antialiased">
+    <div className="phi min-h-screen flex flex-col bg-background text-foreground font-sans antialiased">
       <NavigationHeader />
       <main className="flex-1">{children}</main>
       <NavigationFooter />
