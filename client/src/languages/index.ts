@@ -4,6 +4,8 @@ import homeEs from "./home/es.json";
 import homeEn from "./home/en.json";
 import navEs from "./nav/es.json";
 import navEn from "./nav/en.json";
+import footerEs from "./footer/es.json";
+import footerEn from "./footer/en.json";
 import authEs from "./auth/es.json";
 import authEn from "./auth/en.json";
 import adminEs from "./admin/es.json";
@@ -13,6 +15,7 @@ export const esMessages = {
   Common: commonEs,
   HomePage: homeEs,
   Nav: navEs,
+  Footer: footerEs,
   LoginPage: authEs,
   AdminPage: adminEs,
 };
@@ -21,6 +24,7 @@ export const enMessages = {
   Common: commonEn,
   HomePage: homeEn,
   Nav: navEn,
+  Footer: footerEn,
   LoginPage: authEn,
   AdminPage: adminEn,
 };

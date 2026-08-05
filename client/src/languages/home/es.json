@@ -1,13 +1,87 @@
 {
-  "badge": "INFORME DE INVESTIGACIÓN",
-  "title": "Capacidad Estancada: El Cuello de Botella Silencioso de la Infraestructura de IA",
-  "description": "A medida que el despliegue de modelos de lenguaje a gran escala crece exponencialmente, la infraestructura física no logra mantener el ritmo. Identificamos las ineficiencias ocultas que crean desperdicio operacional en los centros de datos modernos.",
-  "startReading": "COMENZAR A LEER",
-  "viewMethodology": "VER METODOLOGÍA",
-  "scrollToExplore": "Desliza para explorar",
-  "officialReport": "REPORTE OFICIAL",
-  "source": "Fuente: Índice de Capacidad Estancada de PhysaFlow",
-  "allRightsReserved": "Todos los derechos reservados.",
-  "privacyPolicy": "Política de Privacidad",
-  "termsOfService": "Términos del Servicio"
+  "heroLine1": "Instalada. Energizada. Pagada.",
+  "heroLine2": "Y sin poder producir trabajo.",
+  "heroSub": "Entre lo que una instalación posee y lo que puede entregar, <b>no hay un nombre acordado.</b> Este índice propone uno — y una taxonomía de las dieciocho formas que adopta en instalación, IT y carga de trabajo.",
+  "readTheReport": "Leer el informe",
+  "downloadPdf": "Descargar PDF",
+  "heroMono": "Benchmarking metodológico · Telemetría de acceso público · No implica alianza",
+  "continueReading": "Seguir leyendo",
+  "supportersNote": "Construido con el apoyo de las instituciones que respaldan la próxima generación de infraestructura de IA.",
+  "problemTitle": "La capacidad se informa arriba y se consume abajo",
+  "problemLede": "Megavatios contratados, racks instalados, aceleradores entregados. Esas cifras describen lo que existe. No describen lo que se puede usar.",
+  "problemBody": "Entre ambas hay un conjunto de restricciones —eléctricas, térmicas, topológicas, temporales y organizativas— que impide que la infraestructura instalada se convierta en trabajo. Este índice propone un vocabulario único para esa distancia.",
+  "readTheDefinition": "Leer la definición",
+  "chaptersLede": "Cada capítulo es su propia página, para poder enlazarlo y citarlo por separado.",
+  "chapters": {
+    "theCapacityFunnel": "El embudo de capacidad",
+    "facilityLayer": "Capa de instalación",
+    "itLayer": "Capa de IT",
+    "workloadAndOperationsLayer": "Capa de carga de trabajo y operaciones",
+    "measurementApproach": "Enfoque de medición",
+    "whatThisIndexDoesNotClaim": "Lo que este índice no afirma"
+  },
+  "milestoneTag": "Hito 01 / 04",
+  "bannerText": "Comparado contra telemetría de supercómputo de acceso público — no contra despliegues privados.",
+  "bannerFoot": "NERSC · Berkeley Lab · Perlmutter — no implica alianza",
+  "funnelTitle": "El embudo de capacidad",
+  "funnelLede": "Siete pasos desde la capacidad nominal hasta la salida útil. La industria comunica bien los tres primeros. Los dos últimos deciden si la inversión produjo algo.",
+  "figureNum": "Figura 01",
+  "figureTitle": "Embudo de capacidad — de nominal a salida útil",
+  "illustrative": "Ilustrativa",
+  "expand": "Ampliar",
+  "steps": {
+    "01": {
+      "name": "Capacidad nominal",
+      "desc": "Capacidad teórica total",
+      "caption": "Compras y construcción. Equipamiento ordenado pero aún no montado ni puesto en servicio."
+    },
+    "02": {
+      "name": "Capacidad instalada",
+      "desc": "Instalada físicamente",
+      "caption": "Conexión a la red y demora de interconexión. Las líneas de transmisión tardan de cuatro a ocho años en economías avanzadas."
+    },
+    "03": {
+      "name": "Capacidad energizada",
+      "desc": "Alimentada y energizada",
+      "caption": "Refrigeración y distribución de energía. Envolvente térmica, derrateo de UPS, límites de ramal y busway a nivel de rack."
+    },
+    "04": {
+      "name": "Capacidad sostenible",
+      "desc": "Cumple límites térmicos y de seguridad",
+      "caption": "Disponibilidad de hardware y topología de clúster. Nodos presentes pero fuera de la red elegible, o aún no en el pool."
+    },
+    "05": {
+      "name": "Capacidad asignable",
+      "desc": "Tras reservas y sobrecarga",
+      "caption": "Planificación y fragmentación. Aceleradores libres que no pueden ensamblarse en un conjunto contiguo asignable."
+    },
+    "06": {
+      "name": "Capacidad utilizada",
+      "desc": "En uso activo por cargas de trabajo",
+      "caption": "Colas, reservas y política de admisión. Capacidad retenida o en espera mientras hay demanda pendiente."
+    },
+    "07": {
+      "name": "Capacidad de salida útil",
+      "desc": "Productiva, genera valor",
+      "caption": "Trabajos fallidos, reintentos y asignaciones ociosas. Horas de GPU asignadas que no producen salida."
+    }
+  },
+  "funnelIdle": "Posá el cursor sobre un paso para ver qué le quita capacidad antes del siguiente.",
+  "stepsLabel": "pasos",
+  "gc1Title": "Qué muestra esta figura",
+  "gc1Body": "Un modelo de pérdida monótona. Cada paso quita capacidad por un motivo distinto — y los motivos no comparten métrica.",
+  "illustrativeModel": "Modelo ilustrativo",
+  "gc2Title": "De dónde vienen las pérdidas",
+  "facility": "Instalación",
+  "it": "IT",
+  "workload": "Carga de trabajo y operaciones",
+  "gc2Foot": "Dieciocho fenómenos nombrados en tres capas.",
+  "gc3Title": "Metodología",
+  "gc3Body": "Los siete pasos están definidos. La medición no. Las definiciones y sus límites están abiertos a comentarios antes de publicar cualquier cifra.",
+  "exploreMethodology": "Ver metodología",
+  "disc": "Las proporciones son ilustrativas. No se recolectó ninguna medición para ningún paso.",
+  "source": "Fuente: PhysaFlow Stranded Capacity Index",
+  "version": "Definición de cada paso pendiente de validación · v0.1",
+  "downloadTable": "Tabla",
+  "citeFigure": "Citar esta figura"
 }
