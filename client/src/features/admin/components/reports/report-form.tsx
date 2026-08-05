@@ -15,6 +15,7 @@ import { createReportAction, updateReportAction } from "../../actions/reports-ac
 import { MDXEditorComponent } from "@/features/admin/components/ui/mdx/mdx-editor-component";
 import { MdxPreview } from "@/features/admin/components/ui/mdx/mdx-preview";
 
+import { useLanguage } from "@/context/language-context";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Badge } from "@/components/ui/badge";
 
@@ -35,10 +36,13 @@ const parseInitialTitle = (rawTitle?: string) => {
 export function ReportForm({ initialData, isEditMode = false }: ReportFormProps) {
   const t = useTranslations("AdminPage.reports.reportForm");
   const router = useRouter();
+  const { language: currentContextLang } = useLanguage();
 
   const initialParsed = parseInitialTitle(initialData?.title);
   const [versionNumber, setVersionNumber] = useState<string>(initialParsed.versionNumber);
-  const [language, setLanguage] = useState<"es" | "en">(initialParsed.lang as "es" | "en");
+  const [language, setLanguage] = useState<"es" | "en">(
+    isEditMode ? (initialParsed.lang as "es" | "en") : (currentContextLang as "es" | "en") || (initialParsed.lang as "es" | "en")
+  );
   
   const cleanVer = versionNumber.replace(/[^0-9.]/g, "");
   const formattedVersion = `v${cleanVer || "1"}`;
