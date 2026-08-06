@@ -1,11 +1,19 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { useLanguage, type Language } from "@/context/language-context";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
+import { type Language } from "@/context/language-context";
 import { getReportsAction } from "@/features/admin/actions/reports-actions";
 import type { ReportItem } from "@/features/admin/schemas/report-schema";
 
-export function parseReportSlug(input: string): { version: string; lang: Language } | null {
+export function parseReportSlug(
+  input: string,
+): { version: string; lang: Language } | null {
   if (!input) return null;
   const match = input.trim().match(/^(v[0-9.-]+)-(es|en)$/i);
   if (match) {
@@ -21,8 +29,10 @@ type VersionContextType = {
   version: string;
   setVersion: (ver: string) => void;
   availableVersions: string[];
-  isLanguageLocked: boolean;
-  setIsLanguageLocked: (locked: boolean) => void;
+  contentLanguage: Language;
+  setContentLanguage: (lang: Language) => void;
+  availableContentLanguages: Language[];
+  isContentLanguageLocked: boolean;
   reportsList: ReportItem[];
   refreshReports: () => Promise<void>;
   activeReport: ReportItem | null;
@@ -46,12 +56,25 @@ function compareVersionsDescending(a: string, b: string): number {
 }
 
 export function VersionProvider({ children }: { children: React.ReactNode }) {
-  const { language, setLanguage } = useLanguage();
   const [version, setVersionState] = useState<string>("");
+  const [contentLanguage, setContentLanguageState] = useState<Language>("es");
   const [availableVersions, setAvailableVersions] = useState<string[]>([]);
-  const [versionLangsMap, setVersionLangsMap] = useState<Record<string, Language[]>>({});
-  const [isLanguageLocked, setIsLanguageLocked] = useState<boolean>(false);
+  const [versionLangsMap, setVersionLangsMap] = useState<
+    Record<string, Language[]>
+  >({});
   const [reportsList, setReportsList] = useState<ReportItem[]>([]);
+
+  useEffect(() => {
+    const savedContentLang = localStorage.getItem("app_content_lang") as Language;
+    if (savedContentLang === "es" || savedContentLang === "en") {
+      setContentLanguageState(savedContentLang);
+    }
+  }, []);
+
+  const setContentLanguage = (lang: Language) => {
+    setContentLanguageState(lang);
+    localStorage.setItem("app_content_lang", lang);
+  };
 
   const loadReportsAndSync = useCallback(async () => {
     try {
@@ -79,26 +102,24 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
       setVersionLangsMap(langsMap);
       setAvailableVersions(uniqueVersions);
 
-      // Default to the most recent version (index 0) if no saved choice or if invalid
+      // Default to the most recent version if no saved choice or if invalid
       const savedVer = localStorage.getItem("app_version");
-      const activeVer = savedVer && uniqueVersions.includes(savedVer)
-        ? savedVer
-        : uniqueVersions[0] || "";
+      const activeVer =
+        savedVer && uniqueVersions.includes(savedVer)
+          ? savedVer
+          : uniqueVersions[0] || "";
 
       if (activeVer) {
         setVersionState(activeVer);
-        const langs = langsMap[activeVer];
-        if (langs && langs.length === 1) {
-          setLanguage(langs[0]);
-          setIsLanguageLocked(true);
-        } else {
-          setIsLanguageLocked(false);
+        const langs = langsMap[activeVer] || [];
+        if (langs.length === 1) {
+          setContentLanguageState(langs[0]);
         }
       }
     } catch (err) {
       console.error("Error syncing version context with reports action:", err);
     }
-  }, [setLanguage]);
+  }, []);
 
   useEffect(() => {
     loadReportsAndSync();
@@ -108,24 +129,28 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
     setVersionState(ver);
     localStorage.setItem("app_version", ver);
 
-    const langs = versionLangsMap[ver];
-    if (langs && langs.length === 1) {
-      setLanguage(langs[0]);
-      setIsLanguageLocked(true);
-    } else {
-      setIsLanguageLocked(false);
+    const langs = versionLangsMap[ver] || [];
+    if (langs.length === 1) {
+      setContentLanguageState(langs[0]);
     }
   };
 
-  // Automatically find active report and its UUID based on active version and active language
-  const activeReport = reportsList.find((r) => {
-    const p = parseReportSlug(r.slug || r.title || "");
-    if (p) {
-      return p.version === version && p.lang === language;
-    }
-    const slugStr = (r.slug || r.title || "").toLowerCase();
-    return slugStr.includes(version.toLowerCase()) && slugStr.includes(`-${language}`);
-  }) || null;
+  const availableContentLanguages = version ? versionLangsMap[version] || ["es", "en"] : ["es", "en"];
+  const isContentLanguageLocked = availableContentLanguages.length === 1;
+
+  // Automatically find active report based on active version and content language
+  const activeReport =
+    reportsList.find((r) => {
+      const p = parseReportSlug(r.slug || r.title || "");
+      if (p) {
+        return p.version === version && p.lang === contentLanguage;
+      }
+      const slugStr = (r.slug || r.title || "").toLowerCase();
+      return (
+        slugStr.includes(version.toLowerCase()) &&
+        slugStr.includes(`-${contentLanguage}`)
+      );
+    }) || null;
 
   const activeReportId = activeReport?.id || null;
 
@@ -135,8 +160,10 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
         version,
         setVersion,
         availableVersions,
-        isLanguageLocked,
-        setIsLanguageLocked,
+        contentLanguage,
+        setContentLanguage,
+        availableContentLanguages,
+        isContentLanguageLocked,
         reportsList,
         refreshReports: loadReportsAndSync,
         activeReport,
@@ -155,8 +182,10 @@ export function useVersion() {
       version: "v1",
       setVersion: () => {},
       availableVersions: [],
-      isLanguageLocked: false,
-      setIsLanguageLocked: () => {},
+      contentLanguage: "es" as Language,
+      setContentLanguage: () => {},
+      availableContentLanguages: ["es" as Language],
+      isContentLanguageLocked: false,
       reportsList: [],
       refreshReports: async () => {},
       activeReport: null,

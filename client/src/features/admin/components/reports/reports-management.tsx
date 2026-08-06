@@ -67,13 +67,14 @@ function getLatestVersion(reports: ReportItem[]): string {
 
 export function ReportsManagement() {
   const t = useTranslations("AdminPage.reports");
-  const { language } = useLanguage();
   const { refreshReports } = useVersion();
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteReportId, setDeleteReportId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const [reportFilterLang, setReportFilterLang] = useState<"all" | "es" | "en">("all");
 
   useEffect(() => {
     async function loadData() {
@@ -106,15 +107,17 @@ export function ReportsManagement() {
   };
 
   const languageFilteredReports = reports.filter((item) => {
+    if (reportFilterLang === "all") return true;
+
     const slugStr = item.slug || item.title || "";
     const parsed = parseReportSlug(slugStr);
     if (parsed) {
-      return parsed.lang === language;
+      return parsed.lang === reportFilterLang;
     }
     const titleLower = (item.title || "").toLowerCase();
     const slugLower = (item.slug || "").toLowerCase();
     if (titleLower.includes("-es") || titleLower.includes("-en") || slugLower.includes("-es") || slugLower.includes("-en")) {
-      return titleLower.endsWith(`-${language}`) || slugLower.endsWith(`-${language}`) || titleLower.includes(`-${language}`);
+      return titleLower.endsWith(`-${reportFilterLang}`) || slugLower.endsWith(`-${reportFilterLang}`) || titleLower.includes(`-${reportFilterLang}`);
     }
     return true;
   });
@@ -204,16 +207,54 @@ export function ReportsManagement() {
               </span>
             </div>
 
-            {/* Client-side Search Input on the Right */}
-            <div className="relative w-full sm:w-64">
-              <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-              <Input
-                type="text"
-                placeholder="Buscar reporte..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-3 py-1.5 h-9 rounded-xl bg-card border-border/60 text-xs shadow-2xs focus-visible:ring-emerald-500/20"
-              />
+            {/* Language Filter & Client-side Search Input */}
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="flex items-center p-0.5 rounded-xl bg-muted/40 border border-border/60 text-xs font-semibold shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setReportFilterLang("all")}
+                  className={`px-2.5 py-1 rounded-lg transition-all ${
+                    reportFilterLang === "all"
+                      ? "bg-card text-foreground shadow-2xs font-bold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t("filterAll")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setReportFilterLang("es")}
+                  className={`px-2.5 py-1 rounded-lg transition-all ${
+                    reportFilterLang === "es"
+                      ? "bg-card text-foreground shadow-2xs font-bold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  ES
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setReportFilterLang("en")}
+                  className={`px-2.5 py-1 rounded-lg transition-all ${
+                    reportFilterLang === "en"
+                      ? "bg-card text-foreground shadow-2xs font-bold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  EN
+                </button>
+              </div>
+
+              <div className="relative w-full sm:w-56">
+                <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                <Input
+                  type="text"
+                  placeholder={t("searchPlaceholder")}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 pr-3 py-1.5 h-9 rounded-xl bg-card border-border/60 text-xs shadow-2xs focus-visible:ring-emerald-500/20"
+                />
+              </div>
             </div>
           </div>
 
@@ -229,7 +270,7 @@ export function ReportsManagement() {
                 {filteredReports.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={2} className="text-center py-8 text-xs text-muted-foreground italic">
-                      {searchQuery ? "No se encontraron reportes que coincidan con la búsqueda." : t("noReports")}
+                      {searchQuery ? t("noSearchMatch") : t("noReports")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -292,15 +333,15 @@ export function ReportsManagement() {
         <AlertDialogContent className="rounded-3xl p-6">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-bold text-foreground">
-              ¿Eliminar este reporte?
+              {t("deleteTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed pt-1">
-              Esta acción no se puede deshacer. Se eliminará permanentemente el reporte y su configuración asociada del sistema.
+              {t("deleteDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="pt-4 flex items-center justify-end gap-2">
             <AlertDialogCancel className="rounded-xl border-border/60 text-xs font-semibold">
-              Cancelar
+              {t("deleteCancel")}
             </AlertDialogCancel>
             <Button
               variant="destructive"
@@ -308,7 +349,7 @@ export function ReportsManagement() {
               onClick={confirmDelete}
               className="rounded-xl px-4 text-xs font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? "Eliminando..." : "Eliminar"}
+              {isDeleting ? t("deleting") : t("deleteConfirm")}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

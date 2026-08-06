@@ -9,17 +9,24 @@ export type Language = "es" | "en";
 type LanguageContextType = {
   language: Language;
   setLanguage: (lang: Language) => void;
+  reportsLanguage: Language;
+  setReportsLanguage: (lang: Language) => void;
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>("es");
+  const [reportsLanguage, setReportsLanguageState] = useState<Language>("es");
 
   useEffect(() => {
     const savedLang = localStorage.getItem("app_lang") as Language;
     if (savedLang === "es" || savedLang === "en") {
       queueMicrotask(() => setLanguageState(savedLang));
+    }
+    const savedReportsLang = localStorage.getItem("app_reports_lang") as Language;
+    if (savedReportsLang === "es" || savedReportsLang === "en") {
+      queueMicrotask(() => setReportsLanguageState(savedReportsLang));
     }
   }, []);
 
@@ -28,8 +35,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("app_lang", lang);
   };
 
+  const setReportsLanguage = (lang: Language) => {
+    setReportsLanguageState(lang);
+    localStorage.setItem("app_reports_lang", lang);
+  };
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage }}>
+    <LanguageContext.Provider value={{ language, setLanguage, reportsLanguage, setReportsLanguage }}>
       <NextIntlClientProvider
         locale={language}
         messages={messagesMap[language]}
