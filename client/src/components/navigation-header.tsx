@@ -1,117 +1,172 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { LanguageToggle } from "@/components/language-toggle";
-import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { useLanguage } from "@/context/language-context";
+import { useScrollProgress } from "@/hooks/use-scroll-progress";
+import { useSectionTracker } from "@/hooks/use-section-tracker";
+import { searchIndex } from "@/features/home/data/search-index";
+
+const NAV_LINKS = [
+  { href: "/report", key: "definition" },
+  { href: "/#s02", key: "chapters", match: "/" },
+  { href: "/report/taxonomy", key: "taxonomy", match: "/report/taxonomy" },
+  { href: "/methodology", key: "methodology", match: "/methodology" },
+  { href: "/report", key: "references" },
+];
+
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="11" cy="11" r="7.2" />
+      <path d="M20.5 20.5l-4-4" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  );
+}
+
+function SearchOverlay({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const t = useTranslations("Nav");
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return q
+      ? searchIndex.filter((i) =>
+          `${i.k} ${t(i.tKey)} ${t(i.eKey)}`.toLowerCase().includes(q),
+        )
+      : searchIndex;
+  }, [query, t]);
+
+  if (!open) return null;
+
+  return (
+    <div className="sheet on">
+      <button
+        className="sclose"
+        aria-label="Close"
+        onClick={onClose}
+      >
+        <CloseIcon />
+      </button>
+      <div className="box">
+        <input
+          autoFocus
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t("searchPlaceholder")}
+          autoComplete="off"
+        />
+        <div className="sres">
+          {results.length > 0 ? (
+            results.map((item) => (
+              <Link key={item.k} href={item.href} onClick={onClose}>
+                <span className="k">{item.k}</span>
+                <span>
+                  <span className="ti">{t(item.tKey)}</span>
+                  <span className="ex">{t(item.eKey)}</span>
+                </span>
+              </Link>
+            ))
+          ) : (
+            <div className="none">{t("noResults")}</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function NavigationHeader() {
   const t = useTranslations("Nav");
-  const pathname = usePathname();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const isReportActive = pathname.startsWith("/report");
-  const isMethodologyActive = pathname.startsWith("/methodology");
-  const isAboutActive = pathname.startsWith("/about");
-
-  const getLinkClasses = (isActive: boolean) =>
-    isActive
-      ? "text-foreground font-semibold border-b-2 border-foreground pb-0.5 transition-colors"
-      : "text-muted-foreground hover:text-foreground transition-colors";
+  const { language, setLanguage } = useLanguage();
+  const { progress, shrink } = useScrollProgress();
+  const active = useSectionTracker(".phi section.n[data-n]");
+  const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur-md transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 sm:h-20 flex items-center justify-between">
-        {/* Brand / Logo */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <span className="font-serif font-bold text-lg sm:text-xl tracking-wider text-foreground">
-            PHYSAFLOW
-          </span>
-          <span className="hidden sm:inline-block text-xs font-serif italic text-muted-foreground border-l border-border pl-3 py-0.5">
-            {t("logoSubtitle")}
-          </span>
-        </Link>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-8 font-mono text-xs uppercase tracking-wider">
-          <Link href="/report" className={getLinkClasses(isReportActive)}>
-            {t("report")}
+    <>
+      <header id="hd" className={shrink ? "sm" : undefined}>
+        <div className="hr">
+          <Link href="/" className="lock">
+            <img
+              className="iso"
+              src="/images/physaflow-logo.jpg"
+              alt="PhysaFlow"
+            />
+            <p className="wmk">PhysaFlow</p>
           </Link>
-          <Link
-            href="/methodology"
-            className={getLinkClasses(isMethodologyActive)}
-          >
-            {t("methodology")}
-          </Link>
-          <Link href="/about" className={getLinkClasses(isAboutActive)}>
-            {t("about")}
-          </Link>
-        </nav>
-
-        {/* Right Controls */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          <LanguageToggle />
-
-          {/* Mobile Menu Toggle Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle Menu"
-          >
-            {mobileMenuOpen ? (
-              <X className="size-5" />
-            ) : (
-              <Menu className="size-5" />
-            )}
-          </Button>
-        </div>
-      </div>
-
-      {/* Mobile Navigation Dropdown */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-b border-border bg-background px-4 py-6 space-y-4 font-mono text-xs uppercase tracking-wider animate-in slide-in-from-top-2">
-          <nav className="flex flex-col space-y-3">
-            <Link
-              href="/report"
-              onClick={() => setMobileMenuOpen(false)}
-              className={
-                isReportActive
-                  ? "text-foreground font-semibold py-1"
-                  : "text-muted-foreground hover:text-foreground py-1"
-              }
-            >
-              {t("report")}
-            </Link>
-            <Link
-              href="/methodology"
-              onClick={() => setMobileMenuOpen(false)}
-              className={
-                isMethodologyActive
-                  ? "text-foreground font-semibold py-1"
-                  : "text-muted-foreground hover:text-foreground py-1"
-              }
-            >
-              {t("methodology")}
-            </Link>
-            <Link
-              href="/about"
-              onClick={() => setMobileMenuOpen(false)}
-              className={
-                isAboutActive
-                  ? "text-foreground font-semibold py-1"
-                  : "text-muted-foreground hover:text-foreground py-1"
-              }
-            >
-              {t("about")}
-            </Link>
+          <span className="sep" />
+          <span className="rep">{t("strandedCapacityIndex")}</span>
+          <div className="now">
+            <span className="n" id="nn">
+              {active.n}
+            </span>
+            <span className="t" id="nt">
+              {active.t ? t(active.t) : ""}
+            </span>
+          </div>
+          <nav>
+            {NAV_LINKS.map((link) => (
+              <Link key={link.key} href={link.href}>
+                {t(link.key)}
+              </Link>
+            ))}
           </nav>
+          <div className="tools">
+            <button
+              className="ic"
+              id="sbtn"
+              aria-label="Search"
+              onClick={() => setSearchOpen(true)}
+            >
+              <SearchIcon />
+            </button>
+            <div className="lgs">
+              <button
+                aria-current={language === "en" ? "true" : "false"}
+                onClick={() => setLanguage("en")}
+              >
+                EN
+              </button>
+              <span style={{ color: "#DADADA" }}>/</span>
+              <button
+                aria-current={language === "es" ? "true" : "false"}
+                onClick={() => setLanguage("es")}
+              >
+                ES
+              </button>
+            </div>
+          </div>
         </div>
-      )}
-    </header>
+        <div className="prog">
+          <i id="pg" style={{ width: `${progress}%` }} />
+        </div>
+      </header>
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+    </>
   );
 }
