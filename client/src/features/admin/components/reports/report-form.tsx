@@ -16,6 +16,7 @@ import { MDXEditorComponent } from "@/features/admin/components/ui/mdx/mdx-edito
 import { MdxPreview } from "@/features/admin/components/ui/mdx/mdx-preview";
 
 import { useLanguage } from "@/context/language-context";
+import { useVersion } from "@/context/version-context";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Badge } from "@/components/ui/badge";
 
@@ -37,11 +38,12 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
   const t = useTranslations("AdminPage.reports.reportForm");
   const router = useRouter();
   const { language: currentContextLang } = useLanguage();
+  const { contentLanguage } = useVersion();
 
   const initialParsed = parseInitialTitle(initialData?.title);
   const [versionNumber, setVersionNumber] = useState<string>(initialParsed.versionNumber);
   const [language, setLanguage] = useState<"es" | "en">(
-    isEditMode ? (initialParsed.lang as "es" | "en") : (currentContextLang as "es" | "en") || (initialParsed.lang as "es" | "en")
+    isEditMode ? (initialParsed.lang as "es" | "en") : (contentLanguage as "es" | "en") || (currentContextLang as "es" | "en") || (initialParsed.lang as "es" | "en")
   );
   
   const cleanVer = versionNumber.replace(/[^0-9.]/g, "");
@@ -161,7 +163,7 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
               {/* Input de Versión */}
               <div className="space-y-1.5">
                 <Label htmlFor="version-input" className="text-xs text-muted-foreground font-medium">
-                  Versión del Reporte
+                  {t("versionLabel")}
                 </Label>
                 <div className="flex items-center rounded-xl border border-border/60 bg-background overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500/20">
                   <span className="px-3 py-2 text-xs font-mono font-bold bg-muted/60 text-muted-foreground border-r border-border/40 select-none">
@@ -179,13 +181,13 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
                     required
                   />
                 </div>
-                <p className="text-[10px] text-muted-foreground">Solo números y puntos (ej. 1.2.2)</p>
+                <p className="text-[10px] text-muted-foreground">{t("versionHelper")}</p>
               </div>
 
               {/* Selector de Idioma */}
               <div className="space-y-1.5">
                 <Label htmlFor="lang-select" className="text-xs text-muted-foreground font-medium">
-                  Idioma del Reporte
+                  {t("langLabel")}
                 </Label>
                 <NativeSelect
                   id="lang-select"

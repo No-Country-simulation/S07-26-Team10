@@ -97,13 +97,15 @@ export function AdminSidebar() {
           // Mobile drawer vs collapsed state
           mobileOpen
             ? "fixed top-[106px] inset-x-0 bottom-0 z-40 bg-card border-b flex flex-col overflow-y-auto"
-            : "hidden md:flex flex-col"
+            : "hidden md:flex flex-col",
         )}
       >
         <nav className="flex flex-col gap-1.5 flex-1">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/admin");
+            const isActive =
+              pathname === item.href ||
+              (pathname.startsWith(item.href) && item.href !== "/admin");
 
             return (
               <Link
@@ -113,7 +115,7 @@ export function AdminSidebar() {
                   "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all",
                   isActive
                     ? "bg-primary/15 text-primary font-semibold shadow-2xs"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                 )}
               >
                 <Icon className="size-4 shrink-0" />

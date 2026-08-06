@@ -6,20 +6,35 @@ import { useTranslations } from "next-intl";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { LayoutGrid, PlusCircle, FileText, ArrowRight } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { LayoutGrid, PlusCircle, FileText, ArrowRight, AlertCircle } from "lucide-react";
 import { getSectionsAction } from "../../actions/sections-actions";
 import type { SectionItem } from "../../schemas/section-schema";
+import { useVersion } from "@/context/version-context";
 
 export function SectionsManagement() {
   const t = useTranslations("AdminPage");
+  const { activeReportId, activeReport, version } = useVersion();
   const [sections, setSections] = useState<SectionItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadSections() {
+      if (!activeReportId) {
+        setSections([]);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
       try {
-        const data = await getSectionsAction();
+        const data = await getSectionsAction(activeReportId);
         setSections(data);
       } catch (err) {
         console.error("Failed to load sections", err);
@@ -28,7 +43,7 @@ export function SectionsManagement() {
       }
     }
     loadSections();
-  }, []);
+  }, [activeReportId]);
 
   return (
     <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-2">
@@ -56,6 +71,15 @@ export function SectionsManagement() {
         </div>
       </div>
 
+      {!activeReportId && (
+        <div className="p-4 rounded-xl text-sm font-medium flex items-center gap-3 border bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300">
+          <AlertCircle className="size-5 shrink-0" />
+          <span>
+            No hay un reporte activo seleccionado para la versión actual ({version || "N/A"}). Seleccione un reporte en el selector superior de versión.
+          </span>
+        </div>
+      )}
+
       <Card className="border border-border/60 bg-card shadow-xs rounded-2xl p-6">
         <CardHeader className="p-0 mb-6">
           <div className="flex items-center gap-3">
@@ -63,7 +87,9 @@ export function SectionsManagement() {
               <LayoutGrid className="size-5" />
             </div>
             <div>
-              <CardTitle className="text-base font-semibold">{t("pages.sectionsTableTitle")}</CardTitle>
+              <CardTitle className="text-base font-semibold">
+                {t("pages.sectionsTableTitle")}{activeReport ? ` — ${activeReport.title}` : ""}
+              </CardTitle>
               <CardDescription className="text-xs">{t("pages.sectionsTableDesc")}</CardDescription>
             </div>
           </div>
@@ -88,44 +114,67 @@ export function SectionsManagement() {
             </div>
           ) : (
             <div className="rounded-xl border border-border/50 overflow-hidden">
-              <Table>
-                <TableHeader className="bg-muted/40">
-                  <TableRow>
-                    <TableHead>{t("pages.tableTitle")}</TableHead>
-                    <TableHead>{t("pages.tableSlug")}</TableHead>
-                    <TableHead>{t("pages.tableCitation")}</TableHead>
-                    <TableHead className="text-right">{t("pages.tableActions")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sections.map((section) => (
-                    <TableRow key={section.id}>
-                      <TableCell className="font-medium text-foreground">
-                        <div className="flex flex-col">
-                          <span>{section.title}</span>
-                          <span className="text-[11px] font-mono text-muted-foreground truncate max-w-[200px]">
-                            {section.description}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {section.slug}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground truncate max-w-[220px]">
-                        {section.citation_text || "N/A"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Link href={`/admin/sections/${section.id}`}>
-                          <Button variant="outline" size="sm" className="rounded-lg h-8 px-3 text-xs gap-1.5 border-border/60">
-                            <span>{t("pages.edit")}</span>
-                            <ArrowRight className="size-3" />
-                          </Button>
-                        </Link>
-                      </TableCell>
+              <TooltipProvider>
+                <Table>
+                  <TableHeader className="bg-muted/40">
+                    <TableRow>
+                      <TableHead className="w-14">Orden</TableHead>
+                      <TableHead className="w-48 max-w-[190px]">{t("pages.tableTitle")}</TableHead>
+                      <TableHead className="w-36 max-w-[140px]">{t("pages.tableSlug")}</TableHead>
+                      <TableHead className="w-24">Estado</TableHead>
+                      <TableHead className="text-right w-24">{t("pages.tableActions")}</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {sections.map((section) => (
+                      <TableRow key={section.id}>
+                        <TableCell className="font-mono text-xs font-bold text-muted-foreground w-14">
+                          #{section.display_order}
+                        </TableCell>
+                        <TableCell className="font-medium text-foreground w-48 max-w-[190px]">
+                          <div className="flex flex-col max-w-[180px]">
+                            <span className="truncate font-semibold text-xs text-foreground" title={section.title}>
+                              {section.title}
+                            </span>
+                            <span className="text-[11px] font-mono text-muted-foreground truncate max-w-[180px]">
+                              {section.content ? section.content.slice(0, 50) + "..." : ""}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="w-36 max-w-[140px]">
+                          <Tooltip>
+                            <TooltipTrigger className="block truncate max-w-[130px] font-mono text-xs text-muted-foreground cursor-pointer underline decoration-dashed decoration-muted-foreground/50 underline-offset-4 text-left">
+                              {section.slug}
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="font-mono text-xs max-w-xs break-all">
+                              {section.slug}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TableCell>
+                        <TableCell className="w-24">
+                          {section.published ? (
+                            <Badge className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 font-semibold text-[11px]">
+                              Publicada
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-muted-foreground font-medium text-[11px]">
+                              Borrador
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right w-24">
+                          <Link href={`/admin/sections/${section.id}`}>
+                            <Button variant="outline" size="sm" className="rounded-lg h-8 px-3 text-xs gap-1.5 border-border/60">
+                              <span>{t("pages.edit")}</span>
+                              <ArrowRight className="size-3" />
+                            </Button>
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TooltipProvider>
             </div>
           )}
         </CardContent>
@@ -133,6 +182,7 @@ export function SectionsManagement() {
     </div>
   );
 }
+
 
 export function SectionsManagementSkeleton() {
   return (
