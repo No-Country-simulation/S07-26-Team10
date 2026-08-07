@@ -33,7 +33,19 @@ Analizamos métricas en tiempo real de más de 45 instalaciones globales de supe
 
 ## 02. CÁLCULO DEL ÍNDICE DE CAPACIDAD ESTANCADA (SCI)
 
-El valor SCI se obtiene al comparar la capacidad máxima teórica del hardware instalado frente al rendimiento útil real alcanzado bajo restricciones térmicas y energéticas. Cualquier brecha recurrente mayor al 5% se clasifica como capacidad estancada operacional.`,
+El valor SCI se obtiene al comparar la capacidad máxima teórica del hardware instalado frente al rendimiento útil real alcanzado bajo restricciones térmicas y energéticas. Cualquier brecha recurrente mayor al 5% se clasifica como capacidad estancada operacional.
+
+## 03. ENFOQUE DE MEDICIÓN
+
+Cada capa (facility, IT y carga de trabajo) se evalúa con indicadores propios de su dominio: energía/cooling en facility, utilización y topología en IT, y admisión/scheduling en carga de trabajo. Los resultados se consolidan en una sola puntuación SCI por instalación.
+
+## 04. LO QUE ESTE ÍNDICE NO AFIRMA
+
+El SCI describe e identifica patrones de capacidad estancada; no atribuye causalidad financiera definitiva ni proyecta rendimiento futuro de proveedores individuales. Sus estimaciones de impacto deben leerse como órdenes de magnitud orientativos, no como auditorías.
+
+## 05. ESTADOS DE EVIDENCIA
+
+Cada fenómeno se clasifica en una escala de siete estados de evidencia, desde "documentado en telemetría" hasta "pregunta abierta", para señalar el grado de confianza de cada hallazgo.`,
     citation_text: "Fuente: Índice de Capacidad Estancada de PhysaFlow",
     created_at: "2024-09-30T00:00:00Z",
     updated_at: "2024-09-30T00:00:00Z",
@@ -65,7 +77,19 @@ We analyzed real-time telemetry metrics across 45 global supercomputing faciliti
 
 ## 02. STRANDED CAPACITY INDEX (SCI) CALCULATION
 
-The SCI value is calculated by comparing theoretical peak capacity against actual compute performance achieved under real-world thermal and power constraints. Any recurring gap greater than 5% is classified as stranded capacity.`,
+The SCI value is calculated by comparing theoretical peak capacity against actual compute performance achieved under real-world thermal and power constraints. Any recurring gap greater than 5% is classified as stranded capacity.
+
+## 03. MEASUREMENT APPROACH
+
+Each layer (facility, IT, workload) is assessed with domain-specific indicators: energy and cooling for facility, utilization and topology for IT, admission and scheduling for workload. Results are consolidated into a single SCI score per facility.
+
+## 04. WHAT THIS INDEX DOES NOT CLAIM
+
+The SCI describes and identifies stranded-capacity patterns; it does not attribute definitive financial causation or project individual vendor performance. Impact estimates should be read as indicative orders of magnitude, not audits.
+
+## 05. EVIDENCE STATES
+
+Each phenomenon is classified on a seven-state evidence scale, from "documented in telemetry" to "open question", to signal the confidence level of each finding.`,
     citation_text: "Source: PhysaFlow Stranded Capacity Index",
     created_at: "2024-09-30T00:00:00Z",
     updated_at: "2024-09-30T00:00:00Z",
