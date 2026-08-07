@@ -37,6 +37,7 @@ import {
   FolderPlus,
   Copy,
   BookMarked,
+  Pencil,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -48,7 +49,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useVersion } from "@/context/version-context";
-import { getResourcesBySectionAction } from "@/features/admin/actions/resources-actions";
+import { getResourcesBySectionAction, deleteResourceAction } from "@/features/admin/actions/resources-actions";
 import { getReferencesBySectionAction } from "@/features/admin/actions/references-actions";
 import type { ResourceItem } from "@/features/admin/schemas/resource-schema";
 import type { ReferenceItem } from "@/features/admin/schemas/reference-schema";
@@ -86,6 +87,25 @@ export function SectionForm({
       getReferencesBySectionAction(initialData.id).then(setSectionReferences);
     }
   }, [initialData?.id]);
+
+  const [resourceToDelete, setResourceToDelete] = useState<string | null>(null);
+  const [isDeletingResource, setIsDeletingResource] = useState(false);
+
+  const confirmDeleteResource = async () => {
+    if (!resourceToDelete) return;
+    setIsDeletingResource(true);
+    try {
+      const res = await deleteResourceAction(resourceToDelete);
+      if (res.success) {
+        setSectionResources((prev) => prev.filter((r) => r.id !== resourceToDelete));
+        setResourceToDelete(null);
+      }
+    } catch (error) {
+      console.error("Error deleting resource:", error);
+    } finally {
+      setIsDeletingResource(false);
+    }
+  };
 
   // Tab state for content (Markdown editor vs Preview)
   const [contentTab, setContentTab] = useState<"editor" | "preview">("editor");
@@ -278,8 +298,8 @@ export function SectionForm({
               </h1>
               <p className="text-xs text-muted-foreground mt-1">
                 {activeReport
-                  ? `Reporte activo: ${activeReport.title} (${version})`
-                  : `Versión actual: ${version || "N/A"}`}
+                  ? t("activeReportLabel", { title: activeReport.title, version })
+                  : t("currentVersionLabel", { version: version || "N/A" })}
               </p>
             </div>
 
@@ -318,9 +338,7 @@ export function SectionForm({
           <div className="p-4 rounded-xl text-sm font-medium flex items-center gap-3 border bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300">
             <AlertCircle className="size-5 shrink-0" />
             <span>
-              Atención: No hay un reporte activo seleccionado en el contexto de
-              versión. Seleccione un reporte en la barra superior antes de
-              guardar esta sección.
+              {t("noActiveReportWarning")}
             </span>
           </div>
         )}
@@ -355,7 +373,7 @@ export function SectionForm({
                     01
                   </span>
                   <CardTitle className="text-base font-semibold">
-                    Identificación de la Sección
+                    {t("card01Title")}
                   </CardTitle>
                 </div>
               </CardHeader>
@@ -387,7 +405,7 @@ export function SectionForm({
                       htmlFor="slug-display"
                       className="text-xs font-medium"
                     >
-                      Slug (URL) — Generado por el servidor
+                      {t("slugLabel")} — {t("slugAuto")}
                     </Label>
                     <Input
                       id="slug-display"
@@ -409,7 +427,7 @@ export function SectionForm({
                       02
                     </span>
                     <CardTitle className="text-base font-semibold">
-                      Contenido Editorial (Markdown)
+                      {t("card02Title")}
                     </CardTitle>
                   </div>
                   <div className="flex items-center gap-1 p-1 bg-muted rounded-xl border border-border/40 text-xs">
@@ -467,7 +485,7 @@ export function SectionForm({
                   <div className="flex items-center gap-2.5">
                     <FolderPlus className="size-4 text-emerald-700 dark:text-emerald-400" />
                     <CardTitle className="text-base font-semibold">
-                      Recursos Visuales y Documentos
+                      {t("resourcesTitle")}
                     </CardTitle>
                   </div>
                   <Link
@@ -480,7 +498,7 @@ export function SectionForm({
                       className="rounded-xl border-emerald-900/30 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/10 text-xs font-semibold gap-1.5 px-3 py-1"
                     >
                       <FolderPlus className="size-3.5" />
-                      <span>+ Agregar Recurso</span>
+                      <span>{t("addResourceBtn")}</span>
                     </Button>
                   </Link>
                 </CardHeader>
@@ -488,7 +506,7 @@ export function SectionForm({
                 <CardContent className="p-0">
                   {sectionResources.length === 0 ? (
                     <div className="p-6 text-center border border-dashed border-border/60 rounded-xl bg-muted/20 text-xs text-muted-foreground">
-                      No hay recursos adjuntos a esta sección.
+                      {t("noSectionResources")}
                     </div>
                   ) : (
                     <div className="space-y-2.5">
@@ -505,8 +523,8 @@ export function SectionForm({
                               {res.description || res.alt_text}
                             </p>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono font-semibold uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] font-mono font-semibold uppercase px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-900 dark:text-emerald-300 border border-emerald-500/20">
                               {res.type}
                             </span>
                             {res.file_url && (
@@ -514,7 +532,7 @@ export function SectionForm({
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                title="Copiar enlace del archivo"
+                                title={t("copyFileUrl")}
                                 onClick={() => {
                                   navigator.clipboard.writeText(
                                     res.file_url || "",
@@ -523,6 +541,31 @@ export function SectionForm({
                                 className="size-7 text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-400"
                               >
                                 <Copy className="size-3.5" />
+                              </Button>
+                            )}
+                            {res.id && (
+                              <Link href={`/admin/resources/${res.id}`}>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  title={t("editResource")}
+                                  className="size-7 text-muted-foreground hover:text-foreground"
+                                >
+                                  <Pencil className="size-3.5" />
+                                </Button>
+                              </Link>
+                            )}
+                            {res.id && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                title={t("deleteResource")}
+                                onClick={() => setResourceToDelete(res.id!)}
+                                className="size-7 text-muted-foreground hover:text-destructive"
+                              >
+                                <Trash2 className="size-3.5" />
                               </Button>
                             )}
                           </div>
@@ -538,10 +581,9 @@ export function SectionForm({
                   <FolderPlus className="size-5 text-muted-foreground/60 shrink-0" />
                   <p>
                     <strong className="text-foreground">
-                      Recursos Visuales:
+                      {t("resourcesTitle")}:
                     </strong>{" "}
-                    Primero guarde la sección para poder vincular diagramas,
-                    gráficos e imágenes.
+                    {t("saveFirstResourcesHint")}
                   </p>
                 </div>
               </Card>
@@ -554,7 +596,7 @@ export function SectionForm({
                   <div className="flex items-center gap-2.5">
                     <BookMarked className="size-4 text-emerald-700 dark:text-emerald-400" />
                     <CardTitle className="text-base font-semibold">
-                      Referencias Bibliográficas (APA 7)
+                      {t("referencesTitle")}
                     </CardTitle>
                   </div>
                   <Link
@@ -567,7 +609,7 @@ export function SectionForm({
                       className="rounded-xl border-emerald-900/30 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/10 text-xs font-semibold gap-1.5 px-3 py-1"
                     >
                       <BookMarked className="size-3.5" />
-                      <span>+ Agregar Referencia</span>
+                      <span>{t("addReferenceBtn")}</span>
                     </Button>
                   </Link>
                 </CardHeader>
@@ -575,7 +617,7 @@ export function SectionForm({
                 <CardContent className="p-0">
                   {sectionReferences.length === 0 ? (
                     <div className="p-6 text-center border border-dashed border-border/60 rounded-xl bg-muted/20 text-xs text-muted-foreground">
-                      No hay referencias asociadas a esta sección.
+                      {t("noSectionReferences")}
                     </div>
                   ) : (
                     <div className="space-y-2.5">
@@ -607,9 +649,9 @@ export function SectionForm({
                   <BookMarked className="size-5 text-muted-foreground/60 shrink-0" />
                   <p>
                     <strong className="text-foreground">
-                      Referencias Bibliográficas:
+                      {t("referencesTitle")}:
                     </strong>{" "}
-                    Primero guarde la sección para poder vincular citas APA 7.
+                    {t("saveFirstReferencesHint")}
                   </p>
                 </div>
               </Card>
@@ -666,11 +708,11 @@ export function SectionForm({
                 {/* Estado de sección (Publicada / Borrador) */}
                 <div className="space-y-2">
                   <Label className="text-xs text-muted-foreground font-medium">
-                    Publicación
+                    {t("publicationLabel")}
                   </Label>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-foreground">
-                      {watchPublished ? "Publicada" : "Borrador"}
+                      {watchPublished ? t("published") : t("draft")}
                     </span>
                     <Switch
                       checked={watchPublished ?? false}
@@ -692,8 +734,7 @@ export function SectionForm({
                     {t("styleGuideTitle")}
                   </h4>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    El contenido admite sintaxis Markdown/MDX enriquecida
-                    (títulos, listas, fórmulas LaTeX y bloques de código).
+                    {t("styleGuideHint")}
                   </p>
                 </div>
               </div>
@@ -738,6 +779,32 @@ export function SectionForm({
               onClick={handleDelete}
             >
               {isDeleting ? t("deleting") : t("deleteSection")}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      {/* Modal de confirmación para eliminar recurso */}
+      <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => { if (!open) setResourceToDelete(null); }}>
+        <AlertDialogContent className="rounded-3xl p-6">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg font-bold text-foreground">
+              {t("deleteResourceModalTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed pt-1">
+              {t("deleteResourceModalDesc")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="pt-4 flex items-center justify-end gap-2">
+            <AlertDialogCancel className="rounded-xl border-border/60 text-xs font-semibold">
+              {t("cancel")}
+            </AlertDialogCancel>
+            <Button
+              variant="destructive"
+              disabled={isDeletingResource}
+              onClick={confirmDeleteResource}
+              className="rounded-xl px-4 text-xs font-semibold"
+            >
+              {isDeletingResource ? t("deleting") : t("deleteResourceConfirm")}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

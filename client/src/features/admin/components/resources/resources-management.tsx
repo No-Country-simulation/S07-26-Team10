@@ -21,6 +21,15 @@ import {
   FileText,
   Copy,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { getResourcesAction, deleteResourceAction } from "../../actions/resources-actions";
 import { getSectionsAction } from "../../actions/sections-actions";
 import type { ResourceItem } from "../../schemas/resource-schema";
@@ -31,6 +40,8 @@ export function ResourcesManagement() {
   const [resources, setResources] = useState<ResourceItem[]>([]);
   const [sections, setSections] = useState<SectionItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [resourceToDelete, setResourceToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -50,10 +61,17 @@ export function ResourcesManagement() {
     loadData();
   }, []);
 
-  const handleDelete = async (id: string) => {
-    if (confirm("¿Desea eliminar este recurso?")) {
-      await deleteResourceAction(id);
-      setResources((prev) => prev.filter((r) => r.id !== id));
+  const confirmDelete = async () => {
+    if (!resourceToDelete) return;
+    setIsDeleting(true);
+    try {
+      await deleteResourceAction(resourceToDelete);
+      setResources((prev) => prev.filter((r) => r.id !== resourceToDelete));
+      setResourceToDelete(null);
+    } catch (err) {
+      console.error("Error deleting resource:", err);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -221,7 +239,7 @@ export function ResourcesManagement() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDelete(item.id!)}
+                              onClick={() => setResourceToDelete(item.id!)}
                               className="size-8 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="size-3.5" />
@@ -252,6 +270,33 @@ export function ResourcesManagement() {
           </p>
         </div>
       </Card>
+
+      {/* Modal de confirmación para eliminar recurso */}
+      <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => { if (!open) setResourceToDelete(null); }}>
+        <AlertDialogContent className="rounded-3xl p-6">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg font-bold text-foreground">
+              {t("deleteModalTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed pt-1">
+              {t("deleteModalDesc")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="pt-4 flex items-center justify-end gap-2">
+            <AlertDialogCancel className="rounded-xl border-border/60 text-xs font-semibold">
+              {t("cancel")}
+            </AlertDialogCancel>
+            <Button
+              variant="destructive"
+              disabled={isDeleting}
+              onClick={confirmDelete}
+              className="rounded-xl px-4 text-xs font-semibold"
+            >
+              {isDeleting ? t("deleting") : t("deleteConfirm")}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
