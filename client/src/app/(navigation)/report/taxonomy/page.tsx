@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useTranslations } from "next-intl"
 import { fetchTaxonomyData, fetchConceptById, fetchCategoryByConceptId } from "@/lib/taxonomy-api"
 import type { TaxonomyCategory } from "@/data/taxonomy"
 import { TaxonomyTree } from "@/components/report/taxonomy/TaxonomyTree"
@@ -16,6 +17,7 @@ const DEFAULT_CONCEPT_ID = "cooling-bottleneck"
 type PageState = "loading" | "loaded" | "error"
 
 export default function TaxonomyPage() {
+  const t = useTranslations("Report")
   const [pageState, setPageState] = useState<PageState>("loading")
   const [categories, setCategories] = useState<TaxonomyCategory[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -55,7 +57,7 @@ export default function TaxonomyPage() {
         }
       } catch {
         if (cancelled) return
-        setLoadError("Failed to load taxonomy data. Please try again.")
+        setLoadError(t("failedToLoad"))
         setPageState("error")
       }
     }
@@ -110,7 +112,7 @@ export default function TaxonomyPage() {
     : undefined
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100">
+    <div className="phi-taxonomy min-h-screen bg-neutral-950 text-neutral-100">
       <header className="sticky top-0 z-40 border-b border-neutral-800 bg-neutral-950/80 backdrop-blur-md">
         <div className="flex items-center justify-between h-14 px-4 lg:px-6">
           <div className="flex items-center gap-3">
@@ -132,13 +134,13 @@ export default function TaxonomyPage() {
               </span>
               <span className="text-xs text-neutral-600 hidden sm:inline">/</span>
               <span className="text-xs text-neutral-500 hidden sm:inline">
-                Stranded Capacity Report
+                {t("strandedCapacityReport")}
               </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium">
-              Taxonomy
+              {t("taxonomyTitle")}
             </span>
           </div>
         </div>
@@ -200,7 +202,7 @@ export default function TaxonomyPage() {
 
           {pageState === "loaded" && conceptExists && !selectedConcept && !selectedCategory && (
             <div className="flex items-center justify-center h-64">
-              <p className="text-neutral-500 text-sm">Select a concept from the taxonomy to view its details.</p>
+              <p className="text-neutral-500 text-sm">{t("selectConcept")}</p>
             </div>
           )}
         </main>

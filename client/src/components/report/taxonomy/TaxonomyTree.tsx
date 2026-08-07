@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import { useCallback, useRef, useEffect } from "react"
 import { ChevronRight, Folder, FileText, LayoutGrid } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -20,6 +22,7 @@ export function TaxonomyTree({
   onSelectConcept,
   onToggleCategory,
 }: TaxonomyTreeProps) {
+  const t = useTranslations("Report")
   const treeRef = useRef<HTMLDivElement>(null)
   const itemRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
 
@@ -121,14 +124,14 @@ export function TaxonomyTree({
         <div className="flex items-center gap-2 px-2">
           <LayoutGrid className="size-4 text-neutral-400" />
           <span className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
-            Taxonomy
+            {t("taxonomyTitle")}
           </span>
         </div>
       </div>
 
       {categories.length === 0 ? (
         <div className="flex-1 flex items-center justify-center px-4">
-          <p className="text-xs text-neutral-600 text-center">No categories available</p>
+          <p className="text-xs text-neutral-600 text-center">{t("noCategories")}</p>
         </div>
       ) : (
         <nav
@@ -179,7 +182,7 @@ export function TaxonomyTree({
               >
                 {category.concepts.length === 0 ? (
                   <div className="ml-4 border-l border-neutral-800 pl-2 py-3">
-                    <p className="text-xs text-neutral-600 px-3 italic">No concepts in this category</p>
+                    <p className="text-xs text-neutral-600 px-3 italic">{t("noConceptsInCategory")}</p>
                   </div>
                 ) : (
                   <div className="ml-4 border-l border-neutral-800 pl-2 py-1 space-y-0.5">

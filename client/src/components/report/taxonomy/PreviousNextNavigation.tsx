@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { TaxonomyConcept } from "@/data/taxonomy"
@@ -15,6 +17,7 @@ export function PreviousNextNavigation({
   next,
   onSelect,
 }: PreviousNextNavigationProps) {
+  const t = useTranslations("Report")
   return (
     <nav
       aria-label="Concept navigation"
@@ -32,7 +35,7 @@ export function PreviousNextNavigation({
         >
           <ChevronLeft className="size-4 text-neutral-500 shrink-0 group-hover:text-neutral-300 transition-colors duration-150" />
           <div className="min-w-0">
-            <p className="text-xs text-neutral-500 mb-0.5">Previous</p>
+            <p className="text-xs text-neutral-500 mb-0.5">{t("previous")}</p>
             <p className="text-sm font-medium text-neutral-200 truncate">
               {prev.name}
             </p>
@@ -53,7 +56,7 @@ export function PreviousNextNavigation({
           )}
         >
           <div className="min-w-0">
-            <p className="text-xs text-neutral-500 mb-0.5">Next</p>
+            <p className="text-xs text-neutral-500 mb-0.5">{t("next")}</p>
             <p className="text-sm font-medium text-neutral-200 truncate">
               {next.name}
             </p>

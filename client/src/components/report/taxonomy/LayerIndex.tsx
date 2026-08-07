@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import type { TaxonomyCategory } from "@/data/taxonomy"
 import { cn } from "@/lib/utils"
 
@@ -14,12 +15,13 @@ export function LayerIndex({
   selectedConceptId,
   onSelectConcept,
 }: LayerIndexProps) {
+  const t = useTranslations("Report")
   return (
     <section className="border-b border-neutral-800 bg-neutral-950/60">
       <div className="max-w-5xl mx-auto px-6 py-8 lg:px-12 space-y-6">
         <div className="flex items-center gap-2">
           <span className="text-[10px] uppercase tracking-widest text-neutral-500 font-medium">
-            Layer index
+            {t("layerIndex")}
           </span>
           <span className="h-px flex-1 bg-neutral-800" />
         </div>

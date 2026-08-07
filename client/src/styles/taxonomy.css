@@ -1,0 +1,113 @@
+/* Phi theme overrides for the taxonomy explorer.
+   Scoped under .phi-taxonomy so the dark reader stays dark but on-palette
+   (forest-green background, gold accents). */
+
+.phi-taxonomy {
+  --tax-bg: #08201a;
+  --tax-bg-2: #0d2b23;
+  --tax-border: rgba(201, 169, 97, 0.18);
+  --tax-border-strong: rgba(201, 169, 97, 0.32);
+  --tax-gold: #e0bd72;
+  --tax-cream: #f0ede4;
+  --tax-muted: #a8b8a0;
+}
+
+.phi-taxonomy .bg-neutral-950 {
+  background-color: var(--tax-bg);
+}
+.phi-taxonomy .bg-neutral-950\/80 {
+  background-color: rgba(8, 32, 26, 0.8);
+}
+.phi-taxonomy .bg-neutral-900\/50 {
+  background-color: rgba(13, 43, 35, 0.5);
+}
+.phi-taxonomy .bg-neutral-900\/60 {
+  background-color: rgba(13, 43, 35, 0.6);
+}
+.phi-taxonomy .bg-neutral-800 {
+  background-color: var(--tax-bg-2);
+}
+.phi-taxonomy .bg-neutral-800\/30 {
+  background-color: rgba(13, 43, 35, 0.3);
+}
+.phi-taxonomy .bg-neutral-800\/40 {
+  background-color: rgba(13, 43, 35, 0.4);
+}
+.phi-taxonomy .bg-neutral-800\/60 {
+  background-color: rgba(13, 43, 35, 0.6);
+}
+.phi-taxonomy .bg-neutral-700 {
+  background-color: rgba(201, 169, 97, 0.25);
+}
+.phi-taxonomy .bg-neutral-700\/60 {
+  background-color: rgba(201, 169, 97, 0.22);
+}
+.phi-taxonomy .bg-neutral-500 {
+  background-color: var(--tax-gold);
+}
+.phi-taxonomy .bg-neutral-50 {
+  background-color: var(--tax-cream);
+}
+.phi-taxonomy .bg-neutral-50 .text-neutral-950 {
+  color: #08201a;
+}
+
+.phi-taxonomy .border-neutral-800 {
+  border-color: var(--tax-border);
+}
+.phi-taxonomy .border-neutral-700 {
+  border-color: var(--tax-border-strong);
+}
+.phi-taxonomy .border-neutral-700\/50 {
+  border-color: rgba(201, 169, 97, 0.28);
+}
+
+.phi-taxonomy .text-neutral-950 {
+  color: #08201a;
+}
+.phi-taxonomy .text-neutral-100 {
+  color: var(--tax-cream);
+}
+.phi-taxonomy .text-neutral-200 {
+  color: #e8e2d2;
+}
+.phi-taxonomy .text-neutral-300 {
+  color: #d8d2c0;
+}
+.phi-taxonomy .text-neutral-400 {
+  color: var(--tax-muted);
+}
+.phi-taxonomy .text-neutral-500 {
+  color: #8fa08a;
+}
+.phi-taxonomy .text-neutral-600 {
+  color: #7b8d7a;
+}
+.phi-taxonomy .text-neutral-700 {
+  color: #a8b8a0;
+}
+
+.phi-taxonomy .ring-neutral-500 {
+  --tw-ring-color: var(--tax-gold);
+  --tw-ring-opacity: 1;
+}
+.phi-taxonomy .ring-neutral-700\/50 {
+  --tw-ring-color: rgba(201, 169, 97, 0.28);
+  --tw-ring-opacity: 1;
+}
+
+.phi-taxonomy .hover\:bg-neutral-800:hover {
+  background-color: rgba(13, 43, 35, 0.9);
+}
+.phi-taxonomy .hover\:bg-neutral-800\/40:hover {
+  background-color: rgba(13, 43, 35, 0.4);
+}
+.phi-taxonomy .hover\:bg-neutral-800\/60:hover {
+  background-color: rgba(13, 43, 35, 0.6);
+}
+.phi-taxonomy .hover\:text-neutral-200:hover {
+  color: #e8e2d2;
+}
+.phi-taxonomy .text-amber-300 {
+  color: var(--tax-gold);
+}

@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { ArrowRight, CheckCircle2, AlertTriangle, Lightbulb, ListTree } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { BreadcrumbNav } from "./BreadcrumbNav"
@@ -20,6 +21,7 @@ export function ConceptDetail({
   concept,
   onSelectConcept,
 }: ConceptDetailProps) {
+  const t = useTranslations("Report")
   const related = getRelatedConcepts(concept.relatedConceptIds)
   const { prev, next } = getAdjacentConcepts(concept.id)
 
@@ -56,7 +58,7 @@ export function ConceptDetail({
         <section id="section-definition">
           <h2 className="flex items-center gap-2.5 text-lg font-semibold text-neutral-50 mb-4 pb-2 border-b border-neutral-800">
             <span className="size-1.5 rounded-full bg-neutral-500" />
-            Definition
+            {t("definition")}
           </h2>
           <p className="text-sm text-neutral-300 leading-[1.75]">
             {concept.definition}
@@ -66,7 +68,7 @@ export function ConceptDetail({
         <section id="section-characteristics">
           <h2 className="flex items-center gap-2.5 text-lg font-semibold text-neutral-50 mb-4 pb-2 border-b border-neutral-800">
             <span className="size-1.5 rounded-full bg-neutral-500" />
-            Characteristics
+            {t("characteristics")}
           </h2>
           <ul className="space-y-2.5">
             {concept.characteristics.map((char, i) => (
@@ -81,7 +83,7 @@ export function ConceptDetail({
         <section id="section-impact">
           <h2 className="flex items-center gap-2.5 text-lg font-semibold text-neutral-50 mb-4 pb-2 border-b border-neutral-800">
             <span className="size-1.5 rounded-full bg-neutral-500" />
-            Operational Impact
+            {t("operationalImpact")}
           </h2>
           <div className="flex items-start gap-3 p-4 rounded-xl bg-neutral-900/60 border border-neutral-800">
             <AlertTriangle className="size-5 text-neutral-500 mt-0.5 shrink-0" />
@@ -94,7 +96,7 @@ export function ConceptDetail({
         <section id="section-causes">
           <h2 className="flex items-center gap-2.5 text-lg font-semibold text-neutral-50 mb-4 pb-2 border-b border-neutral-800">
             <span className="size-1.5 rounded-full bg-neutral-500" />
-            Common Causes
+            {t("commonCauses")}
           </h2>
           <ul className="space-y-2.5">
             {concept.commonCauses.map((cause, i) => (
@@ -111,7 +113,7 @@ export function ConceptDetail({
         <section id="section-example">
           <h2 className="flex items-center gap-2.5 text-lg font-semibold text-neutral-50 mb-4 pb-2 border-b border-neutral-800">
             <span className="size-1.5 rounded-full bg-neutral-500" />
-            Example Scenario
+            {t("exampleScenario")}
           </h2>
           <div className="flex items-start gap-3 p-4 rounded-xl bg-neutral-900/60 border border-neutral-800">
             <Lightbulb className="size-5 text-neutral-500 mt-0.5 shrink-0" />
@@ -123,7 +125,7 @@ export function ConceptDetail({
 
         <section>
           <FigureCard
-            title={`${concept.name} — Conceptual Diagram`}
+            title={`${concept.name} ${t("conceptualDiagram")}`}
             type="diagram"
             description="High-level architecture diagram illustrating the interaction between infrastructure components and stranded capacity mechanisms."
           />
@@ -131,7 +133,7 @@ export function ConceptDetail({
 
         <section>
           <FigureCard
-            title={`${concept.name} — Reference Architecture`}
+            title={`${concept.name} ${t("referenceArchitecture")}`}
             type="image"
             description="Reference deployment pattern showing optimal and suboptimal configurations for mitigating this stranded capacity factor."
           />
@@ -141,7 +143,7 @@ export function ConceptDetail({
           <section id="section-related">
             <h2 className="flex items-center gap-2.5 text-lg font-semibold text-neutral-50 mb-4 pb-2 border-b border-neutral-800">
               <span className="size-1.5 rounded-full bg-neutral-500" />
-              Related Concepts
+              {t("relatedConcepts")}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {related.map((r) => (
@@ -173,19 +175,19 @@ export function ConceptDetail({
         <section id="section-downloads">
           <h2 className="flex items-center gap-2.5 text-lg font-semibold text-neutral-50 mb-4 pb-2 border-b border-neutral-800">
             <span className="size-1.5 rounded-full bg-neutral-500" />
-            Downloads
+            {t("downloads")}
           </h2>
           <div className="space-y-2">
             <DownloadButton
-              label={`${concept.name} — Executive Summary (PDF)`}
+              label={`${concept.name} — ${t("executiveSummaryPdf")}`}
               description="2-page brief · 240 KB"
             />
             <DownloadButton
-              label={`${concept.name} — Technical Deep Dive (PDF)`}
+              label={`${concept.name} — ${t("technicalDeepDivePdf")}`}
               description="12-page analysis with diagrams · 1.8 MB"
             />
             <DownloadButton
-              label={`Stranded Capacity Taxonomy — Full Report (PDF)`}
+              label={`${t("fullReportPdf")}`}
               description="Comprehensive reference · 4.2 MB"
             />
           </div>

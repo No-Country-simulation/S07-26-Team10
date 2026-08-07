@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import { Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -28,6 +30,7 @@ export function MobileNavigation({
   onSelectConcept,
   onToggleCategory,
 }: MobileNavigationProps) {
+    const t = useTranslations("Report")
   return (
     <Sheet>
       <SheetTrigger
@@ -44,7 +47,7 @@ export function MobileNavigation({
       </SheetTrigger>
       <SheetContent side="left" className="w-72 p-0 bg-neutral-950 border-r border-neutral-800">
         <SheetHeader className="sr-only">
-          <SheetTitle>Taxonomy Navigation</SheetTitle>
+          <SheetTitle>{t("taxonomyTitle")}</SheetTitle>
           <SheetDescription>
             Browse stranded capacity taxonomy categories and concepts
           </SheetDescription>

@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import { SearchX, ArrowLeft } from "lucide-react"
 
 interface ConceptNotFoundProps {
@@ -8,6 +10,7 @@ interface ConceptNotFoundProps {
 }
 
 export function ConceptNotFound({ conceptId, onBack }: ConceptNotFoundProps) {
+  const t = useTranslations("Report")
   return (
     <div className="max-w-xl mx-auto py-20">
       <div className="flex flex-col items-center text-center">
@@ -16,7 +19,7 @@ export function ConceptNotFound({ conceptId, onBack }: ConceptNotFoundProps) {
         </div>
 
         <h2 className="text-xl font-semibold text-neutral-100 mb-2">
-          Concept Not Found
+          {t("conceptNotFound")}
         </h2>
 
         <p className="text-sm text-neutral-400 leading-relaxed mb-2 max-w-sm">
@@ -34,7 +37,7 @@ export function ConceptNotFound({ conceptId, onBack }: ConceptNotFoundProps) {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-neutral-300 bg-neutral-800/60 border border-neutral-700/50 hover:bg-neutral-700/60 hover:text-neutral-100 transition-all duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-500"
           >
             <ArrowLeft className="size-4" />
-            Back to first concept
+            {t("backToDefault")}
           </button>
         )}
       </div>
