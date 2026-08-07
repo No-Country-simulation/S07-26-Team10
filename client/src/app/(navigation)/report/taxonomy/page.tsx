@@ -7,6 +7,7 @@ import { TaxonomyTree } from "@/components/report/taxonomy/TaxonomyTree"
 import { ConceptDetail } from "@/components/report/taxonomy/ConceptDetail"
 import { TableOfContents } from "@/components/report/taxonomy/TableOfContents"
 import { MobileNavigation } from "@/components/report/taxonomy/MobileNavigation"
+import { LayerIndex } from "@/components/report/taxonomy/LayerIndex"
 import { ConceptNotFound } from "@/components/report/taxonomy/ConceptNotFound"
 import { ConceptDetailSkeleton, TreeSkeleton, TOCSkeleton } from "@/components/report/taxonomy/LoadingSkeleton"
 
@@ -34,6 +35,24 @@ export default function TaxonomyPage() {
         if (cancelled) return
         setCategories(data)
         setPageState("loaded")
+
+        const hash = window.location.hash.toUpperCase()
+        if (hash) {
+          const target = hash.replace("#", "")
+          const concept = data
+            .flatMap((cat) => cat.concepts)
+            .find((c) => c.itemCode === target || c.layerCode === target)
+          if (concept) {
+            const cat = data.find((c) =>
+              c.concepts.some((c2) => c2.id === concept.id),
+            )
+            if (cat) {
+              setExpandedCategories((prev) => new Set([...prev, cat.id]))
+            }
+            setSelectedConceptId(concept.id)
+            setConceptExists(true)
+          }
+        }
       } catch {
         if (cancelled) return
         setLoadError("Failed to load taxonomy data. Please try again.")
@@ -124,6 +143,14 @@ export default function TaxonomyPage() {
           </div>
         </div>
       </header>
+
+      {pageState === "loaded" && (
+        <LayerIndex
+          categories={categories}
+          selectedConceptId={selectedConceptId}
+          onSelectConcept={handleSelectConcept}
+        />
+      )}
 
       <div className="flex">
         <aside className="hidden lg:block w-72 shrink-0 border-r border-neutral-800 h-[calc(100vh-3.5rem)] sticky top-14 overflow-hidden">
