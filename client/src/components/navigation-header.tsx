@@ -13,7 +13,7 @@ const NAV_LINKS = [
   { href: "/#s02", key: "chapters", match: "/" },
   { href: "/report/taxonomy", key: "taxonomy", match: "/report/taxonomy" },
   { href: "/methodology", key: "methodology", match: "/methodology" },
-  { href: "/report", key: "references" },
+  { href: "/report/references", key: "references", match: "/report/references" },
 ];
 
 function SearchIcon() {

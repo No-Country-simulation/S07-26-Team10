@@ -39,7 +39,7 @@ export function NavigationFooter() {
           <Link href="/#s02">{t("capacityFunnel")}</Link>
           <Link href="/report/taxonomy">{t("taxonomy")}</Link>
           <Link href="/methodology">{t("methodology")}</Link>
-          <Link href="/report">{t("references")}</Link>
+          <Link href="/report/references">{t("references")}</Link>
         </div>
         <div>
           <h4>{t("publication")}</h4>
