@@ -13,7 +13,7 @@ import { Globe, Check, Lock } from "lucide-react";
 
 export function LanguageToggle() {
   const { language, setLanguage } = useLanguage();
-  const { isLanguageLocked } = useVersion();
+  const { isContentLanguageLocked } = useVersion();
 
   return (
     <DropdownMenu>
@@ -22,18 +22,18 @@ export function LanguageToggle() {
           <Button
             variant="outline"
             size="sm"
-            disabled={isLanguageLocked}
-            className={`gap-2 rounded-full ${isLanguageLocked ? "opacity-70 cursor-not-allowed bg-muted/50" : ""}`}
-            title={isLanguageLocked ? "El idioma está fijado para esta versión" : "Cambiar idioma"}
+            disabled={isContentLanguageLocked}
+            className={`gap-2 rounded-full ${isContentLanguageLocked ? "opacity-70 cursor-not-allowed bg-muted/50" : ""}`}
+            title={isContentLanguageLocked ? "El idioma está fijado para esta versión" : "Cambiar idioma"}
           >
-            {isLanguageLocked ? <Lock className="size-3.5 text-muted-foreground" /> : <Globe className="size-4" />}
+            {isContentLanguageLocked ? <Lock className="size-3.5 text-muted-foreground" /> : <Globe className="size-4" />}
             <span className="font-medium">
               {language === "es" ? "ES" : "EN"}
             </span>
           </Button>
         }
       />
-      {!isLanguageLocked && (
+      {!isContentLanguageLocked && (
         <DropdownMenuContent align="end" className="w-36">
           <DropdownMenuItem
             onClick={() => setLanguage("es")}
