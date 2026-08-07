@@ -135,7 +135,10 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const availableContentLanguages = version ? versionLangsMap[version] || ["es", "en"] : ["es", "en"];
+  const defaultLangs: Language[] = ["es", "en"];
+  const availableContentLanguages: Language[] = version
+    ? versionLangsMap[version] || defaultLangs
+    : defaultLangs;
   const isContentLanguageLocked = availableContentLanguages.length === 1;
 
   // Automatically find active report based on active version and content language
