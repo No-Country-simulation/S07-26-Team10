@@ -193,6 +193,11 @@
     "emptyConceptsText": "No registered concepts for this technical category.",
     "sectionPrefix": "SECTION:",
     "orderPrefix": "ORDER:",
+    "deleteCategoryTitle": "Delete category",
+    "deleteCategoryConfirm": "Are you sure you want to delete the category \"{name}\"? This action cannot be undone.",
+    "deleteCategoryBtn": "Delete",
+    "deleting": "Deleting...",
+    "errorDelete": "Error deleting category.",
     "categoryForm": {
       "breadcrumbBase": "Taxonomy",
       "breadcrumbEdit": "Edit category",
@@ -200,6 +205,7 @@
       "createTitle": "Create new category",
       "editTitle": "Edit category: {name}",
       "subtitle": "Define the first-level technical category to group report concepts.",
+      "cardTitle": "Category Parameters",
       "cancel": "Cancel",
       "saving": "Saving...",
       "saveCategory": "Save category",
@@ -208,11 +214,15 @@
       "descLabel": "Description",
       "descPlaceholder": "e.g. Energy and cooling",
       "orderLabel": "Display Order",
-      "statusLabel": "Status",
+      "statusLabel": "Active Status",
+      "statusDesc": "Determines whether the category is available and visible in the system.",
       "statusActive": "ACTIVE",
       "statusInactive": "INACTIVE",
       "iconLabel": "Technical Icon",
-      "iconPlaceholder": "Select icon (zap, server, network...)"
+      "iconPlaceholder": "Select icon (zap, server, network...)",
+      "errorCreate": "Error creating category.",
+      "errorUpdate": "Error updating category.",
+      "errorGeneric": "An unexpected error occurred while saving the category."
     },
     "conceptForm": {
       "breadcrumbBase": "Taxonomy",
@@ -221,14 +231,21 @@
       "createTitle": "Create new concept",
       "editTitle": "Edit concept: {name}",
       "subtitle": "Define the metric or technical concept assigned to a main category.",
+      "cardTitle": "Technical Concept Parameters",
       "cancel": "Cancel",
-      "saving": "Guardar concepto",
+      "saving": "Saving...",
+      "saveConcept": "Save concept",
       "nameLabel": "Concept Name",
       "namePlaceholder": "e.g. Inefficient cooling",
       "categoryLabel": "Parent Category",
+      "categoryPlaceholder": "Select a category...",
       "sectionLabel": "Linked Section",
       "sectionPlaceholder": "e.g. INTRODUCTION",
-      "orderLabel": "Order of Display"
+      "descLabel": "Description",
+      "descPlaceholder": "Description or technical details of the concept...",
+      "orderLabel": "Display Order",
+      "errorCreate": "Error creating concept.",
+      "errorGeneric": "An unexpected error occurred while saving the concept."
     }
   },
   "sectionForm": {

@@ -193,6 +193,11 @@
     "emptyConceptsText": "No hay conceptos registrados para esta categoría técnica.",
     "sectionPrefix": "SECCIÓN:",
     "orderPrefix": "ORDEN:",
+    "deleteCategoryTitle": "Eliminar categoría",
+    "deleteCategoryConfirm": "¿Estás seguro de que deseas eliminar la categoría \"{name}\"? Esta acción no se puede deshacer.",
+    "deleteCategoryBtn": "Eliminar",
+    "deleting": "Eliminando...",
+    "errorDelete": "Error al eliminar la categoría.",
     "categoryForm": {
       "breadcrumbBase": "Taxonomía",
       "breadcrumbEdit": "Editar categoría",
@@ -200,6 +205,7 @@
       "createTitle": "Crear nueva categoría",
       "editTitle": "Editar categoría: {name}",
       "subtitle": "Defina la categoría técnica de primer nivel para agrupar los conceptos del reporte.",
+      "cardTitle": "Parámetros de la Categoría",
       "cancel": "Cancelar",
       "saving": "Guardando...",
       "saveCategory": "Guardar categoría",
@@ -208,11 +214,15 @@
       "descLabel": "Descripción",
       "descPlaceholder": "Ej. Energía y cooling",
       "orderLabel": "Orden de Visualización",
-      "statusLabel": "Estado",
+      "statusLabel": "Estado Activo",
+      "statusDesc": "Determina si la categoría está disponible y visible en el sistema.",
       "statusActive": "ACTIVO",
       "statusInactive": "INACTIVO",
       "iconLabel": "Icono Técnico",
-      "iconPlaceholder": "Seleccionar icono (zap, server, network...)"
+      "iconPlaceholder": "Seleccionar icono (zap, server, network...)",
+      "errorCreate": "Error al crear la categoría.",
+      "errorUpdate": "Error al actualizar la categoría.",
+      "errorGeneric": "Ocurrió un error inesperado al guardar la categoría."
     },
     "conceptForm": {
       "breadcrumbBase": "Taxonomía",
@@ -221,15 +231,21 @@
       "createTitle": "Crear nuevo concepto",
       "editTitle": "Editar concepto: {name}",
       "subtitle": "Defina la métrica o concepto técnico asignado a una categoría principal.",
+      "cardTitle": "Parámetros del Concepto Técnico",
       "cancel": "Cancelar",
       "saving": "Guardando...",
       "saveConcept": "Guardar concepto",
       "nameLabel": "Nombre del Concepto",
       "namePlaceholder": "Ej. Enfriamiento ineficiente",
       "categoryLabel": "Categoría Padre",
+      "categoryPlaceholder": "Seleccione una categoría...",
       "sectionLabel": "Sección Vinculada",
       "sectionPlaceholder": "Ej. INTRODUCCIÓN",
-      "orderLabel": "Orden de Visualización"
+      "descLabel": "Descripción",
+      "descPlaceholder": "Descripción o detalle técnico del concepto...",
+      "orderLabel": "Orden de Visualización",
+      "errorCreate": "Error al crear el concepto.",
+      "errorGeneric": "Ocurrió un error inesperado al guardar el concepto."
     }
   },
   "sectionForm": {

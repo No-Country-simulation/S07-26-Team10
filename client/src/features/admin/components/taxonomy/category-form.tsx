@@ -12,6 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ChevronLeft, Save, Layers } from "lucide-react";
 import type { CategoryItem } from "../../schemas/taxonomy-schema";
+import { createCategoryAction, updateCategoryAction } from "../../actions/taxonomy-actions";
+import { useVersion } from "@/context/version-context";
 
 interface CategoryFormProps {
   initialData?: CategoryItem;
@@ -21,21 +23,58 @@ interface CategoryFormProps {
 export function CategoryForm({ initialData, isEditMode = false }: CategoryFormProps) {
   const t = useTranslations("AdminPage.taxonomy.categoryForm");
   const router = useRouter();
+  const { activeReportId } = useVersion();
 
   const [name, setName] = useState(initialData?.name || "");
   const [description, setDescription] = useState(initialData?.description || "");
   const [displayOrder, setDisplayOrder] = useState(initialData?.display_order || 1);
-  const [active, setActive] = useState<boolean>(initialData?.active ?? true);
+  const [active, setActive] = useState<boolean>(initialData?.active ?? initialData?.published ?? true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage(null);
 
-    setTimeout(() => {
+    try {
+      if (isEditMode && initialData?.id) {
+        const res = await updateCategoryAction(initialData.id, {
+          name,
+          description,
+          display_order: displayOrder,
+          published: active,
+        });
+
+        if (res.success) {
+          router.push("/admin/taxonomy");
+          router.refresh();
+        } else {
+          setErrorMessage(res.message || t("errorUpdate"));
+        }
+      } else {
+        const targetReportId = initialData?.report_id || activeReportId || undefined;
+        const res = await createCategoryAction({
+          report_id: targetReportId,
+          name,
+          description,
+          display_order: displayOrder,
+          published: active,
+        });
+
+        if (res.success) {
+          router.push("/admin/taxonomy");
+          router.refresh();
+        } else {
+          setErrorMessage(res.message || t("errorCreate"));
+        }
+      }
+    } catch (err) {
+      console.error("Error submitting category form:", err);
+      setErrorMessage(t("errorGeneric"));
+    } finally {
       setIsSubmitting(false);
-      router.push("/admin/taxonomy");
-    }, 400);
+    }
   };
 
   return (
@@ -78,11 +117,17 @@ export function CategoryForm({ initialData, isEditMode = false }: CategoryFormPr
         </div>
       </div>
 
+      {errorMessage && (
+        <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium">
+          {errorMessage}
+        </div>
+      )}
+
       <Card className="border border-border/60 bg-card shadow-xs rounded-2xl p-6">
         <CardHeader className="p-0 mb-6 border-b border-border/40 pb-4">
           <div className="flex items-center gap-2.5">
             <Layers className="size-5 text-emerald-700 dark:text-emerald-400" />
-            <CardTitle className="text-base font-semibold">Parámetros de la Categoría (categories)</CardTitle>
+            <CardTitle className="text-base font-semibold">{t("cardTitle")}</CardTitle>
           </div>
         </CardHeader>
 
@@ -90,7 +135,7 @@ export function CategoryForm({ initialData, isEditMode = false }: CategoryFormPr
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="cat-name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Nombre (name) <span className="text-destructive">*</span>
+                {t("nameLabel")} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="cat-name"
@@ -105,7 +150,7 @@ export function CategoryForm({ initialData, isEditMode = false }: CategoryFormPr
 
             <div className="space-y-2">
               <Label htmlFor="cat-order" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Orden de Visualización (display_order)
+                {t("orderLabel")}
               </Label>
               <Input
                 id="cat-order"
@@ -120,7 +165,7 @@ export function CategoryForm({ initialData, isEditMode = false }: CategoryFormPr
 
           <div className="space-y-2">
             <Label htmlFor="cat-desc" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Descripción (description)
+              {t("descLabel")}
             </Label>
             <Textarea
               id="cat-desc"
@@ -135,10 +180,10 @@ export function CategoryForm({ initialData, isEditMode = false }: CategoryFormPr
           <div className="pt-3 border-t border-border/40 flex items-center justify-between">
             <div className="space-y-0.5">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Estado Activo (active)
+                {t("statusLabel")}
               </Label>
               <p className="text-[11px] text-muted-foreground">
-                Determina si la categoría está disponible y visible en el sistema.
+                {t("statusDesc")}
               </p>
             </div>
             <Switch

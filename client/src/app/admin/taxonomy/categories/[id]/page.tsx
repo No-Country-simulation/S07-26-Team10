@@ -1,15 +1,14 @@
 import { CategoryForm } from "@/features/admin/components/taxonomy/category-form";
-import type { CategoryItem } from "@/features/admin/schemas/taxonomy-schema";
+import { getCategoryByIdAction } from "@/features/admin/actions/taxonomy-actions";
+import { notFound } from "next/navigation";
 
-const MOCK_EDIT_CATEGORY: CategoryItem = {
-  id: "a1b2c3d4-e5f6-7890-abcd-111111111111",
-  name: "Facility Layer",
-  description: "Energía y cooling",
-  display_order: 1,
-  active: true,
-  concepts: [],
-};
+export default async function EditCategoryPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const category = await getCategoryByIdAction(id);
 
-export default function EditCategoryPage() {
-  return <CategoryForm isEditMode={true} initialData={MOCK_EDIT_CATEGORY} />;
+  if (!category) {
+    notFound();
+  }
+
+  return <CategoryForm isEditMode={true} initialData={category} />;
 }
