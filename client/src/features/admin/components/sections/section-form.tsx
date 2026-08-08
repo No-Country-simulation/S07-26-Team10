@@ -50,7 +50,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useVersion } from "@/context/version-context";
 import { getResourcesBySectionAction, deleteResourceAction } from "@/features/admin/actions/resources-actions";
-import { getReferencesBySectionAction } from "@/features/admin/actions/references-actions";
+import { getReferencesAction } from "@/features/admin/actions/references-actions";
 import type { ResourceItem } from "@/features/admin/schemas/resource-schema";
 import type { ReferenceItem } from "@/features/admin/schemas/reference-schema";
 
@@ -75,7 +75,7 @@ export function SectionForm({
     message: string;
   } | null>(null);
 
-  // Associated section resources and references state
+  // Associated section resources and report references state
   const [sectionResources, setSectionResources] = useState<ResourceItem[]>([]);
   const [sectionReferences, setSectionReferences] = useState<ReferenceItem[]>(
     [],
@@ -84,9 +84,12 @@ export function SectionForm({
   React.useEffect(() => {
     if (initialData?.id) {
       getResourcesBySectionAction(initialData.id).then(setSectionResources);
-      getReferencesBySectionAction(initialData.id).then(setSectionReferences);
     }
-  }, [initialData?.id]);
+    const repId = initialData?.report_id || activeReportId;
+    if (repId) {
+      getReferencesAction(repId).then(setSectionReferences);
+    }
+  }, [initialData?.id, initialData?.report_id, activeReportId]);
 
   const [resourceToDelete, setResourceToDelete] = useState<string | null>(null);
   const [isDeletingResource, setIsDeletingResource] = useState(false);
@@ -600,7 +603,7 @@ export function SectionForm({
                     </CardTitle>
                   </div>
                   <Link
-                    href={`/admin/references/new?sectionId=${initialData?.id || ""}`}
+                    href={`/admin/references/new?reportId=${initialData?.report_id || activeReportId || ""}`}
                   >
                     <Button
                       type="button"
