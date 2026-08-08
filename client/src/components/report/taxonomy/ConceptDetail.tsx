@@ -4,8 +4,6 @@ import { useTranslations } from "next-intl"
 import { ArrowRight, CheckCircle2, AlertTriangle, Lightbulb, ListTree } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { BreadcrumbNav } from "./BreadcrumbNav"
-import { FigureCard } from "./FigureCard"
-import { DownloadButton } from "./DownloadButton"
 import { PreviousNextNavigation } from "./PreviousNextNavigation"
 import { getAdjacentConcepts, getRelatedConcepts } from "@/data/taxonomy"
 import type { TaxonomyCategory, TaxonomyConcept } from "@/data/taxonomy"
@@ -123,22 +121,6 @@ export function ConceptDetail({
           </div>
         </section>
 
-        <section>
-          <FigureCard
-            title={`${concept.name} ${t("conceptualDiagram")}`}
-            type="diagram"
-            description={t("figureDiagramDesc")}
-          />
-        </section>
-
-        <section>
-          <FigureCard
-            title={`${concept.name} ${t("referenceArchitecture")}`}
-            type="image"
-            description={t("figureReferenceDesc")}
-          />
-        </section>
-
         {related.length > 0 && (
           <section id="section-related">
             <h2 className="flex items-center gap-2.5 text-lg font-semibold text-neutral-50 mb-4 pb-2 border-b border-neutral-800">
@@ -171,27 +153,6 @@ export function ConceptDetail({
             </div>
           </section>
         )}
-
-        <section id="section-downloads">
-          <h2 className="flex items-center gap-2.5 text-lg font-semibold text-neutral-50 mb-4 pb-2 border-b border-neutral-800">
-            <span className="size-1.5 rounded-full bg-neutral-500" />
-            {t("downloads")}
-          </h2>
-          <div className="space-y-2">
-            <DownloadButton
-              label={`${concept.name} — ${t("executiveSummaryPdf")}`}
-              description={t("pdfBriefDesc")}
-            />
-            <DownloadButton
-              label={`${concept.name} — ${t("technicalDeepDivePdf")}`}
-              description={t("pdfDeepDesc")}
-            />
-            <DownloadButton
-              label={`${t("fullReportPdf")}`}
-              description={t("pdfFullDesc")}
-            />
-          </div>
-        </section>
 
         <div className="pt-4 pb-8">
           <PreviousNextNavigation
