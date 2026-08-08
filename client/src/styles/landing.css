@@ -863,24 +863,30 @@
   margin-top: 16px;
   flex-wrap: wrap;
 }
-.phi .fdl a {
+.phi .fdl a,
+.phi .fdl button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 9px 16px;
   border-radius: 999px;
   border: 1px solid var(--phi-gline);
+  background: transparent;
+  font-family: inherit;
   font-size: 15px;
   font-weight: 500;
   color: var(--phi-green);
+  cursor: pointer;
   transition: 0.18s;
 }
-.phi .fdl a:hover {
+.phi .fdl a:hover,
+.phi .fdl button:hover {
   background: var(--phi-green);
   border-color: var(--phi-green);
   color: #fff;
 }
-.phi .fdl a svg {
+.phi .fdl a svg,
+.phi .fdl button svg {
   width: 14px;
   height: 14px;
   stroke: currentColor;
