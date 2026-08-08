@@ -10,10 +10,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, Save, PlusCircle } from "lucide-react";
+import { Save, PlusCircle } from "lucide-react";
 import type { ConceptItem } from "../../schemas/taxonomy-schema";
-import { getCategoryOptionsAction } from "../../actions/taxonomy-actions";
-import { getSectionOptionsAction } from "../../actions/sections-actions";
+import { getCategoryOptionsAction, createConceptAction } from "../../actions/taxonomy-actions";
+import { useVersion } from "@/context/version-context";
 
 interface ConceptFormProps {
   initialData?: ConceptItem;
@@ -23,50 +23,65 @@ interface ConceptFormProps {
 export function ConceptForm({ initialData, isEditMode = false }: ConceptFormProps) {
   const t = useTranslations("AdminPage.taxonomy.conceptForm");
   const router = useRouter();
+  const { activeReportId } = useVersion();
 
   const [name, setName] = useState(initialData?.name || "");
   const [description, setDescription] = useState(initialData?.description || "");
-  const [sectionId, setSectionId] = useState(initialData?.section_id || "");
   const [categoryId, setCategoryId] = useState(initialData?.category_id || "");
   const [displayOrder, setDisplayOrder] = useState(initialData?.display_order || 1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Dynamic options loaded from server actions
   const [categoryOptions, setCategoryOptions] = useState<{ id: string; name: string }[]>([]);
-  const [sectionOptions, setSectionOptions] = useState<{ id: string; title: string }[]>([]);
 
   useEffect(() => {
     async function loadOptions() {
       try {
-        const [cats, secs] = await Promise.all([
-          getCategoryOptionsAction(),
-          getSectionOptionsAction(),
-        ]);
+        const cats = await getCategoryOptionsAction(activeReportId || undefined);
         setCategoryOptions(cats);
-        setSectionOptions(secs);
 
-        // Set default selected values if not pre-populated
+        // Set default selected category if not pre-populated
         if (!initialData?.category_id && cats.length > 0) {
           setCategoryId(cats[0].id);
-        }
-        if (!initialData?.section_id && secs.length > 0) {
-          setSectionId(secs[0].id);
         }
       } catch (err) {
         console.error("Failed to load options for concept form", err);
       }
     }
     loadOptions();
-  }, [initialData]);
+  }, [initialData, activeReportId]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage(null);
 
-    setTimeout(() => {
+    try {
+      if (isEditMode) {
+        // Edit mode will be handled once PATCH concept is added
+        router.push("/admin/taxonomy");
+      } else {
+        const res = await createConceptAction({
+          category_id: categoryId,
+          name,
+          description,
+          display_order: displayOrder,
+        });
+
+        if (res.success) {
+          router.push("/admin/taxonomy");
+          router.refresh();
+        } else {
+          setErrorMessage(res.message || t("errorCreate"));
+        }
+      }
+    } catch (err) {
+      console.error("Error submitting concept form:", err);
+      setErrorMessage(t("errorGeneric"));
+    } finally {
       setIsSubmitting(false);
-      router.push("/admin/taxonomy");
-    }, 400);
+    }
   };
 
   return (
@@ -109,11 +124,17 @@ export function ConceptForm({ initialData, isEditMode = false }: ConceptFormProp
         </div>
       </div>
 
+      {errorMessage && (
+        <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium">
+          {errorMessage}
+        </div>
+      )}
+
       <Card className="border border-border/60 bg-card shadow-xs rounded-2xl p-6">
         <CardHeader className="p-0 mb-6 border-b border-border/40 pb-4">
           <div className="flex items-center gap-2.5">
             <PlusCircle className="size-5 text-amber-700 dark:text-amber-400" />
-            <CardTitle className="text-base font-semibold">Parámetros del Concepto Técnico (concepts)</CardTitle>
+            <CardTitle className="text-base font-semibold">{t("cardTitle")}</CardTitle>
           </div>
         </CardHeader>
 
@@ -121,7 +142,7 @@ export function ConceptForm({ initialData, isEditMode = false }: ConceptFormProp
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="con-name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Nombre del Concepto <span className="text-destructive">*</span>
+                {t("nameLabel")} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="con-name"
@@ -136,7 +157,7 @@ export function ConceptForm({ initialData, isEditMode = false }: ConceptFormProp
 
             <div className="space-y-2">
               <Label htmlFor="con-order" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Orden de Visualización
+                {t("orderLabel")}
               </Label>
               <Input
                 id="con-order"
@@ -149,58 +170,36 @@ export function ConceptForm({ initialData, isEditMode = false }: ConceptFormProp
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="con-cat" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Categoría <span className="text-destructive">*</span>
-              </Label>
-              <Select value={categoryId} onValueChange={(val) => { if (val) setCategoryId(val); }}>
-                <SelectTrigger id="con-cat" className="rounded-xl bg-background text-sm">
-                  <SelectValue placeholder="Seleccione una categoría...">
-                    {categoryOptions.find((c) => c.id === categoryId)?.name}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  {categoryOptions.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="con-sec" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Sección <span className="text-destructive">*</span>
-              </Label>
-              <Select value={sectionId} onValueChange={(val) => { if (val) setSectionId(val); }}>
-                <SelectTrigger id="con-sec" className="rounded-xl bg-background text-sm">
-                  <SelectValue placeholder="Seleccione una sección...">
-                    {sectionOptions.find((s) => s.id === sectionId)?.title}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  {sectionOptions.map((sec) => (
-                    <SelectItem key={sec.id} value={sec.id}>
-                      {sec.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="con-cat" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {t("categoryLabel")} <span className="text-destructive">*</span>
+            </Label>
+            <Select value={categoryId} onValueChange={(val) => { if (val) setCategoryId(val); }}>
+              <SelectTrigger id="con-cat" className="rounded-xl bg-background text-sm">
+                <SelectValue placeholder={t("categoryPlaceholder")}>
+                  {categoryOptions.find((c) => c.id === categoryId)?.name}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                {categoryOptions.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="con-desc" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Descripción
+              {t("descLabel")}
             </Label>
             <Textarea
               id="con-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              placeholder="Descripción o detalle técnico del concepto..."
+              placeholder={t("descPlaceholder")}
               className="rounded-xl bg-background text-xs leading-relaxed p-3 border-border/60"
             />
           </div>

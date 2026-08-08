@@ -3,33 +3,89 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Zap,
   Server,
   Network,
   PlusCircle,
   Pencil,
+  Trash2,
   GripVertical,
   Settings,
   Layers,
 } from "lucide-react";
-import { getCategoriesAction } from "../../actions/taxonomy-actions";
+import {
+  getCategoriesAction,
+  deleteCategoryAction,
+} from "../../actions/taxonomy-actions";
 import type { CategoryItem } from "../../schemas/taxonomy-schema";
+import { useVersion } from "@/context/version-context";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export function TaxonomyManagement() {
   const t = useTranslations("AdminPage.taxonomy");
+  const { activeReportId } = useVersion();
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [categoryToDelete, setCategoryToDelete] = useState<CategoryItem | null>(
+    null,
+  );
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const handleDeleteCategory = async () => {
+    if (!categoryToDelete?.id) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await deleteCategoryAction(categoryToDelete.id);
+      if (res.success) {
+        setCategories((prev) =>
+          prev.filter((c) => c.id !== categoryToDelete.id),
+        );
+        setCategoryToDelete(null);
+      } else {
+        setDeleteError(res.message || t("errorDelete"));
+      }
+    } catch (err) {
+      console.error("Failed to delete category:", err);
+      setDeleteError(t("errorDelete"));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   useEffect(() => {
     async function loadData() {
       try {
-        const data = await getCategoriesAction();
+        setLoading(true);
+        const data = await getCategoriesAction(activeReportId || undefined);
         setCategories(data);
       } catch (err) {
         console.error("Failed to load taxonomy categories", err);
@@ -38,7 +94,7 @@ export function TaxonomyManagement() {
       }
     }
     loadData();
-  }, []);
+  }, [activeReportId]);
 
   const getCategoryIcon = (catName: string) => {
     const lower = catName.toLowerCase();
@@ -46,10 +102,14 @@ export function TaxonomyManagement() {
       return <Zap className="size-4 text-emerald-700 dark:text-emerald-400" />;
     }
     if (lower.includes("it")) {
-      return <Server className="size-4 text-emerald-700 dark:text-emerald-400" />;
+      return (
+        <Server className="size-4 text-emerald-700 dark:text-emerald-400" />
+      );
     }
     if (lower.includes("workload")) {
-      return <Network className="size-4 text-emerald-700 dark:text-emerald-400" />;
+      return (
+        <Network className="size-4 text-emerald-700 dark:text-emerald-400" />
+      );
     }
     return <Layers className="size-4 text-emerald-700 dark:text-emerald-400" />;
   };
@@ -93,11 +153,21 @@ export function TaxonomyManagement() {
           <Table>
             <TableHeader className="bg-muted/40">
               <TableRow className="border-b border-border/50">
-                <TableHead className="font-bold text-xs text-foreground/80 py-3">{t("colCategory")}</TableHead>
-                <TableHead className="font-bold text-xs text-foreground/80 py-3">{t("colDescription")}</TableHead>
-                <TableHead className="font-bold text-xs text-foreground/80 py-3 text-center w-24">{t("colOrder")}</TableHead>
-                <TableHead className="font-bold text-xs text-foreground/80 py-3 text-center w-28">{t("colStatus")}</TableHead>
-                <TableHead className="font-bold text-xs text-foreground/80 py-3 text-right w-24">{t("colActions")}</TableHead>
+                <TableHead className="font-bold text-xs text-foreground/80 py-3">
+                  {t("colCategory")}
+                </TableHead>
+                <TableHead className="font-bold text-xs text-foreground/80 py-3">
+                  {t("colDescription")}
+                </TableHead>
+                <TableHead className="font-bold text-xs text-foreground/80 py-3 text-center w-24">
+                  {t("colOrder")}
+                </TableHead>
+                <TableHead className="font-bold text-xs text-foreground/80 py-3 text-center w-28">
+                  {t("colStatus")}
+                </TableHead>
+                <TableHead className="font-bold text-xs text-foreground/80 py-3 text-right w-24">
+                  {t("colActions")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -109,7 +179,10 @@ export function TaxonomyManagement() {
                 </TableRow>
               ) : (
                 categories.map((cat) => (
-                  <TableRow key={cat.id} className="border-b border-border/40 hover:bg-muted/20">
+                  <TableRow
+                    key={cat.id}
+                    className="border-b border-border/40 hover:bg-muted/20"
+                  >
                     <TableCell className="font-semibold text-sm text-foreground py-3">
                       <div className="flex items-center gap-2.5">
                         <span className="size-2 rounded-full bg-emerald-900 dark:bg-emerald-400" />
@@ -124,15 +197,34 @@ export function TaxonomyManagement() {
                     </TableCell>
                     <TableCell className="text-center py-3">
                       <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-[10px] tracking-wider uppercase px-2.5 py-0.5 rounded-full border-0">
-                        {cat.active ? "ACTIVO" : "INACTIVO"}
+                        {cat.active
+                          ? t("categoryForm.statusActive")
+                          : t("categoryForm.statusInactive")}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right py-3">
-                      <Link href={`/admin/taxonomy/categories/${cat.id}`}>
-                        <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-foreground">
-                          <Pencil className="size-3.5" />
+                      <div className="flex items-center justify-end gap-1">
+                        <Link href={`/admin/taxonomy/categories/${cat.id}`}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-8 text-muted-foreground hover:text-foreground"
+                          >
+                            <Pencil className="size-3.5" />
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setDeleteError(null);
+                            setCategoryToDelete(cat);
+                          }}
+                          className="size-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="size-3.5" />
                         </Button>
-                      </Link>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -161,7 +253,10 @@ export function TaxonomyManagement() {
           </div>
         ) : (
           categories.map((cat) => (
-            <Card key={`cat-card-${cat.id}`} className="border border-border/60 bg-card shadow-xs rounded-2xl p-6 relative overflow-hidden">
+            <Card
+              key={`cat-card-${cat.id}`}
+              className="border border-border/60 bg-card shadow-xs rounded-2xl p-6 relative overflow-hidden"
+            >
               {/* Subtle background icon decoration */}
               <div className="absolute right-4 top-4 opacity-5 pointer-events-none">
                 {getCategoryIcon(cat.name)}
@@ -174,7 +269,9 @@ export function TaxonomyManagement() {
                     {getCategoryIcon(cat.name)}
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-foreground">{cat.name}</h3>
+                    <h3 className="text-base font-bold text-foreground">
+                      {cat.name}
+                    </h3>
                     <p className="text-[11px] font-mono font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-500">
                       {t("conceptsCount", { count: cat.concepts.length })}
                     </p>
@@ -182,7 +279,11 @@ export function TaxonomyManagement() {
                 </div>
 
                 <Link href="/admin/taxonomy/concepts/new">
-                  <Button variant="outline" size="sm" className="rounded-xl border-amber-700/30 text-amber-800 dark:text-amber-400 hover:bg-amber-500/10 text-xs font-semibold tracking-wider gap-1.5 px-3 py-1.5 uppercase">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl border-amber-700/30 text-amber-800 dark:text-amber-400 hover:bg-amber-500/10 text-xs font-semibold tracking-wider gap-1.5 px-3 py-1.5 uppercase"
+                  >
                     <PlusCircle className="size-3.5" />
                     <span>{t("newConceptBtn")}</span>
                   </Button>
@@ -192,7 +293,9 @@ export function TaxonomyManagement() {
               {/* Concepts List or Empty State */}
               {cat.concepts.length === 0 ? (
                 <div className="border border-dashed border-border/70 rounded-xl p-8 text-center flex flex-col items-center justify-center gap-2 bg-muted/20">
-                  <div className="text-muted-foreground/40 font-mono text-lg font-bold">[ ]</div>
+                  <div className="text-muted-foreground/40 font-mono text-lg font-bold">
+                    [ ]
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     {t("emptyConceptsText")}
                   </p>
@@ -205,7 +308,8 @@ export function TaxonomyManagement() {
                       "sec-002-tax": "TAXONOMÍA",
                       "sec-003-meth": "METODOLOGÍA",
                     };
-                    const sectionName = sectionTitleMap[concept.section_id] || concept.section_id;
+                    const secId = concept.section_id || "";
+                    const sectionName = sectionTitleMap[secId] || secId;
 
                     return (
                       <div
@@ -213,18 +317,31 @@ export function TaxonomyManagement() {
                         className="flex items-center justify-between p-3.5 rounded-xl border border-border/50 bg-background/80 hover:border-border transition-all shadow-2xs"
                       >
                         <div>
-                          <h4 className="text-xs font-bold text-foreground">{concept.name}</h4>
+                          <h4 className="text-xs font-bold text-foreground">
+                            {concept.name}
+                          </h4>
                           <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mt-0.5">
-                            {t("sectionPrefix")} {sectionName} · {t("orderPrefix")} {concept.display_order}
+                            {sectionName
+                              ? `${t("sectionPrefix")} ${sectionName} · `
+                              : ""}
+                            {t("orderPrefix")} {concept.display_order}
                           </p>
                         </div>
 
                         <div className="flex items-center gap-1.5 text-muted-foreground">
-                          <Button variant="ghost" size="icon" className="size-7 text-muted-foreground/70 hover:text-foreground">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-7 text-muted-foreground/70 hover:text-foreground"
+                          >
                             <GripVertical className="size-3.5" />
                           </Button>
                           <Link href={`/admin/taxonomy/concepts/${concept.id}`}>
-                            <Button variant="ghost" size="icon" className="size-7 text-muted-foreground/70 hover:text-foreground">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 text-muted-foreground/70 hover:text-foreground"
+                            >
                               <Settings className="size-3.5" />
                             </Button>
                           </Link>
@@ -238,6 +355,56 @@ export function TaxonomyManagement() {
           ))
         )}
       </div>
+
+      {/* Delete Category Confirmation Modal */}
+      <AlertDialog
+        open={!!categoryToDelete}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCategoryToDelete(null);
+            setDeleteError(null);
+          }
+        }}
+      >
+        <AlertDialogContent className="max-w-md rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg font-bold">
+              {t("deleteCategoryTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-muted-foreground pt-1">
+              {t("deleteCategoryConfirm", {
+                name: categoryToDelete?.name || "",
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {deleteError && (
+            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium">
+              {deleteError}
+            </div>
+          )}
+
+          <AlertDialogFooter className="pt-2">
+            <AlertDialogCancel
+              onClick={() => {
+                setCategoryToDelete(null);
+                setDeleteError(null);
+              }}
+              disabled={isDeleting}
+              className="rounded-xl"
+            >
+              {t("categoryForm.cancel")}
+            </AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteCategory}
+              disabled={isDeleting}
+            >
+              {isDeleting ? t("deleting") : t("deleteCategoryBtn")}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
