@@ -30,14 +30,40 @@ export const getHomeIntro = cache(
           const data = await response.json();
           const fallback = FALLBACK_HOME_DATA[targetLang];
 
+          let introduction = data.introduction || data.content || fallback.introduction;
+          let methodology = data.methodology || fallback.methodology;
+
+          // If the report has no inline intro/methodology, pull from its sections.
+          if ((!data.introduction || !data.methodology) && data.id) {
+            try {
+              const sectionsRes = await fetch(
+                `${env.apiUrl}/sections/report/${data.id}`,
+                { headers: { "Content-Type": "application/json" } },
+              );
+              if (sectionsRes.ok) {
+                const sections: { slug: string; content?: string }[] =
+                  await sectionsRes.json();
+                const introSection = sections.find((s) =>
+                  s.slug.toLowerCase().includes("intro"),
+                );
+                const methSection = sections.find((s) =>
+                  s.slug.toLowerCase().includes("method"),
+                );
+                if (introSection?.content) introduction = introSection.content;
+                if (methSection?.content) methodology = methSection.content;
+              }
+            } catch {
+              // sections unreachable → keep fallback
+            }
+          }
+
           return {
             id: data.id || fallback.id,
             title: data.title || fallback.title,
             slug: data.slug || fallback.slug,
             description: data.summary || data.description || fallback.description,
-            introduction:
-              data.introduction || data.content || fallback.introduction,
-            methodology: data.methodology || fallback.methodology,
+            introduction,
+            methodology,
             citation_text:
               data.citation_text || data.citationText || fallback.citation_text,
             created_at:

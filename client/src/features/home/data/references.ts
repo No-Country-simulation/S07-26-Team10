@@ -6,7 +6,7 @@ export interface Reference {
   citationUrl: string;
 }
 
-export const referencesData: Reference[] = [
+const FALLBACK_REFERENCES: Reference[] = [
   {
     authors: "Physa Energy Analytics",
     title: "Stranded Capacity Report 2026: The Silent Bottleneck of AI Infrastructure",
@@ -44,6 +44,45 @@ export const referencesData: Reference[] = [
   },
 ];
 
-export function getReferences(lang: "es" | "en"): Reference[] {
-  return referencesData;
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
+const REPORT_SLUG = "stranded-capacity-ai-infrastructure";
+
+function mapApiReference(raw: {
+  authors?: string | null;
+  title?: string | null;
+  year?: number | null;
+  source?: string | null;
+  citation_url?: string | null;
+}): Reference {
+  return {
+    authors: raw.authors || "PhysaFlow",
+    title: raw.title || "Stranded Capacity Report",
+    year: raw.year || new Date().getFullYear(),
+    source: raw.source || "PhysaFlow Research",
+    citationUrl: raw.citation_url || `https://physaflow.com/report`,
+  };
+}
+
+export async function getReferences(
+  lang: "es" | "en",
+): Promise<Reference[]> {
+  try {
+    const reportRes = await fetch(`${API_BASE}/reports/${REPORT_SLUG}`, {
+      next: { revalidate: 3600 },
+    });
+    if (!reportRes.ok) return FALLBACK_REFERENCES;
+    const report = await reportRes.json();
+
+    const res = await fetch(`${API_BASE}/references/report/${report.id}`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return FALLBACK_REFERENCES;
+
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) return FALLBACK_REFERENCES;
+
+    return data.map(mapApiReference);
+  } catch {
+    return FALLBACK_REFERENCES;
+  }
 }
