@@ -1,0 +1,23 @@
+{
+  "badge": "CÓMO CITAR",
+  "title": "Cómo citar este reporte",
+  "lede": "Formato académico y periodístico para citar el reporte, sus figuras y sus capítulos.",
+  "reportSection": "Reporte completo",
+  "academicLabel": "Formato académico (APA 7)",
+  "journalisticLabel": "Formato periodístico",
+  "figureSection": "Figuras y visualizaciones",
+  "figureLede": "Las figuras y visualizaciones de este reporte son material abierto con atribución obligatoria.",
+  "attribution": "Atribución",
+  "attributionText": "Fuente: PhysaFlow Stranded Capacity Index",
+  "chapterSection": "Capítulos y conceptos",
+  "chapterLede": "Cada capítulo y concepto puede citarse de forma independiente, usando su URL y código de ítem.",
+  "copy": "Copiar",
+  "copied": "Copiado",
+  "exampleFigure": "Ejemplo — Figura 01: Embudo de capacidad",
+  "figureAcademic": "PhysaFlow. (2026). Figura 1 — Embudo de capacidad, de Stranded Capacity: The Silent Bottleneck of AI Infrastructure. PhysaFlow Research. https://physaflow.com/report/taxonomy#s03",
+  "figureJournalistic": "“Embudo de capacidad”, PhysaFlow, Stranded Capacity Index, 2026, https://physaflow.com/report/taxonomy#s03",
+  "note": "Nota",
+  "noteText": "Verifica autor, fecha y versión en la página de inicio del reporte antes de publicar la cita.",
+  "reportAcademic": "PhysaFlow. (2026). Capacidad Estancada: El Cuello de Botella Silencioso de la Infraestructura de IA. PhysaFlow Research. https://physaflow.com/report",
+  "reportJournalistic": "“Capacidad estancada: el cuello de botella silencioso de la infraestructura de IA”, PhysaFlow, 2026, https://physaflow.com/report"
+}

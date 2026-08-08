@@ -1,0 +1,23 @@
+{
+  "badge": "HOW TO CITE",
+  "title": "How to cite this report",
+  "lede": "Academic and journalistic formats for citing the report, its figures and its chapters.",
+  "reportSection": "Full report",
+  "academicLabel": "Academic format (APA 7)",
+  "journalisticLabel": "Journalistic format",
+  "figureSection": "Figures and visualizations",
+  "figureLede": "Figures and visualizations in this report are open material with mandatory attribution.",
+  "attribution": "Attribution",
+  "attributionText": "Source: PhysaFlow Stranded Capacity Index",
+  "chapterSection": "Chapters and concepts",
+  "chapterLede": "Each chapter and concept can be cited independently using its URL and item code.",
+  "copy": "Copy",
+  "copied": "Copied",
+  "exampleFigure": "Example — Figure 01: Capacity funnel",
+  "figureAcademic": "PhysaFlow. (2026). Figure 1 — Capacity funnel, from Stranded Capacity: The Silent Bottleneck of AI Infrastructure. PhysaFlow Research. https://physaflow.com/report/taxonomy#s03",
+  "figureJournalistic": "“Capacity funnel”, PhysaFlow, Stranded Capacity Index, 2026, https://physaflow.com/report/taxonomy#s03",
+  "note": "Note",
+  "noteText": "Verify the author, date and version on the report home page before publishing the citation.",
+  "reportAcademic": "PhysaFlow. (2026). Stranded Capacity: The Silent Bottleneck of AI Infrastructure. PhysaFlow Research. https://physaflow.com/report",
+  "reportJournalistic": "“Stranded Capacity: The Silent Bottleneck of AI Infrastructure”, PhysaFlow, 2026, https://physaflow.com/report"
+}

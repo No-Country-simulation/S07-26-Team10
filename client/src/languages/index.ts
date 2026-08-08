@@ -12,6 +12,8 @@ import adminEs from "./admin/es.json";
 import adminEn from "./admin/en.json";
 import reportEs from "./report/es.json";
 import reportEn from "./report/en.json";
+import howToCiteEs from "./howToCite/es.json";
+import howToCiteEn from "./howToCite/en.json";
 
 export const esMessages = {
   Common: commonEs,
@@ -21,6 +23,7 @@ export const esMessages = {
   LoginPage: authEs,
   AdminPage: adminEs,
   Report: reportEs,
+  HowToCite: howToCiteEs,
 };
 
 export const enMessages = {
@@ -31,6 +34,7 @@ export const enMessages = {
   LoginPage: authEn,
   AdminPage: adminEn,
   Report: reportEn,
+  HowToCite: howToCiteEn,
 };
 
 export const messagesMap = {

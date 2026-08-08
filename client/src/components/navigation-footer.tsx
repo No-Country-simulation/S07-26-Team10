@@ -43,7 +43,7 @@ export function NavigationFooter() {
         </div>
         <div>
           <h4>{t("publication")}</h4>
-          <a href="#">{t("howToCite")}</a>
+          <Link href="/report/how-to-cite">{t("howToCite")}</Link>
           <a href="#">{t("changelog")}</a>
           <a href="#">{t("licence")}</a>
         </div>
