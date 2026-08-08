@@ -1,29 +1,29 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import { useCallback, useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import type { TaxonomyConcept } from "@/data/taxonomy"
 
-interface TOCItem {
-  id: string
-  label: string
-}
+
 
 interface TableOfContentsProps {
   concept: TaxonomyConcept
 }
 
-const SECTIONS: TOCItem[] = [
-  { id: "definition", label: "Definition" },
-  { id: "characteristics", label: "Characteristics" },
-  { id: "impact", label: "Impact" },
-  { id: "causes", label: "Common Causes" },
-  { id: "example", label: "Example" },
-  { id: "related", label: "Related" },
-  { id: "downloads", label: "Downloads" },
+const SECTIONS: { id: string; labelKey: string }[] = [
+  { id: "definition", labelKey: "definition" },
+  { id: "characteristics", labelKey: "characteristics" },
+  { id: "impact", labelKey: "impactShort" },
+  { id: "causes", labelKey: "commonCauses" },
+  { id: "example", labelKey: "exampleShort" },
+  { id: "related", labelKey: "relatedShort" },
+  { id: "downloads", labelKey: "downloads" },
 ]
 
 export function TableOfContents({ concept }: TableOfContentsProps) {
+  const t = useTranslations("Report")
   const [activeId, setActiveId] = useState<string>("")
 
   const handleClick = useCallback((id: string) => {
@@ -57,7 +57,7 @@ export function TableOfContents({ concept }: TableOfContentsProps) {
     <div className="flex flex-col h-full">
       <div className="px-4 py-4 border-b border-neutral-800">
         <p className="text-xs font-semibold uppercase tracking-widest text-neutral-500">
-          On this page
+          {t("onThisPage")}
         </p>
       </div>
 
@@ -75,7 +75,7 @@ export function TableOfContents({ concept }: TableOfContentsProps) {
                     : "text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/30",
                 )}
               >
-                {section.label}
+                {t(section.labelKey)}
               </button>
             </li>
           ))}

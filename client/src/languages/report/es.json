@@ -23,5 +23,20 @@
   "fullReportPdf": "Taxonomía de Capacidad Estancada — Reporte Completo (PDF)",
   "conceptualDiagram": "— Diagrama Conceptual",
   "referenceArchitecture": "— Arquitectura de Referencia",
-  "download": "Descargar"
+  "download": "Descargar",
+  "onThisPage": "En esta página",
+  "impactShort": "Impacto",
+  "exampleShort": "Ejemplo",
+  "relatedShort": "Relacionados",
+  "reportName": "Reporte",
+  "taxonomyShort": "Taxonomía",
+  "conceptDiagram": "Diagrama conceptual",
+  "referenceImage": "Imagen de referencia",
+  "mobileDescription": "Explora las categorías y conceptos de la taxonomía de capacidad estancada",
+  "openTaxonomyMenu": "Abrir menú de taxonomía",
+  "figureDiagramDesc": "Diagrama de arquitectura de alto nivel que ilustra la interacción entre los componentes de infraestructura y los mecanismos de capacidad estancada.",
+  "figureReferenceDesc": "Patrón de despliegue de referencia que muestra configuraciones óptimas y subóptimas para mitigar este factor de capacidad estancada.",
+  "pdfBriefDesc": "Resumen de 2 páginas · 240 KB",
+  "pdfDeepDesc": "Análisis de 12 páginas con diagramas · 1.8 MB",
+  "pdfFullDesc": "Referencia integral · 4.2 MB"
 }

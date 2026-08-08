@@ -39,7 +39,7 @@ export function MobileNavigation({
             variant="ghost"
             size="icon"
             className="lg:hidden text-neutral-400 hover:text-neutral-200"
-            aria-label="Open taxonomy menu"
+            aria-label={t("openTaxonomyMenu")}
           />
         }
       >
@@ -49,7 +49,7 @@ export function MobileNavigation({
         <SheetHeader className="sr-only">
           <SheetTitle>{t("taxonomyTitle")}</SheetTitle>
           <SheetDescription>
-            Browse stranded capacity taxonomy categories and concepts
+            {t("mobileDescription")}
           </SheetDescription>
         </SheetHeader>
         <TaxonomyTree

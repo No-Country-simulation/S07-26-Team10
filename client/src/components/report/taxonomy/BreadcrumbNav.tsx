@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import type { TaxonomyCategory, TaxonomyConcept } from "@/data/taxonomy"
 
@@ -14,11 +15,12 @@ export function BreadcrumbNav({
   concept,
   className,
 }: BreadcrumbNavProps) {
+  const t = useTranslations("Report")
   return (
     <nav aria-label="Breadcrumb" className={cn("flex items-center gap-2 text-sm", className)}>
-      <span className="text-neutral-500">Report</span>
+      <span className="text-neutral-500">{t("reportName")}</span>
       <span className="text-neutral-700 select-none">/</span>
-      <span className="text-neutral-500">Taxonomy</span>
+      <span className="text-neutral-500">{t("taxonomyShort")}</span>
       <span className="text-neutral-700 select-none">/</span>
       <span className="text-neutral-400">{category.name}</span>
       <span className="text-neutral-700 select-none">/</span>

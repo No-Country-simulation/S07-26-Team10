@@ -23,5 +23,20 @@
   "fullReportPdf": "Stranded Capacity Taxonomy — Full Report (PDF)",
   "conceptualDiagram": "— Conceptual Diagram",
   "referenceArchitecture": "— Reference Architecture",
-  "download": "Download"
+  "download": "Download",
+  "onThisPage": "On this page",
+  "impactShort": "Impact",
+  "exampleShort": "Example",
+  "relatedShort": "Related",
+  "reportName": "Report",
+  "taxonomyShort": "Taxonomy",
+  "conceptDiagram": "Concept diagram",
+  "referenceImage": "Reference image",
+  "mobileDescription": "Browse stranded capacity taxonomy categories and concepts",
+  "openTaxonomyMenu": "Open taxonomy menu",
+  "figureDiagramDesc": "High-level architecture diagram illustrating the interconnection between infrastructure components and stranded capacity mechanisms.",
+  "figureReferenceDesc": "Reference deployment pattern showing optimal and suboptimal configurations for mitigating this stranded capacity factor.",
+  "pdfBriefDesc": "2-page brief · 240 KB",
+  "pdfDeepDesc": "12-page analysis with diagrams · 1.8 MB",
+  "pdfFullDesc": "Comprehensive reference · 4.2 MB"
 }

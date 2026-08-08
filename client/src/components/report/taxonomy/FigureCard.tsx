@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import { ImageIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -16,6 +18,7 @@ export function FigureCard({
   description,
   className,
 }: FigureCardProps) {
+  const t = useTranslations("Report")
   return (
     <div
       className={cn(
@@ -29,7 +32,7 @@ export function FigureCard({
         </div>
         <p className="text-sm font-medium text-neutral-300 mb-1">{title}</p>
         <p className="text-xs text-neutral-500">
-          {type === "diagram" ? "Concept diagram" : "Reference image"}
+          {type === "diagram" ? t("conceptDiagram") : t("referenceImage")}
         </p>
         {description && (
           <p className="text-xs text-neutral-600 mt-3 text-center max-w-xs leading-relaxed">

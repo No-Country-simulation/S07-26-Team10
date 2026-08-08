@@ -127,7 +127,7 @@ export function ConceptDetail({
           <FigureCard
             title={`${concept.name} ${t("conceptualDiagram")}`}
             type="diagram"
-            description="High-level architecture diagram illustrating the interaction between infrastructure components and stranded capacity mechanisms."
+            description={t("figureDiagramDesc")}
           />
         </section>
 
@@ -135,7 +135,7 @@ export function ConceptDetail({
           <FigureCard
             title={`${concept.name} ${t("referenceArchitecture")}`}
             type="image"
-            description="Reference deployment pattern showing optimal and suboptimal configurations for mitigating this stranded capacity factor."
+            description={t("figureReferenceDesc")}
           />
         </section>
 
@@ -180,15 +180,15 @@ export function ConceptDetail({
           <div className="space-y-2">
             <DownloadButton
               label={`${concept.name} — ${t("executiveSummaryPdf")}`}
-              description="2-page brief · 240 KB"
+              description={t("pdfBriefDesc")}
             />
             <DownloadButton
               label={`${concept.name} — ${t("technicalDeepDivePdf")}`}
-              description="12-page analysis with diagrams · 1.8 MB"
+              description={t("pdfDeepDesc")}
             />
             <DownloadButton
               label={`${t("fullReportPdf")}`}
-              description="Comprehensive reference · 4.2 MB"
+              description={t("pdfFullDesc")}
             />
           </div>
         </section>
