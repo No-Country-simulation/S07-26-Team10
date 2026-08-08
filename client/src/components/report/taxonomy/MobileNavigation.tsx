@@ -13,7 +13,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet"
 import { TaxonomyTree } from "./TaxonomyTree"
-import type { TaxonomyCategory, TaxonomyConcept } from "@/data/taxonomy"
+import type { TaxonomyCategory } from "@/data/taxonomy"
 
 interface MobileNavigationProps {
   categories: TaxonomyCategory[]

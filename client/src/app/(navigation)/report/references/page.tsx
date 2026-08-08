@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ReferencesPage() {
-  const references = await getReferences("es");
+  const references = await getReferences();
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-8 sm:py-16 space-y-12 font-sans">

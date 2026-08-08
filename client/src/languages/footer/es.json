@@ -24,5 +24,6 @@
   "publisher": "Editor",
   "pending": "Pendiente",
   "copyright": "© {year} PhysaFlow. Todos los derechos reservados.",
-  "noPartnership": "No implica alianza"
+  "noPartnership": "No implica alianza",
+  "about": "Acerca de PhysaFlow"
 }

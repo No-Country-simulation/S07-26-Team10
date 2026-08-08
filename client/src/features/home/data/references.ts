@@ -63,9 +63,7 @@ function mapApiReference(raw: {
   };
 }
 
-export async function getReferences(
-  lang: "es" | "en",
-): Promise<Reference[]> {
+export async function getReferences(): Promise<Reference[]> {
   try {
     const reportRes = await fetch(`${API_BASE}/reports/${REPORT_SLUG}`, {
       next: { revalidate: 3600 },

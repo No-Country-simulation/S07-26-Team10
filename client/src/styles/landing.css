@@ -1174,6 +1174,15 @@
 .phi .fg a:hover {
   color: var(--phi-dark);
 }
+.phi .fg .pending {
+  display: block;
+  font-size: 16px;
+  color: var(--phi-grey);
+  line-height: 2;
+  list-style: none;
+  opacity: 0.55;
+  cursor: default;
+}
 .phi .fb .lock {
   display: inline-flex;
   align-items: center;

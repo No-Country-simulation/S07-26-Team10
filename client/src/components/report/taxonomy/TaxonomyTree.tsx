@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl"
 import { useCallback, useRef, useEffect } from "react"
 import { ChevronRight, Folder, FileText, LayoutGrid } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { TaxonomyCategory, TaxonomyConcept } from "@/data/taxonomy"
+import type { TaxonomyCategory } from "@/data/taxonomy"
 
 interface TaxonomyTreeProps {
   categories: TaxonomyCategory[]

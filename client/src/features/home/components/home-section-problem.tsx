@@ -29,7 +29,7 @@ export function HomeSectionProblem() {
           <div />
           <div style={{ maxWidth: 720 }}>
             <p>{t("problemBody")}</p>
-            <a className="b line" style={{ marginTop: 26 }} href="#">
+            <a className="b line" style={{ marginTop: 26 }} href="/report">
               {t("readTheDefinition")} <ArrowIcon />
             </a>
           </div>
