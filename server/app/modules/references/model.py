@@ -9,6 +9,8 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
+from app.modules.report_versions.model import ReportVersion
+
 
 from app.core.database import Base
 
@@ -22,9 +24,9 @@ class Reference(Base):
         default=uuid.uuid4,
     )
 
-    report_id: Mapped[uuid.UUID] = mapped_column(
+    report_version_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("reports.id"),
+        ForeignKey("report_versions.id"),
         nullable=False,
     )
 
@@ -60,10 +62,18 @@ class Reference(Base):
 
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True),
+        nullable=False,
         server_default=func.now(),
     )
 
-    report: Mapped["Report"] = relationship(
-        "Report",
+    updated_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    report_version: Mapped["ReportVersion"] = relationship(
+        "ReportVersion",
         back_populates="references",
     )

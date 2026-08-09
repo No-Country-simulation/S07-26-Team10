@@ -11,6 +11,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
+from app.modules.sections.model import Section
 
 from app.core.database import Base
 from app.shared.enums.resource_type import ResourceType
