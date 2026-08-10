@@ -18,44 +18,38 @@ class UploadService:
     ) -> None:
         self.cloudinary_service = cloudinary_service
 
-
     async def upload(
         self,
         file: UploadFile,
         resource_type: UploadResourceType,
     ) -> UploadResponse:
-
+        """
+        Sube un archivo a Cloudinary.
+        """
         contents = await file.read()
 
         if resource_type == UploadResourceType.IMAGE:
-
-            result = self.cloudinary_service.upload_image(
-                contents
-            )
-
+            result = self.cloudinary_service.upload_image(contents)
         else:
-
-            result = self.cloudinary_service.upload_file(
-                contents
-            )
-
+            result = self.cloudinary_service.upload_file(contents)
 
         return UploadResponse(
             url=result["url"],
             public_id=result["public_id"],
-            resource_type=result["resource_type"],
+            resource_type=UploadResourceType(result["resource_type"]),
             width=result.get("width"),
             height=result.get("height"),
         )
 
-
     def delete(
         self,
         public_id: str,
-        resource_type: str,
+        resource_type: UploadResourceType,
     ) -> dict:
-
+        """
+        Elimina un archivo de Cloudinary.
+        """
         return self.cloudinary_service.delete(
             public_id=public_id,
-            resource_type=resource_type,
+            resource_type=resource_type.value,
         )

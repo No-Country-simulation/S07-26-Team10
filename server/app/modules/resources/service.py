@@ -1,6 +1,7 @@
 import uuid
-import logging
-from app.exceptions import NotFoundException
+from typing import Optional
+
+from app.exceptions import ConflictException, NotFoundException
 from app.modules.resources.model import Resource
 from app.modules.resources.repository import ResourceRepository
 from app.modules.resources.schema import (
@@ -10,37 +11,31 @@ from app.modules.resources.schema import (
     ResourceUpdate,
 )
 from app.modules.sections.repository import SectionRepository
-from app.modules.uploads.service import UploadService
-from app.shared.enums.resource_type import ResourceType
+from app.modules.uploads.schema import UploadResponse
 
-logger = logging.getLogger(__name__)
+
 class ResourceService:
     """
     Servicio de lógica de negocio para resources.
-
-    Administra metadata del recurso y delega la eliminación
-    de archivos en Cloudinary a UploadService.
+    SOLO maneja operaciones relacionadas con Resource en BD.
+    NO maneja Cloudinary - eso es responsabilidad de UploadService.
     """
 
     def __init__(
         self,
         repository: ResourceRepository,
         section_repository: SectionRepository,
-        upload_service: UploadService,
     ) -> None:
         self.repository = repository
         self.section_repository = section_repository
-        self.upload_service = upload_service
-
 
     def get_resource(
         self,
         resource_id: uuid.UUID,
     ) -> ResourceRead:
         """
-        Obtiene un resource por su ID.
+        Obtiene un resource por su ID (admin).
         """
-
         resource = self.repository.get_by_id(resource_id)
 
         if not resource:
@@ -50,46 +45,37 @@ class ResourceService:
 
         return ResourceRead.model_validate(resource)
 
+    def get_public_resource(
+        self,
+        resource_id: uuid.UUID,
+    ) -> ResourcePublicRead:
+        """
+        Obtiene un resource por su ID (acceso público).
+        """
+        resource = self.repository.get_by_id(resource_id)
 
-    def get_public_resources(
+        if not resource:
+            raise NotFoundException(
+                message="Recurso no encontrado.",
+            )
+
+        return ResourcePublicRead.model_validate(resource)
+
+    def get_resources_by_section(
         self,
         section_id: uuid.UUID,
     ) -> list[ResourcePublicRead]:
         """
-        Obtiene los resources de una sección.
+        Obtiene todos los resources de una sección (acceso público).
         """
-
         self._validate_section_exists(section_id)
 
-        resources = self.repository.get_all_by_section(
-            section_id,
-        )
+        resources = self.repository.get_by_section_id(section_id)
 
         return [
             ResourcePublicRead.model_validate(resource)
             for resource in resources
         ]
-
-
-    def get_downloadable_resource(
-        self,
-        resource_id: uuid.UUID,
-    ) -> ResourcePublicRead:
-        """
-        Obtiene un resource descargable por ID.
-        """
-
-        resource = self.repository.get_downloadable_by_id(
-            resource_id,
-        )
-
-        if not resource:
-            raise NotFoundException(
-                message="Recurso no encontrado o no disponible para descarga.",
-            )
-
-        return ResourcePublicRead.model_validate(resource)
-
 
     def get_all_resources(
         self,
@@ -98,39 +84,59 @@ class ResourceService:
         """
         Obtiene todos los resources de una sección (admin).
         """
-
         self._validate_section_exists(section_id)
 
-        resources = self.repository.get_all_by_section(
-            section_id,
-        )
+        resources = self.repository.get_by_section_id(section_id)
 
         return [
             ResourceRead.model_validate(resource)
             for resource in resources
         ]
 
+    def get_downloadable_resource(
+        self,
+        resource_id: uuid.UUID,
+    ) -> ResourcePublicRead:
+        """
+        Obtiene un resource solo si es descargable (acceso público).
+        """
+        resource = self.repository.get_downloadable_by_id(resource_id)
+
+        if not resource:
+            raise NotFoundException(
+                message="Recurso descargable no encontrado.",
+            )
+
+        return ResourcePublicRead.model_validate(resource)
 
     def create_resource(
         self,
+        section_id: uuid.UUID,
         data: ResourceCreate,
+        upload_data: UploadResponse,
     ) -> ResourceRead:
         """
         Crea un nuevo resource.
 
         Reglas:
         - La sección debe existir.
+        - file_url y cloudinary_public_id vienen del servicio de uploads.
         """
+        self._validate_section_exists(section_id)
 
-        self._validate_section_exists(data.section_id)
+        # Verificar que el public_id no exista ya en la BD
+        if self.repository.exists_by_public_id(upload_data.public_id):
+            raise ConflictException(
+                message=f"El archivo con public_id '{upload_data.public_id}' ya está registrado.",
+            )
 
         resource = Resource(
-            section_id=data.section_id,
+            section_id=section_id,
             type=data.type,
             title=data.title,
             description=data.description,
-            file_url=data.file_url,
-            cloudinary_public_id=data.cloudinary_public_id,
+            file_url=upload_data.url,
+            cloudinary_public_id=upload_data.public_id,
             alt_text=data.alt_text,
             downloadable=data.downloadable,
         )
@@ -138,7 +144,6 @@ class ResourceService:
         created_resource = self.repository.create(resource)
 
         return ResourceRead.model_validate(created_resource)
-
 
     def update_resource(
         self,
@@ -150,9 +155,8 @@ class ResourceService:
 
         Reglas:
         - El resource debe existir.
-        - Si cloudinary_public_id cambia, se elimina el archivo anterior.
+        - No se puede actualizar file_url ni cloudinary_public_id desde aquí.
         """
-
         resource = self.repository.get_by_id(resource_id)
 
         if not resource:
@@ -164,16 +168,6 @@ class ResourceService:
             exclude_unset=True,
         )
 
-        if (
-            "cloudinary_public_id" in update_data
-            and update_data["cloudinary_public_id"] != resource.cloudinary_public_id
-            and resource.cloudinary_public_id is not None
-        ):
-            self._try_delete_from_cloudinary(
-                resource.cloudinary_public_id,
-                resource.type,
-            )
-
         for field, value in update_data.items():
             setattr(resource, field, value)
 
@@ -181,18 +175,14 @@ class ResourceService:
 
         return ResourceRead.model_validate(updated_resource)
 
-
     def delete_resource(
         self,
         resource_id: uuid.UUID,
-    ) -> None:
+    ) -> ResourceRead:
         """
-        Elimina un resource de la base de datos.
-
-        Si existe cloudinary_public_id, intenta eliminar el archivo
-        de Cloudinary antes de borrar el registro.
+        Elimina un resource de la BD.
+        NOTA: El archivo en Cloudinary debe eliminarse por separado desde UploadService.
         """
-
         resource = self.repository.get_by_id(resource_id)
 
         if not resource:
@@ -200,14 +190,12 @@ class ResourceService:
                 message="Recurso no encontrado.",
             )
 
-        if resource.cloudinary_public_id:
-            self._try_delete_from_cloudinary(
-                resource.cloudinary_public_id,
-                resource.type,
-            )
+        # Guardar datos antes de eliminar para devolverlos
+        resource_data = ResourceRead.model_validate(resource)
 
         self.repository.delete(resource)
 
+        return resource_data
 
     def _validate_section_exists(
         self,
@@ -216,55 +204,9 @@ class ResourceService:
         """
         Verifica que la sección exista.
         """
-
         section = self.section_repository.get_by_id(section_id)
 
         if not section:
             raise NotFoundException(
                 message="Sección no encontrada.",
             )
-
-
-    def _try_delete_from_cloudinary(
-        self,
-        public_id: str,
-        resource_type: ResourceType,
-    ) -> None:
-        """
-        Intenta eliminar un archivo de Cloudinary.
-
-        Si la eliminación falla, no impide la operación en curso.
-        """
-
-        cloudinary_resource_type = self._get_cloudinary_resource_type(
-            resource_type,
-        )
-
-        try:
-            self.upload_service.delete(
-                public_id=public_id,
-                resource_type=cloudinary_resource_type,
-            )
-        except Exception:
-            logger.exception(
-                "Error deleting Cloudinary resource '%s'.",
-                public_id,
-            )
-
-
-    @staticmethod
-    def _get_cloudinary_resource_type(
-        resource_type: ResourceType,
-    ) -> str:
-        """
-        Traduce el ResourceType del dominio al resource_type
-        esperado por Cloudinary.
-
-        - IMAGE, GRAPH, DIAGRAM → "image"
-        - FILE → "raw"
-        """
-
-        if resource_type == ResourceType.FILE:
-            return "raw"
-
-        return "image"

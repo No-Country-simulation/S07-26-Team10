@@ -1,7 +1,7 @@
 import uuid
+from typing import Optional
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, Query
 
 from app.core.constants import (
     HTTP_200_OK,
@@ -17,13 +17,13 @@ from app.modules.categories.schema import (
     CategoryUpdate,
 )
 from app.modules.categories.service import CategoryService
-from app.modules.reports.repository import ReportRepository
+from app.modules.report_versions.repository import ReportVersionRepository
 from app.modules.users.model import User
-
+from app.shared.enums.publication_status import PublicationStatus
+from sqlalchemy.orm import Session
 
 router = APIRouter(
-    prefix="/categories",
-    tags=["categories"],
+    prefix="/report-versions/{report_version_id}/categories", tags=["Categories"]
 )
 
 
@@ -31,111 +31,121 @@ def get_category_service(
     db: Session = Depends(get_db),
 ) -> CategoryService:
     """
-    Factory para inyectar CategoryService.
+    Dependencia para obtener el servicio de categorías.
     """
-
     repository = CategoryRepository(db)
-    report_repository = ReportRepository(db)
+    report_version_repository = ReportVersionRepository(db)
+    return CategoryService(repository, report_version_repository)
 
-    return CategoryService(repository, report_repository)
 
-
-# ==========================
-# Endpoints públicos
-# ==========================
+# ==================== ENDPOINTS PÚBLICOS (sin autenticación) ====================
 
 
 @router.get(
-    "/report/{report_id}",
+    "",
     response_model=list[CategoryPublicRead],
     status_code=HTTP_200_OK,
     summary="Listar categorías publicadas",
-    description="Obtiene las categorías publicadas de un reporte, ordenadas por display_order.",
-    responses={
-        404: {
-            "description": "Reporte no encontrado",
-        },
-    },
+    description="Obtiene las categorías publicadas de una versión de reporte. (Acceso público)",
 )
-def get_public_categories(
-    report_id: uuid.UUID,
+def get_published_categories(
+    report_version_id: uuid.UUID,
     service: CategoryService = Depends(get_category_service),
-) -> list[CategoryPublicRead]:
-    return service.get_public_categories(report_id)
-
-
-# ==========================
-# Endpoints administrativos
-# ==========================
-
-
-@router.get(
-    "/report/{report_id}/admin",
-    response_model=list[CategoryRead],
-    status_code=HTTP_200_OK,
-    summary="Listar todas las categorías (admin)",
-    description="Obtiene todas las categorías de un reporte, incluyendo no publicadas.",
-    responses={
-        401: {
-            "description": "Token inválido o expirado",
-        },
-        404: {
-            "description": "Reporte no encontrado",
-        },
-    },
-)
-def get_all_categories(
-    report_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
-    service: CategoryService = Depends(get_category_service),
-) -> list[CategoryRead]:
-    return service.get_all_categories(report_id)
+):
+    """
+    Obtiene las categorías publicadas de una versión de reporte.
+    Acceso público - No requiere autenticación.
+    """
+    return service.get_published_categories(report_version_id)
 
 
 @router.get(
     "/{category_id}",
+    response_model=CategoryPublicRead,
+    status_code=HTTP_200_OK,
+    summary="Obtener categoría por ID (público)",
+    description="Obtiene una categoría específica por su ID. (Acceso público)",
+)
+def get_public_category(
+    report_version_id: uuid.UUID,
+    category_id: uuid.UUID,
+    service: CategoryService = Depends(get_category_service),
+):
+    """
+    Obtiene una categoría específica por su ID.
+    Acceso público - No requiere autenticación.
+    """
+    return service.get_category(category_id)
+
+
+# ==================== ENDPOINTS PRIVADOS (requieren autenticación) ====================
+
+
+@router.get(
+    "/admin",
+    response_model=list[CategoryRead],
+    status_code=HTTP_200_OK,
+    summary="Listar todas las categorías (admin)",
+    description="Obtiene todas las categorías de una versión de reporte, incluyendo no publicadas. (Requiere autenticación)",
+)
+def get_all_categories(
+    report_version_id: uuid.UUID,
+    status: Optional[PublicationStatus] = Query(
+        default=None,
+        description="Filtrar por estado de publicación",
+    ),
+    service: CategoryService = Depends(get_category_service),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Obtiene todas las categorías de una versión de reporte.
+    Requiere autenticación.
+    """
+    return service.get_categories_by_report_version(report_version_id, status)
+
+
+@router.get(
+    "/admin/{category_id}",
     response_model=CategoryRead,
     status_code=HTTP_200_OK,
-    summary="Obtener categoría por ID",
-    description="Obtiene una categoría por su identificador.",
-    responses={
-        401: {
-            "description": "Token inválido o expirado",
-        },
-        404: {
-            "description": "Categoría no encontrada",
-        },
-    },
+    summary="Obtener categoría por ID (admin)",
+    description="Obtiene una categoría específica por su ID con todos los detalles. (Requiere autenticación)",
 )
 def get_category(
     category_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
     service: CategoryService = Depends(get_category_service),
-) -> CategoryRead:
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Obtiene una categoría específica por su ID con todos los detalles.
+    Requiere autenticación.
+    """
     return service.get_category(category_id)
 
 
 @router.post(
-    "/",
+    "",
     response_model=CategoryRead,
     status_code=HTTP_201_CREATED,
     summary="Crear categoría",
-    description="Crea una nueva categoría asociada a un reporte.",
-    responses={
-        401: {
-            "description": "Token inválido o expirado",
-        },
-        404: {
-            "description": "Reporte no encontrado",
-        },
-    },
+    description="Crea una nueva categoría para una versión de reporte. (Requiere autenticación)",
 )
 def create_category(
+    report_version_id: uuid.UUID,
     data: CategoryCreate,
-    current_user: User = Depends(get_current_user),
     service: CategoryService = Depends(get_category_service),
-) -> CategoryRead:
-    return service.create_category(data)
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Crea una nueva categoría.
+
+    Reglas:
+    - La versión de reporte debe existir.
+    - El nombre debe ser único dentro de la versión.
+    - El status por defecto es DRAFT.
+    - Requiere autenticación.
+    """
+    return service.create_category(report_version_id, data)
 
 
 @router.patch(
@@ -143,22 +153,24 @@ def create_category(
     response_model=CategoryRead,
     status_code=HTTP_200_OK,
     summary="Actualizar categoría",
-    description="Actualiza parcialmente una categoría existente.",
-    responses={
-        401: {
-            "description": "Token inválido o expirado",
-        },
-        404: {
-            "description": "Categoría no encontrada",
-        },
-    },
+    description="Actualiza parcialmente una categoría. (Requiere autenticación)",
 )
 def update_category(
     category_id: uuid.UUID,
     data: CategoryUpdate,
-    current_user: User = Depends(get_current_user),
     service: CategoryService = Depends(get_category_service),
-) -> CategoryRead:
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Actualiza parcialmente una categoría.
+
+    Campos actualizables:
+    - name
+    - description
+    - display_order
+    - status
+    - Requiere autenticación.
+    """
     return service.update_category(category_id, data)
 
 
@@ -166,19 +178,18 @@ def update_category(
     "/{category_id}",
     status_code=HTTP_204_NO_CONTENT,
     summary="Eliminar categoría",
-    description="Elimina una categoría y sus conceptos asociados.",
-    responses={
-        401: {
-            "description": "Token inválido o expirado",
-        },
-        404: {
-            "description": "Categoría no encontrada",
-        },
-    },
+    description="Elimina una categoría y TODOS sus conceptos en cascada. (Requiere autenticación)",
 )
 def delete_category(
     category_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
     service: CategoryService = Depends(get_category_service),
-) -> None:
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Elimina una categoría.
+
+    Reglas:
+    - Elimina la categoría y TODOS sus conceptos en cascada.
+    - Requiere autenticación.
+    """
     service.delete_category(category_id)

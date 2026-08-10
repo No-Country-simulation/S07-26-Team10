@@ -1,16 +1,14 @@
 import uuid
+from typing import Optional
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, Query
 
 from app.core.constants import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
 )
-from app.core.dependencies import get_current_user, get_db
-from app.modules.reports.repository import ReportRepository
-from app.modules.sections.repository import SectionRepository
+from app.core.dependencies import get_current_user, get_section_service
 from app.modules.sections.schema import (
     SectionCreate,
     SectionNavigationRead,
@@ -20,145 +18,163 @@ from app.modules.sections.schema import (
 )
 from app.modules.sections.service import SectionService
 from app.modules.users.model import User
-
+from app.shared.enums.publication_status import PublicationStatus
 
 router = APIRouter(
-    prefix="/sections",
-    tags=["sections"],
+    prefix="/report-versions/{report_version_id}/sections",
+    tags=["Sections"],
 )
 
 
-def get_section_service(
-    db: Session = Depends(get_db),
-) -> SectionService:
-    """
-    Factory para inyectar SectionService.
-    """
-
-    repository = SectionRepository(db)
-    report_repository = ReportRepository(db)
-
-    return SectionService(repository, report_repository)
-
-
-# ==========================
-# Endpoints públicos
-# ==========================
+# ==================== ENDPOINTS PÚBLICOS (sin autenticación) ====================
 
 
 @router.get(
-    "/report/{report_id}",
+    "",
     response_model=list[SectionPublicRead],
     status_code=HTTP_200_OK,
-    summary="Listar secciones publicadas",
-    description="Obtiene las secciones publicadas de un reporte, ordenadas por display_order.",
-    responses={
-        404: {
-            "description": "Reporte no encontrado",
-        },
-    },
+    summary="Listar secciones públicas",
+    description="Obtiene las secciones publicadas de una versión de reporte. (Acceso público)",
 )
 def get_public_sections(
-    report_id: uuid.UUID,
+    report_version_id: uuid.UUID,
     service: SectionService = Depends(get_section_service),
-) -> list[SectionPublicRead]:
-    return service.get_public_sections(report_id)
+):
+    """
+    Obtiene las secciones publicadas de una versión de reporte.
+    Acceso público - No requiere autenticación.
+    """
+    return service.get_public_sections(report_version_id)
 
 
 @router.get(
-    "/{slug}",
-    response_model=SectionNavigationRead,
+    "/{section_id}",
+    response_model=SectionPublicRead,
+    status_code=HTTP_200_OK,
+    summary="Obtener sección pública",
+    description="Obtiene una sección específica por su ID. (Acceso público)",
+)
+def get_public_section(
+    section_id: uuid.UUID,
+    service: SectionService = Depends(get_section_service),
+):
+    """
+    Obtiene una sección específica por su ID.
+    SOLO si está PUBLICADA.
+    Acceso público - No requiere autenticación.
+    """
+    return service.get_public_section(section_id)
+
+
+@router.get(
+    "/by-slug/{slug}",
+    response_model=SectionPublicRead,
     status_code=HTTP_200_OK,
     summary="Obtener sección por slug",
-    description="Obtiene una sección publicada por su slug con navegación anterior/siguiente.",
-    responses={
-        404: {
-            "description": "Sección no encontrada",
-        },
-    },
+    description="Obtiene una sección específica por su slug. (Acceso público)",
 )
 def get_section_by_slug(
+    report_version_id: uuid.UUID,
     slug: str,
     service: SectionService = Depends(get_section_service),
-) -> SectionNavigationRead:
-    return service.get_section_by_slug(slug)
-
-
-# ==========================
-# Endpoints administrativos
-# ==========================
+):
+    """
+    Obtiene una sección específica por su slug.
+    SOLO si está PUBLICADA.
+    Acceso público - No requiere autenticación.
+    """
+    return service.get_section_by_slug(report_version_id, slug)
 
 
 @router.get(
-    "/report/{report_id}/admin",
+    "/{section_id}/navigation",
+    response_model=SectionNavigationRead,
+    status_code=HTTP_200_OK,
+    summary="Obtener sección con navegación",
+    description="Obtiene una sección con navegación anterior/siguiente. (Acceso público)",
+)
+def get_section_with_navigation(
+    report_version_id: uuid.UUID,
+    section_id: uuid.UUID,
+    service: SectionService = Depends(get_section_service),
+):
+    """
+    Obtiene una sección con navegación anterior/siguiente.
+    SOLO si está PUBLICADA.
+    Acceso público - No requiere autenticación.
+    """
+    return service.get_section_with_navigation(report_version_id, section_id)
+
+
+# ==================== ENDPOINTS PRIVADOS (requieren autenticación) ====================
+
+
+@router.get(
+    "/admin",
     response_model=list[SectionRead],
     status_code=HTTP_200_OK,
     summary="Listar todas las secciones (admin)",
-    description="Obtiene todas las secciones de un reporte, incluyendo no publicadas.",
-    responses={
-        401: {
-            "description": "Token inválido o expirado",
-        },
-        404: {
-            "description": "Reporte no encontrado",
-        },
-    },
+    description="Obtiene todas las secciones de una versión de reporte. (Requiere autenticación)",
 )
 def get_all_sections(
-    report_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
+    report_version_id: uuid.UUID,
+    status: Optional[PublicationStatus] = Query(
+        default=None,
+        description="Filtrar por estado de publicación",
+    ),
     service: SectionService = Depends(get_section_service),
-) -> list[SectionRead]:
-    return service.get_all_sections(report_id)
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Obtiene todas las secciones de una versión de reporte (incluye borradores).
+    Requiere autenticación.
+    """
+    return service.get_all_sections(report_version_id, status)
 
 
 @router.get(
-    "/{section_id}/admin",
+    "/admin/{section_id}",
     response_model=SectionRead,
     status_code=HTTP_200_OK,
     summary="Obtener sección por ID (admin)",
-    description="Obtiene una sección por su identificador con información completa.",
-    responses={
-        401: {
-            "description": "Token inválido o expirado",
-        },
-        404: {
-            "description": "Sección no encontrada",
-        },
-    },
+    description="Obtiene una sección específica por su ID con todos los detalles. (Requiere autenticación)",
 )
-def get_section_admin(
+def get_section(
     section_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
     service: SectionService = Depends(get_section_service),
-) -> SectionRead:
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Obtiene una sección específica por su ID con todos los detalles.
+    Requiere autenticación.
+    """
     return service.get_section(section_id)
 
 
 @router.post(
-    "/",
+    "",
     response_model=SectionRead,
     status_code=HTTP_201_CREATED,
     summary="Crear sección",
-    description="Crea una nueva sección generando el slug automáticamente.",
-    responses={
-        401: {
-            "description": "Token inválido o expirado",
-        },
-        404: {
-            "description": "Reporte no encontrado",
-        },
-        409: {
-            "description": "Slug ya registrado",
-        },
-    },
+    description="Crea una nueva sección en una versión de reporte. (Requiere autenticación)",
 )
 def create_section(
+    report_version_id: uuid.UUID,
     data: SectionCreate,
-    current_user: User = Depends(get_current_user),
     service: SectionService = Depends(get_section_service),
-) -> SectionRead:
-    return service.create_section(data)
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Crea una nueva sección.
+
+    Reglas:
+    - La versión de reporte debe existir.
+    - El slug se genera automáticamente a partir del título.
+    - El slug debe ser único dentro de la versión.
+    - El status por defecto es DRAFT.
+    - Requiere autenticación.
+    """
+    return service.create_section(report_version_id, data)
 
 
 @router.patch(
@@ -166,25 +182,24 @@ def create_section(
     response_model=SectionRead,
     status_code=HTTP_200_OK,
     summary="Actualizar sección",
-    description="Actualiza parcialmente una sección existente.",
-    responses={
-        401: {
-            "description": "Token inválido o expirado",
-        },
-        404: {
-            "description": "Sección no encontrada",
-        },
-        409: {
-            "description": "Slug ya registrado",
-        },
-    },
+    description="Actualiza parcialmente una sección. (Requiere autenticación)",
 )
 def update_section(
     section_id: uuid.UUID,
     data: SectionUpdate,
-    current_user: User = Depends(get_current_user),
     service: SectionService = Depends(get_section_service),
-) -> SectionRead:
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Actualiza parcialmente una sección.
+
+    Campos actualizables:
+    - title
+    - content
+    - display_order
+    - status
+    - Requiere autenticación.
+    """
     return service.update_section(section_id, data)
 
 
@@ -192,19 +207,15 @@ def update_section(
     "/{section_id}",
     status_code=HTTP_204_NO_CONTENT,
     summary="Eliminar sección",
-    description="Elimina una sección y sus resources asociados.",
-    responses={
-        401: {
-            "description": "Token inválido o expirado",
-        },
-        404: {
-            "description": "Sección no encontrada",
-        },
-    },
+    description="Elimina una sección. (Requiere autenticación)",
 )
 def delete_section(
     section_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
     service: SectionService = Depends(get_section_service),
-) -> None:
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Elimina una sección.
+    Requiere autenticación.
+    """
     service.delete_section(section_id)

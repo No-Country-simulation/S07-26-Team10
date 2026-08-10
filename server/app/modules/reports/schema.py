@@ -1,53 +1,25 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
 
 class ReportCreate(BaseModel):
     """
     Schema de entrada para crear un reporte.
+    El slug se genera automáticamente, el usuario no ingresa nada.
     """
 
-    title: str = Field(
-        ...,
-        description="Título del reporte",
-        min_length=1,
-        max_length=255,
-    )
-
-    summary: str | None = Field(
-        default=None,
-        description="Resumen del reporte para la página de inicio",
-    )
-
-    citation_text: str | None = Field(
-        default=None,
-        description="Texto de citación del reporte",
-    )
+    pass  # No necesita campos, el slug es automático
 
 
 class ReportUpdate(BaseModel):
     """
-    Schema de entrada para actualizar un reporte parcialmente.
+    Schema de entrada para actualizar un reporte.
+    El slug NO se puede actualizar (es inmutable).
     """
 
-    title: str | None = Field(
-        default=None,
-        description="Título del reporte",
-        min_length=1,
-        max_length=255,
-    )
-
-    summary: str | None = Field(
-        default=None,
-        description="Resumen del reporte para la página de inicio",
-    )
-
-    citation_text: str | None = Field(
-        default=None,
-        description="Texto de citación del reporte",
-    )
+    pass  # No se puede actualizar nada en Report
 
 
 class ReportRead(BaseModel):
@@ -56,18 +28,9 @@ class ReportRead(BaseModel):
     """
 
     id: uuid.UUID
-
-    title: str
-
     slug: str
-
-    summary: str | None = None
-
-    citation_text: str | None = None
-
-    created_at: datetime | None = None
-
-    updated_at: datetime | None = None
+    created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -80,14 +43,7 @@ class ReportPublicRead(BaseModel):
     """
 
     id: uuid.UUID
-
-    title: str
-
     slug: str
-
-    summary: str | None = None
-
-    citation_text: str | None = None
 
     model_config = ConfigDict(
         from_attributes=True,

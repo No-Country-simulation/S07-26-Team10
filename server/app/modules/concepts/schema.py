@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -9,11 +10,6 @@ class ConceptCreate(BaseModel):
     Schema de entrada para crear un concepto.
     """
 
-    category_id: uuid.UUID = Field(
-        ...,
-        description="ID de la categoría a la que pertenece el concepto",
-    )
-
     name: str = Field(
         ...,
         description="Nombre del concepto",
@@ -21,12 +17,12 @@ class ConceptCreate(BaseModel):
         max_length=150,
     )
 
-    description: str | None = Field(
+    description: Optional[str] = Field(
         default=None,
         description="Descripción del concepto",
     )
 
-    display_order: int | None = Field(
+    display_order: Optional[int] = Field(
         default=None,
         description="Orden de presentación del concepto",
     )
@@ -37,19 +33,19 @@ class ConceptUpdate(BaseModel):
     Schema de entrada para actualizar un concepto parcialmente.
     """
 
-    name: str | None = Field(
+    name: Optional[str] = Field(
         default=None,
         description="Nombre del concepto",
         min_length=1,
         max_length=150,
     )
 
-    description: str | None = Field(
+    description: Optional[str] = Field(
         default=None,
         description="Descripción del concepto",
     )
 
-    display_order: int | None = Field(
+    display_order: Optional[int] = Field(
         default=None,
         description="Orden de presentación del concepto",
     )
@@ -61,18 +57,12 @@ class ConceptRead(BaseModel):
     """
 
     id: uuid.UUID
-
     category_id: uuid.UUID
-
     name: str
-
-    description: str | None = None
-
-    display_order: int | None = None
-
-    created_at: datetime | None = None
-
-    updated_at: datetime | None = None
+    description: Optional[str] = None
+    display_order: Optional[int] = None
+    created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -85,14 +75,10 @@ class ConceptPublicRead(BaseModel):
     """
 
     id: uuid.UUID
-
     category_id: uuid.UUID
-
     name: str
-
-    description: str | None = None
-
-    display_order: int | None = None
+    description: Optional[str] = None
+    display_order: Optional[int] = None
 
     model_config = ConfigDict(
         from_attributes=True,

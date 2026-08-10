@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -9,35 +10,32 @@ class ReferenceCreate(BaseModel):
     Schema de entrada para crear una referencia.
     """
 
-    report_id: uuid.UUID = Field(
-        ...,
-        description="ID del reporte al que pertenece la referencia",
-    )
-
-    authors: str | None = Field(
+    authors: Optional[str] = Field(
         default=None,
         description="Autores de la referencia",
         max_length=255,
     )
 
-    title: str | None = Field(
+    title: Optional[str] = Field(
         default=None,
         description="Título de la referencia",
         max_length=255,
     )
 
-    year: int | None = Field(
+    year: Optional[int] = Field(
         default=None,
         description="Año de publicación",
+        ge=1000,
+        le=9999,
     )
 
-    source: str | None = Field(
+    source: Optional[str] = Field(
         default=None,
         description="Fuente de la referencia",
         max_length=255,
     )
 
-    citation_url: str | None = Field(
+    citation_url: Optional[str] = Field(
         default=None,
         description="URL de citación",
         max_length=500,
@@ -49,89 +47,59 @@ class ReferenceUpdate(BaseModel):
     Schema de entrada para actualizar una referencia parcialmente.
     """
 
-    authors: str | None = Field(
+    authors: Optional[str] = Field(
         default=None,
         description="Autores de la referencia",
         max_length=255,
     )
 
-    title: str | None = Field(
+    title: Optional[str] = Field(
         default=None,
         description="Título de la referencia",
         max_length=255,
     )
 
-    year: int | None = Field(
+    year: Optional[int] = Field(
         default=None,
         description="Año de publicación",
+        ge=1000,
+        le=9999,
     )
 
-    source: str | None = Field(
+    source: Optional[str] = Field(
         default=None,
         description="Fuente de la referencia",
         max_length=255,
     )
 
-    citation_url: str | None = Field(
+    citation_url: Optional[str] = Field(
         default=None,
         description="URL de citación",
         max_length=500,
     )
 
-    display_order: int | None = Field(
+    display_order: Optional[int] = Field(
         default=None,
         description="Orden de presentación",
+        ge=0,
     )
 
 
 class ReferenceRead(BaseModel):
     """
-    Schema de salida completo para una referencia (contexto administrativo).
+    Schema de salida para una referencia (único, sin distinción público/admin).
     """
 
     id: uuid.UUID
-
-    report_id: uuid.UUID
-
-    authors: str | None = None
-
-    title: str | None = None
-
-    year: int | None = None
-
-    source: str | None = None
-
-    citation_url: str | None = None
-
-    display_order: int | None = None
-
-    created_at: datetime | None = None
-
-    model_config = ConfigDict(
-        from_attributes=True,
-    )
-
-
-class ReferencePublicRead(BaseModel):
-    """
-    Schema de salida público para una referencia (sin timestamps).
-    """
-
-    id: uuid.UUID
-
-    report_id: uuid.UUID
-
-    authors: str | None = None
-
-    title: str | None = None
-
-    year: int | None = None
-
-    source: str | None = None
-
-    citation_url: str | None = None
-
-    display_order: int | None = None
+    report_version_id: uuid.UUID
+    authors: Optional[str] = None
+    title: Optional[str] = None
+    year: Optional[int] = None
+    source: Optional[str] = None
+    citation_url: Optional[str] = None
+    display_order: Optional[int] = None
+    created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(
         from_attributes=True,

@@ -1,95 +1,46 @@
 import uuid
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, status
 
 from app.core.constants import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
 )
-from app.core.dependencies import get_current_user, get_db
-from app.modules.references.repository import ReferenceRepository
+from app.core.dependencies import get_current_user, get_reference_service
 from app.modules.references.schema import (
     ReferenceCreate,
-    ReferencePublicRead,
     ReferenceRead,
     ReferenceUpdate,
 )
 from app.modules.references.service import ReferenceService
-from app.modules.reports.repository import ReportRepository
 from app.modules.users.model import User
 
-
 router = APIRouter(
-    prefix="/references",
-    tags=["references"],
+    prefix="/report-versions/{report_version_id}/references",
+    tags=["References"],
 )
 
 
-def get_reference_service(
-    db: Session = Depends(get_db),
-) -> ReferenceService:
-    """
-    Factory para inyectar ReferenceService.
-    """
-
-    repository = ReferenceRepository(db)
-    report_repository = ReportRepository(db)
-
-    return ReferenceService(repository, report_repository)
-
-
-# ==========================
-# Endpoints públicos
-# ==========================
+# ==================== ENDPOINTS PÚBLICOS (sin autenticación) ====================
 
 
 @router.get(
-    "/report/{report_id}",
-    response_model=list[ReferencePublicRead],
-    status_code=HTTP_200_OK,
-    summary="Listar referencias de un reporte",
-    description="Obtiene las referencias de un reporte, ordenadas por display_order.",
-    responses={
-        404: {
-            "description": "Reporte no encontrado",
-        },
-    },
-)
-def get_public_references(
-    report_id: uuid.UUID,
-    service: ReferenceService = Depends(get_reference_service),
-) -> list[ReferencePublicRead]:
-    return service.get_public_references(report_id)
-
-
-# ==========================
-# Endpoints administrativos
-# ==========================
-
-
-@router.get(
-    "/report/{report_id}/admin",
+    "",
     response_model=list[ReferenceRead],
     status_code=HTTP_200_OK,
-    summary="Listar todas las referencias (admin)",
-    description="Obtiene todas las referencias de un reporte con información completa.",
-    responses={
-        401: {
-            "description": "Token inválido o expirado",
-        },
-        404: {
-            "description": "Reporte no encontrado",
-        },
-    },
+    summary="Listar referencias",
+    description="Obtiene todas las referencias de una versión de reporte. (Acceso público)",
 )
-def get_all_references(
-    report_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
+def get_references_by_report_version(
+    report_version_id: uuid.UUID,
     service: ReferenceService = Depends(get_reference_service),
-) -> list[ReferenceRead]:
-    return service.get_all_references(report_id)
+):
+    """
+    Obtiene todas las referencias de una versión de reporte.
+    Acceso público - No requiere autenticación.
+    """
+    return service.get_references_by_report_version(report_version_id)
 
 
 @router.get(
@@ -97,45 +48,44 @@ def get_all_references(
     response_model=ReferenceRead,
     status_code=HTTP_200_OK,
     summary="Obtener referencia por ID",
-    description="Obtiene una referencia por su identificador.",
-    responses={
-        401: {
-            "description": "Token inválido o expirado",
-        },
-        404: {
-            "description": "Referencia no encontrada",
-        },
-    },
+    description="Obtiene una referencia específica por su ID. (Acceso público)",
 )
 def get_reference(
     reference_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
     service: ReferenceService = Depends(get_reference_service),
-) -> ReferenceRead:
+):
+    """
+    Obtiene una referencia específica por su ID.
+    Acceso público - No requiere autenticación.
+    """
     return service.get_reference(reference_id)
 
 
+# ==================== ENDPOINTS PRIVADOS (requieren autenticación) ====================
+
+
 @router.post(
-    "/",
+    "",
     response_model=ReferenceRead,
     status_code=HTTP_201_CREATED,
     summary="Crear referencia",
-    description="Crea una nueva referencia asociada a un reporte.",
-    responses={
-        401: {
-            "description": "Token inválido o expirado",
-        },
-        404: {
-            "description": "Reporte no encontrado",
-        },
-    },
+    description="Crea una nueva referencia en una versión de reporte. (Requiere autenticación)",
 )
 def create_reference(
+    report_version_id: uuid.UUID,
     data: ReferenceCreate,
-    current_user: User = Depends(get_current_user),
     service: ReferenceService = Depends(get_reference_service),
-) -> ReferenceRead:
-    return service.create_reference(data)
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Crea una nueva referencia.
+
+    Reglas:
+    - La versión de reporte debe existir.
+    - Si no se provee display_order, se asigna el siguiente.
+    - Requiere autenticación.
+    """
+    return service.create_reference(report_version_id, data)
 
 
 @router.patch(
@@ -143,22 +93,26 @@ def create_reference(
     response_model=ReferenceRead,
     status_code=HTTP_200_OK,
     summary="Actualizar referencia",
-    description="Actualiza parcialmente una referencia existente.",
-    responses={
-        401: {
-            "description": "Token inválido o expirado",
-        },
-        404: {
-            "description": "Referencia no encontrada",
-        },
-    },
+    description="Actualiza parcialmente una referencia. (Requiere autenticación)",
 )
 def update_reference(
     reference_id: uuid.UUID,
     data: ReferenceUpdate,
-    current_user: User = Depends(get_current_user),
     service: ReferenceService = Depends(get_reference_service),
-) -> ReferenceRead:
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Actualiza parcialmente una referencia.
+
+    Campos actualizables:
+    - authors
+    - title
+    - year
+    - source
+    - citation_url
+    - display_order
+    - Requiere autenticación.
+    """
     return service.update_reference(reference_id, data)
 
 
@@ -166,19 +120,16 @@ def update_reference(
     "/{reference_id}",
     status_code=HTTP_204_NO_CONTENT,
     summary="Eliminar referencia",
-    description="Elimina una referencia.",
-    responses={
-        401: {
-            "description": "Token inválido o expirado",
-        },
-        404: {
-            "description": "Referencia no encontrada",
-        },
-    },
+    description="Elimina una referencia. (Requiere autenticación)",
 )
 def delete_reference(
     reference_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
     service: ReferenceService = Depends(get_reference_service),
-) -> None:
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Elimina una referencia.
+    Requiere autenticación.
+    """
     service.delete_reference(reference_id)
+    return None

@@ -2,7 +2,6 @@ import uuid
 
 from sqlalchemy import DateTime
 from sqlalchemy import String
-from sqlalchemy import Text
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped
@@ -21,26 +20,11 @@ class Report(Base):
         default=uuid.uuid4,
     )
 
-    title: Mapped[str] = mapped_column(
-        String(255),
-        nullable=False,
-    )
-
     slug: Mapped[str] = mapped_column(
         String(255),
         unique=True,
         nullable=False,
         index=True,
-    )
-
-    summary: Mapped[str | None] = mapped_column(
-        Text,
-        nullable=True,
-    )
-
-    citation_text: Mapped[str | None] = mapped_column(
-        Text,
-        nullable=True,
     )
 
     created_at: Mapped[DateTime] = mapped_column(
@@ -56,20 +40,8 @@ class Report(Base):
         onupdate=func.now(),
     )
 
-    sections: Mapped[list["Section"]] = relationship(
-        "Section",
-        back_populates="report",
-        cascade="all, delete-orphan",
-    )
-
-    references: Mapped[list["Reference"]] = relationship(
-        "Reference",
-        back_populates="report",
-        cascade="all, delete-orphan",
-    )
-
-    categories: Mapped[list["Category"]] = relationship(
-        "Category",
+    report_versions: Mapped[list["ReportVersion"]] = relationship(
+        "ReportVersion",
         back_populates="report",
         cascade="all, delete-orphan",
     )
