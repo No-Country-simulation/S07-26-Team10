@@ -46,6 +46,7 @@ class ConceptService:
 
     def get_public_concept(
         self,
+        category_id: uuid.UUID,
         concept_id: uuid.UUID,
     ) -> ConceptPublicRead:
         """
@@ -57,6 +58,10 @@ class ConceptService:
             raise NotFoundException(
                 message="Concepto no encontrado.",
             )
+
+            # Validar que el concepto pertenece a la categoría
+        if concept.category_id != category_id:
+            raise NotFoundException("Concepto no encontrado en esta categoría.")
 
         # Verificar que la categoría esté publicada
         category = self.category_repository.get_by_id(concept.category_id)
@@ -127,10 +132,17 @@ class ConceptService:
             )
 
         display_order = data.display_order
-
         if display_order is None:
             max_order = self.repository.get_max_display_order(category_id)
             display_order = max_order + 1
+
+        # Validar que el display_order sea único
+
+        if display_order is not None:
+            if self.repository.exists_by_display_order(category_id, display_order):
+                raise ConflictException(
+                    message=f"Ya existe un concepto con el orden '{display_order}' en esta categoría."
+                )
 
         concept = Concept(
             category_id=category_id,
@@ -145,6 +157,7 @@ class ConceptService:
 
     def update_concept(
         self,
+        category_id: uuid.UUID,
         concept_id: uuid.UUID,
         data: ConceptUpdate,
     ) -> ConceptRead:
@@ -162,6 +175,11 @@ class ConceptService:
                 message="Concepto no encontrado.",
             )
 
+        if concept.category_id != category_id:
+            raise NotFoundException(
+                message="Concepto no encontrado en esta categoría.",
+            )
+
         update_data = data.model_dump(
             exclude_unset=True,
         )
@@ -177,6 +195,16 @@ class ConceptService:
                     message=f"Ya existe un concepto con el nombre '{update_data['name']}' en esta categoría.",
                 )
 
+        if "display_order" in update_data:
+            if self.repository.exists_by_display_order(
+                concept.category_id,
+                update_data["display_order"],
+                exclude_id=concept_id,
+            ):
+                raise ConflictException(
+                    message=f"Ya existe un concepto con el orden '{update_data['display_order']}' en esta categoría."
+                )
+
         for field, value in update_data.items():
             setattr(concept, field, value)
 
@@ -186,6 +214,7 @@ class ConceptService:
 
     def delete_concept(
         self,
+        category_id: uuid.UUID,
         concept_id: uuid.UUID,
     ) -> None:
         """
@@ -196,6 +225,11 @@ class ConceptService:
         if not concept:
             raise NotFoundException(
                 message="Concepto no encontrado.",
+            )
+
+        if concept.category_id != category_id:
+            raise NotFoundException(
+                message="Concepto no encontrado en esta categoría.",
             )
 
         self.repository.delete(concept)

@@ -46,28 +46,6 @@ def get_public_concepts(
 
 
 @router.get(
-    "/{concept_id}",
-    response_model=ConceptPublicRead,
-    status_code=HTTP_200_OK,
-    summary="Obtener concepto público",
-    description="Obtiene un concepto específico por su ID. (Acceso público)",
-)
-def get_public_concept(
-    concept_id: uuid.UUID,
-    service: ConceptService = Depends(get_concept_service),
-):
-    """
-    Obtiene un concepto específico por su ID.
-    SOLO si su categoría está PUBLICADA.
-    Acceso público - No requiere autenticación.
-    """
-    return service.get_public_concept(concept_id)
-
-
-# ==================== ENDPOINTS PRIVADOS (requieren autenticación) ====================
-
-
-@router.get(
     "/admin",
     response_model=list[ConceptRead],
     status_code=HTTP_200_OK,
@@ -87,22 +65,26 @@ def get_all_concepts(
 
 
 @router.get(
-    "/admin/{concept_id}",
-    response_model=ConceptRead,
+    "/{concept_id}",
+    response_model=ConceptPublicRead,
     status_code=HTTP_200_OK,
-    summary="Obtener concepto por ID (admin)",
-    description="Obtiene un concepto específico por su ID con todos los detalles. (Requiere autenticación)",
+    summary="Obtener concepto público",
+    description="Obtiene un concepto específico por su ID. (Acceso público)",
 )
-def get_concept(
+def get_public_concept(
+    category_id: uuid.UUID,
     concept_id: uuid.UUID,
     service: ConceptService = Depends(get_concept_service),
-    current_user: User = Depends(get_current_user),
 ):
     """
-    Obtiene un concepto específico por su ID con todos los detalles.
-    Requiere autenticación.
+    Obtiene un concepto específico por su ID.
+    SOLO si su categoría está PUBLICADA.
+    Acceso público - No requiere autenticación.
     """
-    return service.get_concept(concept_id)
+    return service.get_public_concept(category_id, concept_id)
+
+
+# ==================== ENDPOINTS PRIVADOS (requieren autenticación) ====================
 
 
 @router.post(
@@ -137,6 +119,7 @@ def create_concept(
     description="Actualiza parcialmente un concepto. (Requiere autenticación)",
 )
 def update_concept(
+    category_id: uuid.UUID,
     concept_id: uuid.UUID,
     data: ConceptUpdate,
     service: ConceptService = Depends(get_concept_service),
@@ -151,7 +134,7 @@ def update_concept(
     - display_order
     - Requiere autenticación.
     """
-    return service.update_concept(concept_id, data)
+    return service.update_concept(category_id, concept_id, data)
 
 
 @router.delete(
@@ -161,6 +144,7 @@ def update_concept(
     description="Elimina un concepto. (Requiere autenticación)",
 )
 def delete_concept(
+    category_id: uuid.UUID,
     concept_id: uuid.UUID,
     service: ConceptService = Depends(get_concept_service),
     current_user: User = Depends(get_current_user),
@@ -169,4 +153,4 @@ def delete_concept(
     Elimina un concepto.
     Requiere autenticación.
     """
-    service.delete_concept(concept_id)
+    service.delete_concept(category_id, concept_id)
