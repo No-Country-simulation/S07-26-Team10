@@ -12,8 +12,6 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from app.shared.enums.publication_status import PublicationStatus
-from app.modules.concepts.model import Concept
-from app.modules.report_versions.model import ReportVersion
 
 
 from app.core.database import Base

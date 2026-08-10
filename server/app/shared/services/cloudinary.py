@@ -27,10 +27,7 @@ class CloudinaryService:
     ) -> dict:
         """
         Sube una imagen a Cloudinary.
-
-        Retorna metadata del archivo subido.
         """
-
         result = cloudinary.uploader.upload(
             file,
             folder=folder,
@@ -42,7 +39,7 @@ class CloudinaryService:
             "public_id": result.get("public_id"),
             "width": result.get("width"),
             "height": result.get("height"),
-            "resource_type": result.get("resource_type"),
+            "resource_type": result.get("resource_type", "image"),
         }
 
     def upload_file(
@@ -51,10 +48,8 @@ class CloudinaryService:
         folder: str = "physaflow/files",
     ) -> dict:
         """
-        Sube archivos generales:
-        PDF, documentos, etc.
+        Sube archivos generales (PDF, documentos, etc.)
         """
-
         result = cloudinary.uploader.upload(
             file,
             folder=folder,
@@ -64,7 +59,7 @@ class CloudinaryService:
         return {
             "url": result.get("secure_url"),
             "public_id": result.get("public_id"),
-            "resource_type": result.get("resource_type"),
+            "resource_type": result.get("resource_type", "raw"),
         }
 
     def delete(
@@ -74,16 +69,8 @@ class CloudinaryService:
     ) -> dict:
         """
         Elimina un archivo de Cloudinary.
-
-        resource_type:
-        - image
-        - raw
-        - video
         """
-
-        result = cloudinary.uploader.destroy(
+        return cloudinary.uploader.destroy(
             public_id,
             resource_type=resource_type,
         )
-
-        return result

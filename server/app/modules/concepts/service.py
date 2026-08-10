@@ -1,6 +1,7 @@
 import uuid
+from typing import Optional
 
-from app.exceptions import NotFoundException
+from app.exceptions import ConflictException, NotFoundException
 from app.modules.categories.repository import CategoryRepository
 from app.modules.concepts.model import Concept
 from app.modules.concepts.repository import ConceptRepository
@@ -10,11 +11,13 @@ from app.modules.concepts.schema import (
     ConceptRead,
     ConceptUpdate,
 )
+from app.shared.enums.publication_status import PublicationStatus
 
 
 class ConceptService:
     """
     Servicio de lógica de negocio para conceptos.
+    SOLO maneja operaciones relacionadas con Concept.
     """
 
     def __init__(
@@ -25,7 +28,6 @@ class ConceptService:
         self.repository = repository
         self.category_repository = category_repository
 
-
     def get_concept(
         self,
         concept_id: uuid.UUID,
@@ -33,7 +35,6 @@ class ConceptService:
         """
         Obtiene un concepto por su ID (admin).
         """
-
         concept = self.repository.get_by_id(concept_id)
 
         if not concept:
@@ -43,7 +44,6 @@ class ConceptService:
 
         return ConceptRead.model_validate(concept)
 
-
     def get_public_concept(
         self,
         concept_id: uuid.UUID,
@@ -51,7 +51,6 @@ class ConceptService:
         """
         Obtiene un concepto por su ID (acceso público).
         """
-
         concept = self.repository.get_by_id(concept_id)
 
         if not concept:
@@ -59,8 +58,14 @@ class ConceptService:
                 message="Concepto no encontrado.",
             )
 
-        return ConceptPublicRead.model_validate(concept)
+        # Verificar que la categoría esté publicada
+        category = self.category_repository.get_by_id(concept.category_id)
+        if not category or category.status != PublicationStatus.PUBLISHED:
+            raise NotFoundException(
+                message="Concepto no disponible.",
+            )
 
+        return ConceptPublicRead.model_validate(concept)
 
     def get_public_concepts(
         self,
@@ -68,19 +73,23 @@ class ConceptService:
     ) -> list[ConceptPublicRead]:
         """
         Obtiene los conceptos de una categoría (acceso público).
+        SOLO si la categoría está PUBLICADA.
         """
+        category = self.category_repository.get_by_id(category_id)
 
-        self._validate_category_exists(category_id)
+        if not category:
+            raise NotFoundException(
+                message="Categoría no encontrada.",
+            )
 
-        concepts = self.repository.get_all_by_category(
-            category_id,
-        )
+        if category.status != PublicationStatus.PUBLISHED:
+            raise NotFoundException(
+                message="Categoría no disponible.",
+            )
 
-        return [
-            ConceptPublicRead.model_validate(concept)
-            for concept in concepts
-        ]
+        concepts = self.repository.get_all_by_category(category_id)
 
+        return [ConceptPublicRead.model_validate(concept) for concept in concepts]
 
     def get_all_concepts(
         self,
@@ -89,21 +98,15 @@ class ConceptService:
         """
         Obtiene todos los conceptos de una categoría (admin).
         """
-
         self._validate_category_exists(category_id)
 
-        concepts = self.repository.get_all_by_category(
-            category_id,
-        )
+        concepts = self.repository.get_all_by_category(category_id)
 
-        return [
-            ConceptRead.model_validate(concept)
-            for concept in concepts
-        ]
-
+        return [ConceptRead.model_validate(concept) for concept in concepts]
 
     def create_concept(
         self,
+        category_id: uuid.UUID,
         data: ConceptCreate,
     ) -> ConceptRead:
         """
@@ -111,21 +114,26 @@ class ConceptService:
 
         Reglas:
         - La categoría debe existir.
+        - El nombre debe ser único dentro de la categoría.
         - Si no se provee display_order, se asigna el siguiente disponible.
         """
+        # Validar que la categoría existe
+        self._validate_category_exists(category_id)
 
-        self._validate_category_exists(data.category_id)
+        # Validar que el nombre sea único
+        if self.repository.exists_by_name(category_id, data.name):
+            raise ConflictException(
+                message=f"Ya existe un concepto con el nombre '{data.name}' en esta categoría.",
+            )
 
         display_order = data.display_order
 
         if display_order is None:
-            max_order = self.repository.get_max_display_order(
-                data.category_id,
-            )
+            max_order = self.repository.get_max_display_order(category_id)
             display_order = max_order + 1
 
         concept = Concept(
-            category_id=data.category_id,
+            category_id=category_id,
             name=data.name,
             description=data.description,
             display_order=display_order,
@@ -134,7 +142,6 @@ class ConceptService:
         created_concept = self.repository.create(concept)
 
         return ConceptRead.model_validate(created_concept)
-
 
     def update_concept(
         self,
@@ -146,8 +153,8 @@ class ConceptService:
 
         Reglas:
         - El concepto debe existir.
+        - Si se cambia el nombre, debe ser único dentro de la categoría.
         """
-
         concept = self.repository.get_by_id(concept_id)
 
         if not concept:
@@ -159,13 +166,23 @@ class ConceptService:
             exclude_unset=True,
         )
 
+        # Si se actualiza el nombre, validar unicidad
+        if "name" in update_data:
+            if self.repository.exists_by_name(
+                concept.category_id,
+                update_data["name"],
+                exclude_id=concept_id,
+            ):
+                raise ConflictException(
+                    message=f"Ya existe un concepto con el nombre '{update_data['name']}' en esta categoría.",
+                )
+
         for field, value in update_data.items():
             setattr(concept, field, value)
 
         updated_concept = self.repository.update(concept)
 
         return ConceptRead.model_validate(updated_concept)
-
 
     def delete_concept(
         self,
@@ -174,7 +191,6 @@ class ConceptService:
         """
         Elimina un concepto.
         """
-
         concept = self.repository.get_by_id(concept_id)
 
         if not concept:
@@ -184,7 +200,6 @@ class ConceptService:
 
         self.repository.delete(concept)
 
-
     def _validate_category_exists(
         self,
         category_id: uuid.UUID,
@@ -192,7 +207,6 @@ class ConceptService:
         """
         Verifica que la categoría exista.
         """
-
         category = self.category_repository.get_by_id(category_id)
 
         if not category:

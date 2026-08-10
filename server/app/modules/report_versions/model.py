@@ -16,12 +16,6 @@ from app.core.database import Base
 from app.shared.enums.language_code import LanguageCode
 from app.shared.enums.publication_status import PublicationStatus
 
-# Importar los modelos que necesitas para las relaciones
-from app.modules.sections.model import Section
-from app.modules.references.model import Reference
-from app.modules.categories.model import Category
-from app.modules.reports.model import Report
-
 
 class ReportVersion(Base):
     __tablename__ = "report_versions"

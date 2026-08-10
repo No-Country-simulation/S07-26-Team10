@@ -1,149 +1,115 @@
 import uuid
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, Query, status
 
-from app.core.constants import HTTP_200_OK, HTTP_201_CREATED
-from app.core.dependencies import get_current_user, get_db
-from app.modules.reports.repository import ReportRepository
+from app.core.dependencies import get_current_user, get_report_service
 from app.modules.reports.schema import (
     ReportCreate,
-    ReportPublicRead,
     ReportRead,
-    ReportUpdate,
 )
 from app.modules.reports.service import ReportService
 from app.modules.users.model import User
 
-
-router = APIRouter(
-    prefix="/reports",
-    tags=["reports"],
-)
+router = APIRouter(prefix="/reports", tags=["Reports"])
 
 
-def get_report_service(
-    db: Session = Depends(get_db),
-) -> ReportService:
-    """
-    Factory para inyectar ReportService.
-    """
-
-    repository = ReportRepository(db)
-
-    return ReportService(repository)
-
-
-# ==========================
-# Endpoints públicos
-# ==========================
+# ==================== ENDPOINTS PÚBLICOS (sin autenticación) ====================
 
 
 @router.get(
-    "/",
-    response_model=list[ReportPublicRead],
-    status_code=HTTP_200_OK,
+    "",
+    response_model=list[ReportRead],
     summary="Listar reportes",
-    description="Obtiene todos los reportes disponibles.",
+    description="Obtiene todos los reportes con paginación. (Acceso público)",
 )
-def get_reports(
+def get_all_reports(
+    skip: int = Query(default=0, ge=0, description="Número de registros a saltar"),
+    limit: int = Query(default=100, ge=1, le=100, description="Límite de registros"),
     service: ReportService = Depends(get_report_service),
-) -> list[ReportPublicRead]:
-    return service.get_all_reports()
+):
+    """
+    Obtiene todos los reportes con paginación.
+    Acceso público - No requiere autenticación.
+    """
+    return service.get_all_reports(skip, limit)
 
 
 @router.get(
-    "/{slug}",
-    response_model=ReportPublicRead,
-    status_code=HTTP_200_OK,
+    "/{report_id}",
+    response_model=ReportRead,
+    summary="Obtener reporte por ID",
+    description="Obtiene un reporte específico por su ID. (Acceso público)",
+)
+def get_report(
+    report_id: uuid.UUID,
+    service: ReportService = Depends(get_report_service),
+):
+    """
+    Obtiene un reporte específico por su ID.
+    Acceso público - No requiere autenticación.
+    """
+    return service.get_report(report_id)
+
+
+@router.get(
+    "/by-slug/{slug}",
+    response_model=ReportRead,
     summary="Obtener reporte por slug",
-    description="Obtiene un reporte por su slug (URL amigable).",
-    responses={
-        404: {
-            "description": "Reporte no encontrado",
-        },
-    },
+    description="Obtiene un reporte específico por su slug. (Acceso público)",
 )
 def get_report_by_slug(
     slug: str,
     service: ReportService = Depends(get_report_service),
-) -> ReportPublicRead:
+):
+    """
+    Obtiene un reporte específico por su slug.
+    Acceso público - No requiere autenticación.
+    """
     return service.get_report_by_slug(slug)
 
 
-# ==========================
-# Endpoints administrativos
-# ==========================
-
-
-@router.get(
-    "/{report_id}/admin",
-    response_model=ReportRead,
-    status_code=HTTP_200_OK,
-    summary="Obtener reporte por ID (admin)",
-    description="Obtiene un reporte con información completa por su identificador.",
-    responses={
-        401: {
-            "description": "Token inválido o expirado",
-        },
-        404: {
-            "description": "Reporte no encontrado",
-        },
-    },
-)
-def get_report_admin(
-    report_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
-    service: ReportService = Depends(get_report_service),
-) -> ReportRead:
-    return service.get_report(report_id)
+# ==================== ENDPOINTS PRIVADOS (requieren autenticación) ====================
 
 
 @router.post(
-    "/",
+    "",
     response_model=ReportRead,
-    status_code=HTTP_201_CREATED,
+    status_code=status.HTTP_201_CREATED,
     summary="Crear reporte",
-    description="Crea un nuevo reporte generando el slug automáticamente.",
-    responses={
-        401: {
-            "description": "Token inválido o expirado",
-        },
-        409: {
-            "description": "Slug ya registrado",
-        },
-    },
+    description="Crea un nuevo reporte. El slug se genera automáticamente. (Requiere autenticación)",
 )
 def create_report(
     data: ReportCreate,
-    current_user: User = Depends(get_current_user),
     service: ReportService = Depends(get_report_service),
-) -> ReportRead:
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Crea un nuevo reporte.
+
+    Reglas:
+    - El slug se genera automáticamente.
+    - El slug debe ser único.
+    - Requiere autenticación.
+    """
     return service.create_report(data)
 
 
-@router.patch(
+@router.delete(
     "/{report_id}",
-    response_model=ReportRead,
-    status_code=HTTP_200_OK,
-    summary="Actualizar reporte",
-    description="Actualiza parcialmente un reporte existente.",
-    responses={
-        401: {
-            "description": "Token inválido o expirado",
-        },
-        404: {
-            "description": "Reporte no encontrado",
-        },
-        409: {
-            "description": "Slug ya registrado",
-        },
-    },
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Eliminar reporte",
+    description="Elimina un reporte y TODAS sus versiones en cascada. (Requiere autenticación)",
 )
-def update_report(
+def delete_report(
     report_id: uuid.UUID,
-    data: ReportUpdate,
-    current_user: User = Depends(get_current_user),
     service: ReportService = Depends(get_report_service),
-) -> ReportRead:
-    return service.update_report(report_id, data)
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Elimina un reporte.
+
+    Reglas:
+    - Elimina el reporte y TODAS sus versiones en cascada.
+    - Requiere autenticación.
+    """
+    service.delete_report(report_id)

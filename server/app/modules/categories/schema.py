@@ -1,18 +1,17 @@
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from app.shared.enums.publication_status import PublicationStatus
+from app.modules.concepts.schema import ConceptRead  # Para relaciones
 
 
 class CategoryCreate(BaseModel):
     """
     Schema de entrada para crear una categoría.
     """
-
-    report_id: uuid.UUID = Field(
-        ...,
-        description="ID del reporte al que pertenece la categoría",
-    )
 
     name: str = Field(
         ...,
@@ -21,19 +20,14 @@ class CategoryCreate(BaseModel):
         max_length=150,
     )
 
-    description: str | None = Field(
+    description: Optional[str] = Field(
         default=None,
         description="Descripción de la categoría",
     )
 
-    display_order: int | None = Field(
+    display_order: Optional[int] = Field(
         default=None,
         description="Orden de presentación de la categoría",
-    )
-
-    published: bool = Field(
-        default=True,
-        description="Estado de publicación de la categoría",
     )
 
 
@@ -42,26 +36,26 @@ class CategoryUpdate(BaseModel):
     Schema de entrada para actualizar una categoría parcialmente.
     """
 
-    name: str | None = Field(
+    name: Optional[str] = Field(
         default=None,
         description="Nombre de la categoría",
         min_length=1,
         max_length=150,
     )
 
-    description: str | None = Field(
+    description: Optional[str] = Field(
         default=None,
         description="Descripción de la categoría",
     )
 
-    display_order: int | None = Field(
+    display_order: Optional[int] = Field(
         default=None,
         description="Orden de presentación de la categoría",
     )
 
-    published: bool | None = Field(
+    status: Optional[PublicationStatus] = Field(
         default=None,
-        description="Estado de publicación de la categoría",
+        description="Estado de publicación de la categoría (DRAFT, PUBLISHED)",
     )
 
 
@@ -71,41 +65,45 @@ class CategoryRead(BaseModel):
     """
 
     id: uuid.UUID
-
-    report_id: uuid.UUID
-
+    report_version_id: uuid.UUID
     name: str
-
-    description: str | None = None
-
-    display_order: int | None = None
-
-    published: bool
-
-    created_at: datetime | None = None
-
-    updated_at: datetime | None = None
+    description: Optional[str] = None
+    display_order: Optional[int] = None
+    status: PublicationStatus
+    created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(
         from_attributes=True,
+    )
+
+
+class CategoryDetailRead(CategoryRead):
+    """
+    Schema de salida con detalles completos (incluye conceptos).
+    """
+
+    concepts: list["ConceptRead"] = Field(
+        default_factory=list,
+        description="Conceptos de esta categoría",
     )
 
 
 class CategoryPublicRead(BaseModel):
     """
-    Schema de salida público para una categoría (sin timestamps ni published).
+    Schema de salida público para una categoría (sin timestamps ni status).
     """
 
     id: uuid.UUID
-
-    report_id: uuid.UUID
-
+    report_version_id: uuid.UUID
     name: str
-
-    description: str | None = None
-
-    display_order: int | None = None
+    description: Optional[str] = None
+    display_order: Optional[int] = None
 
     model_config = ConfigDict(
         from_attributes=True,
     )
+
+
+# Para resolver referencias circulares (cuando exista ConceptRead)
+# CategoryDetailRead.model_rebuild()
