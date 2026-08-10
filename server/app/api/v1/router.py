@@ -6,6 +6,9 @@ from app.modules.categories.router import router as categories_router
 from app.modules.concepts.router import router as concepts_router
 from app.modules.references.router import router as references_router
 from app.modules.reports.router import router as reports_router
+from app.modules.report_versions.router import (
+    router as report_versions_router,
+)  # ← AGREGAR
 from app.modules.resources.router import router as resources_router
 from app.modules.sections.router import router as sections_router
 from app.modules.uploads.router import router as uploads_router
@@ -18,6 +21,7 @@ api_router.include_router(categories_router)
 api_router.include_router(concepts_router)
 api_router.include_router(references_router)
 api_router.include_router(reports_router)
+api_router.include_router(report_versions_router)  # ← AGREGAR
 api_router.include_router(resources_router)
 api_router.include_router(sections_router)
 api_router.include_router(uploads_router)
@@ -34,6 +38,4 @@ def root():
 
 @api_router.get("/health", tags=["Health"])
 def health():
-    return {
-        "status": "healthy"
-    }
+    return {"status": "healthy"}
