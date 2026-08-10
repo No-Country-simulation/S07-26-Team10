@@ -28,7 +28,7 @@ class CategoryService:
         self.repository = repository
         self.report_version_repository = report_version_repository
 
-    def get_category(self, category_id: uuid.UUID) -> CategoryRead:
+    def get_category(self, report_version_id, category_id: uuid.UUID) -> CategoryRead:
         """
         Obtiene una categoría por su ID.
         """
@@ -37,6 +37,11 @@ class CategoryService:
         if not category:
             raise NotFoundException(
                 message="Categoría no encontrada.",
+            )
+
+        if category.report_version_id != report_version_id:
+            raise NotFoundException(
+                message="Categoría no encontrada en la versión de reporte especificada.",
             )
 
         return CategoryRead.model_validate(category)
@@ -112,6 +117,21 @@ class CategoryService:
                 message=f"Ya existe una categoría con el nombre '{data.name}' en esta versión.",
             )
 
+        display_order = data.display_order
+        if display_order is None:
+            max_order = self.repository.get_max_display_order(report_version_id)
+            display_order = max_order + 1
+
+        # Validar que el display_order sea único
+
+        if display_order is not None:
+            if self.repository.exists_by_display_order(
+                report_version_id, display_order
+            ):
+                raise ConflictException(
+                    message=f"Ya existe una categoría con el orden '{display_order}' en esta versión."
+                )
+
         # Determinar display_order
         display_order = data.display_order
         if display_order is None:
@@ -132,6 +152,7 @@ class CategoryService:
 
     def update_category(
         self,
+        report_version_id: uuid.UUID,
         category_id: uuid.UUID,
         data: CategoryUpdate,
     ) -> CategoryRead:
@@ -149,6 +170,11 @@ class CategoryService:
                 message="Categoría no encontrada.",
             )
 
+        if category.report_version_id != report_version_id:
+            raise NotFoundException(
+                message="Categoría no encontrada en la versión de reporte especificada.",
+            )
+
         update_data = data.model_dump(
             exclude_unset=True,
         )
@@ -164,6 +190,17 @@ class CategoryService:
                     message=f"Ya existe una categoría con el nombre '{update_data['name']}' en esta versión.",
                 )
 
+        # Si se actualiza display_order, validar unicidad
+        if "display_order" in update_data:
+            if self.repository.exists_by_display_order(
+                category.report_version_id,
+                update_data["display_order"],
+                exclude_id=category_id,
+            ):
+                raise ConflictException(
+                    message=f"Ya existe una categoría con el orden '{update_data['display_order']}' en esta versión."
+                )
+
         for field, value in update_data.items():
             setattr(category, field, value)
 
@@ -171,7 +208,9 @@ class CategoryService:
 
         return CategoryRead.model_validate(updated_category)
 
-    def delete_category(self, category_id: uuid.UUID) -> None:
+    def delete_category(
+        self, report_version_id: uuid.UUID, category_id: uuid.UUID
+    ) -> None:
         """
         Elimina una categoría.
 
@@ -183,6 +222,11 @@ class CategoryService:
         if not category:
             raise NotFoundException(
                 message="Categoría no encontrada.",
+            )
+
+        if category.report_version_id != report_version_id:
+            raise NotFoundException(
+                message="Categoría no encontrada en la versión de reporte especificada.",
             )
 
         self.repository.delete(category)

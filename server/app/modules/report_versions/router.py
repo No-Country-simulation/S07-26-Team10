@@ -66,6 +66,7 @@ def get_published_versions(
     description="Obtiene una versión específica por su ID. (Acceso público)",
 )
 def get_version(
+    report_id: uuid.UUID,
     version_id: uuid.UUID,
     load_relations: bool = Query(
         default=False,
@@ -77,7 +78,7 @@ def get_version(
     Obtiene una versión específica por su ID.
     Acceso público - No requiere autenticación.
     """
-    return service.get_version(version_id, load_relations)
+    return service.get_version(report_id, version_id, load_relations)
 
 
 @router.get(
@@ -159,6 +160,7 @@ def create_version(
     description="Actualiza parcialmente una versión de reporte. (Requiere autenticación)",
 )
 def update_version(
+    report_id: uuid.UUID,
     version_id: uuid.UUID,
     data: ReportVersionUpdate,
     service: ReportVersionService = Depends(get_report_version_service),
@@ -174,7 +176,7 @@ def update_version(
     - status
     - Requiere autenticación.
     """
-    return service.update_version(version_id, data)
+    return service.update_version(report_id, version_id, data)
 
 
 @router.delete(
@@ -184,6 +186,7 @@ def update_version(
     description="Elimina una versión de reporte. (Requiere autenticación)",
 )
 def delete_version(
+    report_id: uuid.UUID,
     version_id: uuid.UUID,
     service: ReportVersionService = Depends(get_report_version_service),
     current_user: User = Depends(get_current_user),
@@ -192,4 +195,4 @@ def delete_version(
     Elimina una versión de reporte.
     Requiere autenticación.
     """
-    service.delete_version(version_id)
+    service.delete_version(report_id, version_id)

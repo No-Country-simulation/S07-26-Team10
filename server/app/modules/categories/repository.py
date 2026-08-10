@@ -113,3 +113,18 @@ class CategoryRepository:
             stmt = stmt.where(Category.id != exclude_id)
 
         return self.db.execute(stmt).scalars().first() is not None
+
+    # Verifica si existe una categoría con el mismo display_order en la misma versión de reporte.
+    def exists_by_display_order(
+        self,
+        report_version_id: uuid.UUID,
+        display_order: int,
+        exclude_id: uuid.UUID | None = None,
+    ) -> bool:
+        stmt = select(Category).where(
+            Category.report_version_id == report_version_id,
+            Category.display_order == display_order,
+        )
+        if exclude_id:
+            stmt = stmt.where(Category.id != exclude_id)
+        return self.db.execute(stmt).scalars().first() is not None
