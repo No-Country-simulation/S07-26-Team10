@@ -2,7 +2,7 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PhysaFlow — Stranded Capacity Index</title>
+<title>Design system — PhysaFlow</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -78,12 +78,10 @@ nav a:hover{color:var(--dark)} nav a.on{color:var(--dark);border-color:var(--gre
 .lgs{display:flex;align-items:center;gap:3px;font-family:var(--m);font-size:var(--fs-ui);letter-spacing:var(--t3);padding:0 6px}
 .lgs button{border:0;background:none;cursor:pointer;font:inherit;color:var(--c-meta);padding:6px 3px}
 .lgs button[aria-current=true]{color:var(--dark)}
-.now{display:none;align-items:center;gap:10px;margin-left:26px;padding-left:18px;min-width:0;opacity:0;
-  border-left:1px solid var(--gline)}
+.now{display:none;align-items:center;gap:12px;margin-left:26px;min-width:0;opacity:0}
 header.sm .now{display:flex;opacity:1;transition:opacity .3s .06s}
 header.sm nav,header.sm .rep,header.sm .sep{display:none}
-.now .n{font-family:var(--m);font-size:var(--fs-ui);letter-spacing:var(--t3);color:var(--green);flex:none;
-  font-weight:500}
+.now .n{font-family:var(--m);font-size:var(--fs-ui);letter-spacing:var(--t3);color:var(--c-meta);flex:none}
 .now .t{font-size:var(--fs-body);font-weight:500;letter-spacing:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .prog{height:2px;background:transparent} .prog i{display:block;height:100%;background:var(--green);width:0}
 
@@ -112,8 +110,7 @@ header.sm nav,header.sm .rep,header.sm .sep{display:none}
 .b:hover svg{transform:translate(2px,-2px)}
 .b.solid{background:var(--dark);border-color:var(--dark);color:#fff}
 .b.solid:hover{background:#fff;color:var(--dark);border-color:var(--dark)}
-.b.line.dis{opacity:.4;pointer-events:none}
-.b.line{padding-inline:22px;background:transparent;border-color:var(--gline);color:var(--dark)}
+.b.line{background:transparent;border-color:var(--gline);color:var(--dark)}
 .b.line:hover{background:var(--dark);border-color:var(--dark);color:#fff}
 .b.ghost{background:transparent;border-color:rgba(255,255,255,.4);color:#fff}
 .b.ghost:hover{background:#fff;border-color:#fff;color:var(--green-dp)}
@@ -131,7 +128,7 @@ header.sm nav,header.sm .rep,header.sm .sep{display:none}
 .hero h1 .soft{color:var(--c-meta)}
 @keyframes drop{to{transform:none}}
 .hero .sub b{font-weight:600;color:var(--green)}
-.sub{font-weight:500;font-size:var(--fs-lead);line-height:30px;color:var(--grey);max-width:58ch;margin:28px auto 0}
+.sub{font-size:var(--fs-lead);line-height:30px;color:var(--grey);max-width:58ch;margin:28px auto 0}
 .htag{font-family:var(--m);font-size:var(--fs-meta);letter-spacing:.06em;text-transform:uppercase;color:var(--green);margin-bottom:26px}
 .hmono{font-family:var(--m);font-size:var(--fs-meta);letter-spacing:.04em;color:var(--green);margin-top:46px;padding-top:24px;
   border-top:1px solid var(--gline);max-width:660px;margin-inline:auto}
@@ -181,11 +178,11 @@ section.n.cur .snum{opacity:1}
 .banner .vig{position:absolute;inset:0;background:radial-gradient(120% 96% at 50% 32%, rgba(0,96,58,0) 0%, rgba(2,52,32,.5) 48%, rgba(8,9,10,.9) 92%)}
 .banner .in{position:relative;max-width:var(--max);margin-inline:auto;padding:18px var(--gut);
   display:flex;align-items:center;gap:22px;text-align:left;min-height:74px}
-.banner .btx{flex:1;min-width:0}
+.banner .btx{display:flex;align-items:baseline;gap:16px;flex:1;min-width:0;flex-wrap:wrap}
 .banner .tag{font-size:var(--fs-meta);letter-spacing:var(--t1);color:#fff;font-weight:500;
   white-space:nowrap;padding-right:16px;border-right:1px solid rgba(255,255,255,.22)}
 .banner h2{font-size:var(--fs-h2);line-height:1.2;letter-spacing:var(--t1);font-weight:500;margin:18px auto 0;max-width:24ch}
-.banner p{color:#fff;font-size:var(--fs-card);line-height:24px;letter-spacing:var(--t1);margin:0;max-width:70ch;font-weight:500}
+.banner p{color:rgba(255,255,255,.88);font-size:var(--fs-sm);line-height:21px;letter-spacing:var(--t1);margin:0;max-width:70ch}
 .banner .rule{height:1px;background:rgba(201,169,97,.3);margin:30px auto 0;max-width:520px}
 .burst{display:block;width:64px;height:44px;flex:none;margin:0;overflow:visible}
 .burst line{stroke:var(--gold);stroke-width:1;opacity:0;transform-origin:150px 100px;transform:scale(.1)}
@@ -196,8 +193,8 @@ section.n.cur .snum{opacity:1}
 .burst circle.ring{fill:none;stroke:var(--cream);stroke-width:1.2;opacity:0}
 .burst.go circle.ring{animation:corein .6s ease-out .5s forwards}
 @keyframes corein{to{opacity:1}}
-.banner .foot{display:block;font-size:var(--fs-micro);letter-spacing:var(--t1);color:rgba(255,255,255,.6);
-  margin-top:6px}
+.banner .foot{font-size:var(--fs-meta);letter-spacing:var(--t1);color:rgba(255,255,255,.55);
+  margin:0;white-space:nowrap}
 @media(max-width:900px){.banner .in{flex-wrap:wrap;gap:12px}.banner .foot{flex-basis:100%}}
 .diag{width:100%;height:auto}
 .diag .ln{stroke:var(--gold);stroke-width:1;fill:none;opacity:.85;
@@ -225,18 +222,11 @@ section.n.cur .snum{opacity:1}
 .fdl a{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;border:1px solid var(--gline);
   font-size:var(--fs-sm);font-weight:500;color:var(--green);transition:.18s}
 .fdl a:hover{background:var(--green);border-color:var(--green);color:#fff}
-.fcite{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;
-  border:1px solid var(--gline);font:inherit;font-size:var(--fs-sm);font-weight:500;color:var(--green);
-  background:none;cursor:pointer;transition:.18s}
-.fcite:hover{background:var(--green);border-color:var(--green);color:#fff}
-.soon{display:inline-flex;align-items:center;font-family:var(--m);font-size:var(--fs-micro);
-  letter-spacing:.04em;color:var(--c-meta)}
-.fcite svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.9}
 .fdl a svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.9}
 .fn .r{display:grid;grid-template-columns:38px 210px 1fr;gap:20px;align-items:center;padding:10px 0;border-top:1px solid var(--stroke);
   transition:background .18s;border-radius:6px}
 .fn .r:first-child{border-top:0}
-.fn .r:hover,.fn .r:focus-visible{background:var(--off)}
+.fn .r:hover{background:var(--off)}
 .fn .st{font-family:var(--m);font-size:var(--fs-ui);letter-spacing:var(--t3);color:var(--c-meta)}
 .fn .nm{font-size:var(--fs-body)}
 .fn .bar{height:30px;background:#F4F4F4;border-radius:4px;position:relative;overflow:hidden}
@@ -251,17 +241,16 @@ section.n.cur .snum{opacity:1}
 .fn .r.key .nm{color:var(--green);font-weight:500}
 @media(max-width:760px){.fn .r{grid-template-columns:30px 1fr;row-gap:8px}.fn .bar{grid-column:1/-1}}
 /* caption que responde al hover */
-.fintro{font-size:var(--fs-sm);line-height:22px;letter-spacing:var(--t1);color:var(--grey);
-  margin-top:20px;padding-top:18px;border-top:1px solid var(--stroke);max-width:82ch}
-.fcap{margin-top:18px;padding:16px 18px;border:1px dashed var(--gline);border-radius:10px;min-height:74px;
+.fcap{margin-top:22px;padding:16px 18px;border:1px dashed var(--gline);border-radius:10px;min-height:74px;
   display:flex;gap:16px;align-items:flex-start;transition:border-color .2s,background .2s}
 .fcap.on{border-style:solid;border-color:var(--gline);background:var(--off)}
 .fcap .no{font-family:var(--m);font-size:var(--fs-meta);letter-spacing:var(--t3);color:var(--green);flex:none;padding-top:2px;min-width:56px}
 .fcap .tx{font-size:var(--fs-body);line-height:24px;color:var(--dark)}
 .fcap .tx b{font-weight:500}
 .fcap .idle{font-family:var(--m);font-size:var(--fs-ui);letter-spacing:var(--t3);color:var(--grey)}
-.disc{font-family:var(--m);font-size:var(--fs-meta);letter-spacing:var(--t3);color:var(--grey);margin-top:16px}
-
+.disc{font-family:var(--m);font-size:var(--fs-ui);letter-spacing:var(--t3);color:var(--grey);margin-top:16px;
+  opacity:0;transform:translateY(-4px);transition:opacity .25s,transform .25s;pointer-events:none}
+.fig:hover .disc{opacity:1;transform:none}
 /* expandir */
 .fexp{margin-left:auto;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;
   border:1px solid var(--gline);font-size:var(--fs-ui);font-weight:500;color:var(--grey);cursor:pointer;background:none;font-family:var(--f);transition:.18s}
@@ -274,18 +263,11 @@ section.n.cur .snum{opacity:1}
 
 /* ===== CAPÍTULOS ===== */
 .chap{display:grid;grid-template-columns:1fr 1fr;column-gap:44px}
-.chap a{display:grid;grid-template-columns:32px 1fr 34px;gap:14px;align-items:start;padding:14px 0;
+.chap a{display:grid;grid-template-columns:32px 1fr 60px;gap:14px;align-items:baseline;padding:14px 0;
   border-top:1px solid var(--gline);transition:.18s;border-radius:6px}
 .chap a:hover{padding-left:10px;background:var(--off)}
 .chap .n{font-family:var(--m);font-size:var(--fs-meta);letter-spacing:var(--t3);color:var(--green)}
 .chap h3{font-size:var(--fs-card);letter-spacing:var(--t2);font-weight:500}
-.chd{display:block;font-family:var(--m);font-size:var(--fs-micro);letter-spacing:.04em;
-  color:var(--c-meta);margin-top:5px}
-.chap a:hover .chd{color:var(--green)}
-.chx{justify-self:end;align-self:center}
-.chx svg{width:20px;height:20px;fill:none;stroke:var(--c-meta);stroke-width:1.9;
-  transition:transform .28s var(--ease-in),stroke .2s}
-.chap a:hover .chx svg{stroke:var(--green);transform:translate(3px,-3px)}
 .chap .t{font-family:var(--m);font-size:var(--fs-meta);letter-spacing:var(--t3);color:var(--c-meta);text-align:right}
 @media(max-width:820px){.chap{grid-template-columns:1fr}}
 
@@ -316,10 +298,6 @@ footer{background:var(--off);border-top:1px solid var(--gline)}
 .fn .bar i{transform:scaleX(1)}.hero h1 .ln em{transform:none}header{transform:none}.diag .ln{stroke-dashoffset:0}.diag .dot{opacity:1}}
 #hd.sm{backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);
   background:rgba(255,255,255,.72);box-shadow:0 1px 0 rgba(0,0,0,.05)}
-.toast{position:fixed;left:50%;bottom:34px;transform:translate(-50%,18px);opacity:0;pointer-events:none;
-  background:var(--dark);color:#fff;font-family:var(--m);font-size:var(--fs-meta);letter-spacing:.04em;
-  padding:11px 20px;border-radius:999px;transition:.3s var(--ease-out);z-index:80}
-.toast.on{opacity:1;transform:translate(-50%,0)}
 .fig{opacity:0;transform:translateY(22px);
   transition:opacity .7s cubic-bezier(.22,.61,.36,1),transform .7s cubic-bezier(.22,.61,.36,1)}
 .fig.boxin{opacity:1;transform:none}
@@ -344,17 +322,15 @@ footer{background:var(--off);border-top:1px solid var(--gline)}
 .fig>*{position:relative;z-index:1}
 
 /* filas */
-.fn .r{grid-template-columns:44px 232px 1fr 172px;align-items:center}
+.fn .r{grid-template-columns:44px 232px 1fr 62px;align-items:center}
 .fn .st{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;
   border:1px solid var(--stroke);font-size:var(--fs-meta);color:var(--c-meta);background:rgba(255,255,255,.5)}
 .fn .r.key .st{border-color:rgba(0,96,58,.32);color:var(--green)}
 .fn .nm{display:flex;flex-direction:column;gap:3px}
 .fn .nm b{font-size:var(--fs-body);font-weight:500;letter-spacing:var(--t2)}
-.fn .nm em{font-style:normal;font-size:var(--fs-meta);letter-spacing:var(--t1);color:var(--c-meta)}
+.fn .nm em{font-style:normal;font-size:var(--fs-meta);letter-spacing:var(--t1);color:#A0A0A0}
 .fn .r.key .nm b{color:var(--green)}
 .fn .vl{font-family:var(--m);font-size:var(--fs-ui);letter-spacing:var(--t3);color:var(--grey);text-align:right}
-.fn .vl em{display:block;font-style:normal;font-family:var(--f);font-size:var(--fs-micro);
-  letter-spacing:var(--t1);color:var(--c-meta);margin-top:4px;white-space:normal}
 .fn .r.key .vl{color:var(--green)}
 .fn .bar{background:rgba(8,9,10,.055)}
 .fn.go .r.key .bar i{animation:load 850ms cubic-bezier(.22,.61,.36,1) var(--d) forwards,
@@ -476,6 +452,7 @@ footer{background:var(--off);border-top:1px solid var(--gline)}
 .fig .fh,.fig .fb{background:transparent}
 
 footer a.dis{opacity:.42;pointer-events:none}
+.b.line.dis{opacity:.4;pointer-events:none}
 
 .pdfrow{display:flex;flex-direction:column;align-items:center;gap:10px;
   padding:clamp(30px,4vh,46px) var(--gut) 0;border-top:1px solid var(--gline);margin-top:clamp(30px,4vh,44px)}
@@ -518,7 +495,7 @@ nav a.cur::after{transform:scaleX(1)}
     <span class="rep">Stranded Capacity Index</span>
     <div class="now"><span class="n" id="nn">01</span><span class="t" id="nt">The problem</span></div>
     <nav>
-      <a href="definition.html">Definition</a><a href="#s02">Chapters</a><a href="taxonomy.html">Taxonomy</a><a href="methodology.html">Methodology</a><a href="references.html">References</a>
+      <a href="definition.html">Definition</a><a href="index.html#s02">Chapters</a><a href="taxonomy.html">Taxonomy</a><a href="methodology.html">Methodology</a><a href="references.html">References</a>
     </nav>
     <div class="tools">
       <button class="ic" id="sbtn" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7.2"/><path d="M20.5 20.5l-4-4"/></svg></button>
@@ -536,153 +513,437 @@ nav a.cur::after{transform:scaleX(1)}
   </div>
 </div>
 
-<section class="hero">
+<style>
+/* ===== DEFINITION ===== */
+.mast{position:relative;overflow:hidden;padding:clamp(120px,17vh,190px) 0 clamp(56px,7vh,84px);
+  border-bottom:1px solid var(--gline)}
+.mast .img{position:absolute;inset:0;background-image:var(--img);background-size:cover;
+  background-position:center 40%;opacity:.16;filter:grayscale(1) contrast(1.3)}
+.mast .fade{position:absolute;inset:0;background:
+  linear-gradient(180deg,#fff 0%,rgba(255,255,255,.72) 30%,rgba(255,255,255,.66) 56%,rgba(255,255,255,.95) 88%,#fff 100%),
+  radial-gradient(74% 62% at 40% 46%, rgba(255,255,255,.48) 0%, rgba(255,255,255,0) 74%)}
+.mast .in{position:relative;max-width:var(--max);margin-inline:auto;padding-inline:var(--gut)}
+
+
+/* riel de lectura: donde estoy y que viene */
+.rail-read{position:sticky;top:70px;z-index:30;background:rgba(255,255,255,.86);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--stroke)}
+.rail-read .in{max-width:var(--max);margin-inline:auto;padding:0 var(--gut);
+  display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
+.rail-read .in::-webkit-scrollbar{display:none}
+.rr{display:flex;align-items:center;gap:9px;padding:13px 20px 12px;white-space:nowrap;
+  border-bottom:2px solid transparent;transition:color .2s,border-color .2s;color:var(--c-meta)}
+.rr:first-child{padding-left:0}
+.rr b{font-family:var(--m);font-size:var(--fs-meta);font-weight:500;letter-spacing:var(--t3)}
+.rr span{font-size:var(--fs-sm);letter-spacing:var(--t1)}
+.rr:hover{color:var(--dark)}
+.rr.on{color:var(--dark);border-bottom-color:var(--green)}
+.rr.on b{color:var(--green)}
+@media(max-width:760px){.rr span{display:none}.rr{padding:12px 14px}}
+
+.backtop{display:inline-flex;align-items:center;gap:9px;margin-bottom:22px;
+  font-size:var(--fs-ui);letter-spacing:var(--t1);color:var(--c-meta);transition:color .2s,gap .2s}
+.backtop svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.9}
+.backtop:hover{color:var(--green);gap:13px}
+.chmark{display:flex;align-items:baseline;gap:18px;padding-bottom:18px;border-bottom:1px solid var(--gline)}
+.cm-n{font-family:var(--m);font-size:var(--fs-h2);line-height:.9;font-weight:500;letter-spacing:var(--t3);color:var(--green)}
+.cm-t{font-size:var(--fs-h3);letter-spacing:var(--t2);font-weight:500}
+.emono{font-family:var(--m);font-size:var(--fs-meta);letter-spacing:.05em;color:var(--green)}
+.mast h1{font-size:var(--fs-h1);line-height:1.02;letter-spacing:var(--t3);font-weight:500;
+  margin-top:24px;max-width:14ch}
+.mast h1 .ln{display:block}
+.mast h1 .ln em{font-style:normal;display:block}
+.au{color:var(--gold-dk)}
+.mast .lead{font-size:var(--fs-lead);line-height:29px;letter-spacing:var(--t1);color:var(--grey);max-width:58ch;margin-top:28px}
+
+section.dfn,section.dnot,section.dwhy,section.dwhere{padding:clamp(72px,9vh,116px) 0;border-bottom:1px solid var(--gline)}
+.dfn .in,.dnot .in,.dwhy .in,.dwhere .in,.chnav .in{max-width:var(--max);margin-inline:auto;padding-inline:var(--gut)}
+.dfn{position:relative}
+.dfn::before{content:"";position:absolute;z-index:-1;inset:12% 12% 40%;pointer-events:none;
+  background:radial-gradient(40% 50% at 20% 30%, rgba(0,96,58,.13) 0%, rgba(0,96,58,0) 70%),
+             radial-gradient(34% 42% at 84% 66%, rgba(0,96,58,.08) 0%, rgba(0,96,58,0) 72%);filter:blur(46px)}
+
+/* la card de estado: la afirmacion a la izquierda, los datos a la derecha */
+.dcard{padding:clamp(26px,2.8vw,38px);display:grid;grid-template-columns:1.15fr .85fr;
+  gap:clamp(28px,4vw,64px);align-items:start}
+
+/* superficie de la card: contraste sin textura */
+.dcard{
+  background:linear-gradient(158deg, rgba(250,250,249,.97) 0%, rgba(243,243,241,.93) 60%, rgba(248,248,246,.95) 100%) !important;
+  border:1px solid rgba(8,9,10,.12);
+  padding:clamp(22px,2.2vw,30px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 1px 2px rgba(8,9,10,.05),
+    0 12px 24px -12px rgba(8,9,10,.18),
+    0 40px 64px -40px rgba(0,96,58,.26) !important;
+}
+.dcard::after{background:
+  linear-gradient(180deg,rgba(255,255,255,.7) 0%,rgba(255,255,255,0) 14%) !important}
+/* la columna de datos: dos por fila, la card baja a la mitad de alto */
+.dcard .dR{display:grid;grid-template-columns:1fr 1fr;gap:0 26px;align-content:start}
+.dcard .lk{padding:9px 0;font-size:var(--fs-sm);display:block}
+.dcard .lk span{display:block;color:var(--c-meta);font-size:var(--fs-micro);letter-spacing:.03em}
+.dcard .lk i{display:block;font-style:normal;font-family:var(--m);font-size:var(--fs-sm);
+  letter-spacing:.02em;color:var(--green);margin-top:3px}
+.dcard .lk.st i{color:var(--dark)}
+.dcard .lk:nth-child(-n+2){border-top:0}
+.dcard .lk{border-top:1px solid rgba(8,9,10,.08)}
+@media(max-width:900px){.dcard .dR{grid-template-columns:1fr}.dcard .lk:nth-child(2){border-top:1px solid rgba(8,9,10,.08)}}
+.dcard .dL{min-width:0}
+.dcard .dR{min-width:0;border-left:1px solid rgba(8,9,10,.09);padding-left:clamp(22px,3vw,40px)}
+.dcard .gt{margin-bottom:4px}
+.dq{font-size:var(--fs-quote);line-height:1.24;letter-spacing:var(--t2);margin-top:12px;max-width:24ch}
+.dcard .lk:first-of-type{margin-top:0;border-top:0}
+.dcard .dsrc{grid-column:1/-1;margin-top:6px;padding-top:16px}
+@media(max-width:900px){.dcard{grid-template-columns:1fr;gap:24px}
+  .dcard .dR{border-left:0;border-top:1px solid rgba(8,9,10,.09);padding-left:0;padding-top:20px}}
+
+.dq{font-size:var(--fs-quote);line-height:1.28;letter-spacing:var(--t2);margin-top:14px;max-width:30ch}
+.dq b{font-weight:500;color:var(--green)}
+.dsrc{margin-top:20px;padding-top:14px;border-top:1px solid rgba(8,9,10,.08);
+  font-family:var(--m);font-size:var(--fs-micro);letter-spacing:.04em;color:var(--c-meta)}
+
+.cond{margin-top:clamp(44px,6vh,72px)}
+.ch{display:grid;grid-template-columns:220px 1fr;gap:30px;align-items:baseline;
+  padding-bottom:26px;border-bottom:1px solid var(--stroke)}
+.cn{font-size:var(--fs-h3);letter-spacing:var(--t2);font-weight:500;color:var(--dark);display:block}
+.ch p{font-size:var(--fs-card);line-height:25px;letter-spacing:var(--t1);color:var(--grey);max-width:52ch}
+.cg{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin-top:30px}
+.ci{font-family:var(--m);font-size:var(--fs-meta);letter-spacing:.04em;color:var(--c-meta)}
+.cc h3{font-size:var(--fs-h3);letter-spacing:var(--t2);font-weight:500;margin-top:10px}
+.cc p{font-size:var(--fs-sm);line-height:23px;letter-spacing:var(--t1);color:var(--grey);margin-top:12px;max-width:36ch}
+
+.ntable{margin-top:44px;border-top:1px solid var(--stroke)}
+.nt{display:grid;grid-template-columns:1fr 1fr;gap:44px;padding:26px 0;border-bottom:1px solid var(--stroke)}
+.ntl{min-width:0}
+.nt h3{font-size:var(--fs-h3-sm);font-size:var(--fs-lead-sm);letter-spacing:var(--t2);font-weight:500}
+.ntd{font-size:var(--fs-sm);line-height:23px;letter-spacing:var(--t1);color:var(--grey);margin-top:10px;max-width:40ch}
+.ntw{display:block;font-size:var(--fs-sm);font-weight:500;letter-spacing:var(--t1);color:var(--green)}
+.ntr p{font-size:var(--fs-body);line-height:24px;letter-spacing:var(--t1);margin-top:10px;max-width:52ch}
+
+.wg{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:44px}
+.wc h3{font-size:var(--fs-h3-sm);line-height:1.26;letter-spacing:var(--t2);font-weight:500;max-width:22ch;
+  padding-top:18px;border-top:1px solid var(--green)}
+.wc p{font-size:var(--fs-sm);line-height:23px;letter-spacing:var(--t1);color:var(--grey);margin-top:14px}
+
+.lay{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:44px}
+.ly{position:relative;border:1px solid var(--gline);border-radius:14px;padding:24px;
+  display:flex;flex-direction:column;min-height:210px;transition:.24s cubic-bezier(.16,1,.3,1)}
+.ly:hover{transform:translateY(-4px);border-color:var(--green);background:#FAFAFA}
+.lyn{font-size:var(--fs-lead-sm);letter-spacing:var(--t2);font-weight:500}
+.ly i{font-style:normal;font-family:var(--m);font-size:var(--fs-micro);letter-spacing:.04em;color:var(--green);margin-top:6px}
+.ly p{font-size:var(--fs-sm);line-height:21px;letter-spacing:var(--t1);color:var(--grey);margin-top:auto;max-width:32ch}
+.lya{position:absolute;top:24px;right:24px}
+.lya svg{width:16px;height:16px;fill:none;stroke:var(--green);stroke-width:1.9;transition:transform .3s}
+.ly:hover .lya svg{transform:translate(3px,-3px)}
+
+.chnav{padding:clamp(46px,6vh,72px) 0}
+.chnav .in{display:flex;gap:14px;flex-wrap:wrap}
+.cnav{display:flex;flex-direction:column;gap:5px;padding:18px 24px;border:1px solid var(--gline);border-radius:12px;
+  min-width:250px;transition:.2s}
+.cnav span{font-family:var(--m);font-size:var(--fs-micro);letter-spacing:.05em;color:var(--c-meta)}
+.cnav b{font-size:var(--fs-card);letter-spacing:var(--t2);font-weight:500}
+.cnav:hover{border-color:var(--green)}
+.cnav.next{align-items:flex-end;text-align:right;position:relative;padding-right:56px}
+.cnav.next svg{position:absolute;right:24px;top:50%;margin-top:-8px;width:16px;height:16px;
+  fill:none;stroke:var(--green);stroke-width:1.9;transition:transform .25s}
+.cnav.next:hover svg{transform:translateX(4px)}
+
+.toast{position:fixed;left:50%;bottom:34px;transform:translate(-50%,18px);opacity:0;pointer-events:none;
+  background:var(--dark);color:#fff;font-family:var(--m);font-size:var(--fs-meta);letter-spacing:.04em;
+  padding:11px 20px;border-radius:999px;transition:.3s cubic-bezier(.22,.61,.36,1);z-index:80}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+.wr{display:inline-block;white-space:pre;opacity:0;transform:translateY(.42em);filter:blur(12px);
+  animation:wrise 1s cubic-bezier(.16,1,.3,1) forwards;animation-delay:calc(var(--b,0ms) + var(--i,0) * 42ms)}
+@keyframes wrise{to{opacity:1;transform:none;filter:blur(0)}}
+.blk{opacity:0;transform:translateY(16px);filter:blur(10px);
+  animation:wrise 1.05s cubic-bezier(.16,1,.3,1) forwards;animation-delay:var(--b,0ms)}
+.rv{opacity:0;transform:translateY(30px);filter:blur(9px)}
+.rv.in{opacity:1;transform:none;filter:blur(0);
+  transition:opacity 1.15s cubic-bezier(.16,1,.3,1),transform 1.15s cubic-bezier(.16,1,.3,1),filter 1.15s cubic-bezier(.16,1,.3,1)}
+.rvs{opacity:0;transform:translateY(26px)}
+.rvs.in{opacity:1;transform:none;transition:opacity 1.1s cubic-bezier(.16,1,.3,1),transform 1.1s cubic-bezier(.16,1,.3,1)}
+@media(prefers-reduced-motion:reduce){.wr,.blk,.rv,.rvs{animation:none!important;transition:none!important;
+  opacity:1!important;transform:none!important;filter:none!important}}
+@media(max-width:980px){.cg,.wg,.lay{grid-template-columns:1fr}.nt{grid-template-columns:1fr;gap:16px}
+  .ch{grid-template-columns:1fr;gap:12px}}
+</style><style>
+.dcard .lk{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 0;
+  border-top:1px solid rgba(8,9,10,.09);font-size:var(--fs-sm);letter-spacing:var(--t1);transition:.18s}
+.dcard .lk:first-of-type{margin-top:18px}
+.dcard .lk i{font-style:normal;font-family:var(--m);font-size:var(--fs-meta);color:var(--green)}
+.dcard .lk:hover{padding-left:6px}
+.dcard .lk.st{cursor:default}
+.dcard .lk.st:hover{padding-left:0}
+.dcard .lk.st i{color:var(--c-meta)}
+.chnav .in{display:flex;gap:14px;flex-wrap:wrap}
+.ntl{min-width:0}
+code{font-family:var(--m);font-size:var(--fs-meta);letter-spacing:.02em;color:var(--green);
+  background:rgba(0,96,58,.06);padding:2px 6px;border-radius:4px}
+.fam{display:grid;grid-template-columns:1fr 1fr;gap:44px;margin-top:44px}
+.fc{min-width:0}
+.fn2{font-size:var(--fs-sm);letter-spacing:var(--t1);font-weight:500}
+.fsam{font-size:var(--fs-h1);letter-spacing:var(--t3);font-weight:500;margin:14px 0 24px;
+  padding-bottom:24px;border-bottom:1px solid var(--stroke)}
+.fw{display:grid;grid-template-columns:150px 1fr;gap:20px;padding:10px 0;border-bottom:1px solid var(--stroke)}
+.fw b{font-size:var(--fs-body)}.fw span{font-size:var(--fs-sm);color:var(--grey);letter-spacing:var(--t1)}
+.fnote{font-family:var(--m);font-size:var(--fs-micro);line-height:18px;letter-spacing:.03em;color:var(--c-meta);margin-top:16px}
+.ttable{margin-top:44px;border-top:1px solid var(--dark)}
+.th,.tr{display:grid;grid-template-columns:230px 250px 1fr;gap:28px;align-items:baseline;
+  padding:16px 0;border-bottom:1px solid var(--stroke)}
+.th{padding:10px 0;border-bottom:1px solid var(--stroke)}
+.th span{font-family:var(--m);font-size:var(--fs-micro);letter-spacing:.06em;text-transform:uppercase;color:var(--c-meta)}
+.tr.d{position:relative}
+.tr.d::before{content:"";position:absolute;left:-16px;top:26px;width:6px;height:6px;border-radius:50%;background:var(--green)}
+.tk code{display:inline-block}
+.tk span{display:block;font-family:var(--m);font-size:var(--fs-micro);color:var(--c-meta);margin-top:6px;letter-spacing:.03em}
+.tu{font-size:var(--fs-sm);line-height:21px;letter-spacing:var(--t1);color:var(--grey)}
+.ts{letter-spacing:var(--t2);font-weight:500;line-height:1.1;overflow:hidden}
+.track{margin-top:40px;padding-top:24px;border-top:1px solid var(--gline)}
+.tg{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:18px}
+.tg.wide{grid-template-columns:repeat(3,1fr);margin-top:44px;gap:30px}
+.tg b{display:block;font-size:var(--fs-lead-sm);letter-spacing:var(--t2);font-weight:500;margin:10px 0 6px}
+.tg p{font-size:var(--fs-ui);line-height:20px;color:var(--grey);letter-spacing:var(--t1)}
+.cgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:24px;margin-top:44px}
+.cw .sw{display:block;height:76px;border-radius:10px;border:1px solid rgba(8,9,10,.1);margin-bottom:12px}
+.cw b{display:block;font-family:var(--m);font-size:var(--fs-meta);letter-spacing:.03em;margin:8px 0 6px}
+.cw p{font-size:var(--fs-meta);line-height:19px;color:var(--grey);letter-spacing:var(--t1)}
+.warn{margin-top:40px;padding:20px 24px;border:1px dashed var(--gline);border-radius:12px}
+.warn p{font-size:var(--fs-sm);line-height:23px;letter-spacing:var(--t1);margin-top:10px;max-width:74ch}
+@media(max-width:1080px){.fam,.tg,.tg.wide{grid-template-columns:1fr}.cgrid{grid-template-columns:repeat(2,1fr)}
+  .th,.tr{grid-template-columns:1fr;gap:8px}.th{display:none}}
+</style>
+<section class="mast">
   <div class="img"></div><div class="fade"></div>
   <div class="in">
-    <h1 data-es="&lt;span class=&quot;ln&quot;&gt;&lt;em&gt;Instalada. Energizada. Pagada.&lt;/em&gt;&lt;/span&gt;&lt;span class=&quot;ln&quot;&gt;&lt;em class=&quot;soft&quot;&gt;Y sin poder producir trabajo.&lt;/em&gt;&lt;/span&gt;">
-      <span class="ln"><em>Installed. Energized. Paid for.</em></span>
-      <span class="ln"><em class="soft">And still unable to do work.</em></span>
-    </h1>
-    <p class="sub blk" style="--b:520ms">Between what a facility holds and what it can deliver, <b>there is no agreed name.</b> This index proposes one — and a taxonomy of the eighteen forms it takes across facility, IT and workload.</p>
-    <div class="hbtn blk" style="--b:680ms">
-      <a class="b solid" href="#s01">Read the report <svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
-      <a class="b line" id="pdfhero" href="#">Download PDF <svg viewBox="0 0 24 24"><path d="M12 4v12M7 12l5 5 5-5M5 20h14"/></svg></a>
-    </div>
-    <div class="hmono blk" style="--b:800ms">Methodological benchmarking · Publicly accessible telemetry · No partnership implied</div>
+    <div class="emono blk" style="--b:60ms">Design system · v0.1 · handoff</div>
+    <h1><span class="ln"><em>Lo que hay,</em></span><span class="ln"><em>y lo que hay que <span class="au">arreglar</span>.</em></span></h1>
+    <p class="lead blk" style="--b:560ms">Extraído del CSS real del prototipo, no de un documento aparte. Si el sitio cambia, esta página queda desactualizada — se regenera, no se edita a mano.</p>
   </div>
 </section>
 
-<a class="cont" id="cont" href="#s01">Continue reading <svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></a>
-
-<div class="sup">
-  <div class="mqt" id="mqt">
-    <img src="data:image/png;base64,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" alt="DraperU Ventures">
-    <img src="data:image/png;base64,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" alt="Harvard Alumni Entrepreneurs">
-    <img src="data:image/png;base64,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" alt="AWS">
-    <span>Biomimicry Institute</span>
-    <img src="data:image/png;base64,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" alt="Harvard Innovation Labs">
-    <img src="data:image/png;base64,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" alt="J.P. Morgan Startup Banking">
-    <span>Ray of Hope Accelerator</span>
+<section class="dfn">
+  <div class="in">
+    <div class="gc dcard rvs">
+      <div class="dL"><span class="gt">Estado</span>
+      <p class="dq">Hay <b>22 tamaños de fuente distintos</b> en la portada. No es una escala, es deriva.</p></div>
+      <div class="dR"><a class="lk" href="#escala"><span>Tokens propuestos</span><i>13</i></a>
+      <a class="lk" href="#deriva"><span>Decisiones pendientes</span><i>4</i></a>
+      <a class="lk" href="#color"><span>Colores en uso</span><i>10</i></a></div>
+      <div class="dsrc">PhysaFlow · Design system v0.1 · abierto a cambios</div>
+    </div>
   </div>
-  <p class="supn">Built with support from the institutions backing the next generation of AI infrastructure.</p>
-</div>
+</section>
 
-<section class="n" id="s01" data-n="01" data-t="The problem">
-  <div class="img"></div><div class="fade"></div>
-  <div class="wrap in">
+<section class="dnot">
+  <div class="in">
     <div class="shead rv"><div class="snum">01</div><div>
-      <h2>Capacity is reported at the top and consumed at the bottom</h2>
-      <p class="lede">Megawatts contracted, racks installed, accelerators delivered. Those figures describe what exists. They do not describe what can be used.</p>
+      <h2>Tipografías</h2>
+      <p class="lede">Dos familias. Ninguna decorativa, ninguna tercera.</p>
     </div></div>
-    <div class="sbody rv"><div></div><div style="max-width:720px">
-      <p style="font-size:var(--fs-lead-sm);line-height:28px">Between the two sits a set of constraints — electrical, thermal, topological, temporal and organizational — that keeps installed infrastructure from converting into work. This index proposes a single vocabulary for that distance.</p>
-      <a class="b line" style="margin-top:26px" href="definition.html">Read the definition <svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
-    </div></div>
+    <div class="fam rv">
+      <div class="fc"><span class="fn2">Inter Tight</span>
+        <p class="fsam">Aa Bb Cc 0123</p>
+        <div class="fw"><b style="font-weight:400">400 Regular</b><span>Texto corrido, párrafos</span></div>
+        <div class="fw"><b style="font-weight:500">500 Medium</b><span>Todos los títulos, botones, énfasis</span></div>
+        <div class="fw"><b style="font-weight:600">600 Semibold</b><span>Un solo uso, en el sub del hero</span></div>
+        <p class="fnote">Google Fonts. Peso 500 es el peso de marca — los títulos nunca van en 700.</p></div>
+      <div class="fc"><span class="fn2" style="font-family:var(--m)">IBM Plex Mono</span>
+        <p class="fsam" style="font-family:var(--m)">Aa Bb Cc 0123</p>
+        <div class="fw"><b style="font-family:var(--m);font-weight:400">400 Regular</b><span>Códigos, metadatos, eyebrows</span></div>
+        <div class="fw"><b style="font-family:var(--m);font-weight:500">500 Medium</b><span>Números de sección</span></div>
+        <p class="fnote">Nunca para texto corrido. Solo datos, códigos y etiquetas cortas.</p></div>
+    </div>
   </div>
 </section>
 
-<section class="n" id="s02" data-n="02" data-t="Chapters">
-  <div class="wrap in">
-    <div class="shead rv"><div class="snum">02</div><div>
-      <h2>Chapters</h2>
-      <p class="lede">Each chapter is its own page, so it can be linked and cited on its own.</p>
-    </div></div>
-    <div class="sbody rv"><div></div><div class="chap">
-      <a href="definition.html"><span class="n">01</span><div><h3>Definition</h3><span class="chd">Definition</span></div><span class="chx"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></span></a>
-      <a href="index.html#s03"><span class="n">02</span><div><h3>The capacity funnel</h3><span class="chd">This page</span></div><span class="chx"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></span></a>
-      <a href="taxonomy.html#FAC"><span class="n">03</span><div><h3>Facility layer</h3><span class="chd">Taxonomy</span></div><span class="chx"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></span></a>
-      <a href="taxonomy.html#IT"><span class="n">04</span><div><h3>IT layer</h3><span class="chd">Taxonomy</span></div><span class="chx"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></span></a>
-      <a href="taxonomy.html#WKL"><span class="n">05</span><div><h3>Workload and operations layer</h3><span class="chd">Taxonomy</span></div><span class="chx"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></span></a>
-      <a href="methodology.html"><span class="n">06</span><div><h3>Measurement approach</h3><span class="chd">Methodology</span></div><span class="chx"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></span></a>
-      <a href="methodology.html#limits"><span class="n">07</span><div><h3>What this index does not claim</h3><span class="chd">Methodology</span></div><span class="chx"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></span></a>
-      <a href="references.html"><span class="n">08</span><div><h3>References</h3><span class="chd">References</span></div><span class="chx"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></span></a>
-    </div></div>
-  </div>
-</section>
-
-<section class="banner">
-  <div class="bimg"></div><div class="vig"></div>
+<section class="dnot" id="escala">
   <div class="in">
-    <svg class="burst" id="bu" viewBox="0 0 300 200" aria-hidden="true"></svg>
-    <div class="btx">
-      <p>Benchmarked against publicly accessible supercomputing telemetry.</p>
-      <span class="foot">* NERSC · Berkeley Lab · Perlmutter. Cited as a public data source. No partnership implied.</span>
-    </div>
-  </div>
-</section>
-<section class="n glassbg" style="border-bottom:0" id="s03" data-n="03" data-t="The capacity funnel">
-  <div class="wrap in">
-    <div class="shead rv"><div class="snum">03</div><div>
-      <h2>The capacity funnel</h2>
-      <p class="lede">Seven steps from nameplate to useful output. The industry communicates the first three well. The last two decide whether the investment produced anything.</p>
+    <div class="shead rv"><div class="snum">02</div><div>
+      <h2>Escala tipográfica</h2>
+      <p class="lede">Trece tokens que reemplazan los 22 valores sueltos. Las filas marcadas con un punto verde son las que hoy tienen más de un valor conviviendo.</p>
     </div></div>
-  </div>
-  <div class="fwide">
-    <div class="fgrid rvs">
-      <div class="fig">
-        <div class="fh">
-          <span class="fnum">Figure 01</span>
-          <span class="ftt">Capacity funnel — nameplate to useful output</span>
-          <span class="chip"><i style="color:var(--gold)"></i>Illustrative</span>
-          <button class="fexp" id="fx"><svg viewBox="0 0 24 24"><path d="M9 4H4v5M15 4h5v5M15 20h5v-5M9 20H4v-5"/></svg>Expand</button>
-        </div>
-        <div class="fb">
-          <div class="fn" id="fn">
-            <div class="r" tabindex="0" data-w="Procurement and build-out. Equipment ordered but not yet racked and commissioned."><span class="st">01</span><span class="nm"><b>Nameplate capacity</b><em>What the equipment is rated for</em></span><span class="bar" style="--w:100%"><i style="--w:100%;--c:#08090A;--d:0s"></i></span><span class="vl">100%<em>− Procurement and build-out</em></span></div>
-            <div class="r" tabindex="0" data-w="Grid connection and interconnection delay. Transmission lines take four to eight years in advanced economies."><span class="st">02</span><span class="nm"><b>Installed capacity</b><em>Racked and on site</em></span><span class="bar" style="--w:100%"><i style="--w:92%;--c:#2B2C2D;--d:.09s"></i></span><span class="vl">92%<em>− Grid interconnection delay</em></span></div>
-            <div class="r" tabindex="0" data-w="Cooling and power distribution. Thermal envelope, UPS derating, branch and busway limits at rack level."><span class="st">03</span><span class="nm"><b>Energized capacity</b><em>Connected and receiving power</em></span><span class="bar" style="--w:100%"><i style="--w:84%;--c:#565758;--d:.18s"></i></span><span class="vl">84%<em>− Cooling and power distribution</em></span></div>
-            <div class="r" tabindex="0" data-w="Hardware availability and cluster topology. Nodes present but outside the eligible fabric, or not yet in the pool."><span class="st">04</span><span class="nm"><b>Supportable capacity</b><em>Within thermal and electrical limits</em></span><span class="bar" style="--w:100%"><i style="--w:71%;--c:#787878;--d:.27s"></i></span><span class="vl">71%<em>− Hardware availability and topology</em></span></div>
-            <div class="r" tabindex="0" data-w="Scheduling and fragmentation. Free accelerators that cannot be assembled into a contiguous allocatable set."><span class="st">05</span><span class="nm"><b>Allocatable capacity</b><em>Free and schedulable as a set</em></span><span class="bar" style="--w:100%"><i style="--w:60%;--c:#A3A3A3;--d:.36s"></i></span><span class="vl">60%<em>− Scheduling and fragmentation</em></span></div>
-            <div class="r key" tabindex="0" data-w="Queues, reservations and admission policy. Capacity held or waiting while demand is pending."><span class="st">06</span><span class="nm"><b>Utilized capacity</b><em>Assigned to a running job</em></span><span class="bar" style="--w:100%"><i style="--w:48%;--c:#0A7A45;--d:.45s"></i></span><span class="vl">48%<em>− Queues and reservations</em></span></div>
-            <div class="r key" tabindex="0" data-w="Failed jobs, retries and idle allocation. GPU-hours assigned that produce no output."><span class="st">07</span><span class="nm"><b>Useful output capacity</b><em>Producing a completed result</em></span><span class="bar" style="--w:100%"><i style="--w:37%;--c:#00603A;--d:.54s"></i></span><span class="vl">37%</span></div>
-          </div>
-          <p class="fintro">Each step removes capacity for a different reason. The label on the right names what is lost before the next step — those are the categories of the taxonomy. Percentages are an illustrative model, not measurements.</p>
-          <div class="fcap" id="fcap"><span class="idle">Hover a step to see what removes capacity before the next one.</span></div>
-        </div>
+    <div class="ttable rv">
+      <div class="th"><span>Token</span><span>Uso</span><span>Muestra</span></div>
+      <div class="tr ">
+        <div class="tk"><code>--fs-display</code><span>clamp(2.6rem, 6.6vw, 84px)</span></div>
+        <div class="tu">Título de portada</div>
+        <div class="ts" style="font-size:clamp(2.6rem, 6.6vw, 84px)">Installed. Energized.</div>
       </div>
-      <aside class="rail">
-        <div class="gc">
-          <span class="gt">What this figure shows</span>
-          <div class="dring"><svg viewBox="0 0 120 120" aria-hidden="true">
-            <circle class="tr" cx="60" cy="60" r="48"/>
-            <g class="seg"></g></svg>
-            <div class="rc"><b>07</b><em>steps</em></div>
-          </div>
-          <p>A monotonic loss model. Each step removes capacity for a different reason — and the reasons do not share a metric.</p>
-          <span class="chip sm"><i style="color:var(--gold)"></i>Illustrative model</span>
-        </div>
-        <div class="gc">
-          <span class="gt">Where the losses come from</span>
-          <a class="lk" href="taxonomy.html#FAC"><span>Facility</span><i>7</i></a>
-          <a class="lk" href="taxonomy.html#IT"><span>IT</span><i>6</i></a>
-          <a class="lk" href="taxonomy.html#WKL"><span>Workload and operations</span><i>5</i></a>
-          <p class="gn">18 named phenomena across three layers.</p>
-        </div>
-        <div class="gc">
-          <span class="gt">Methodology</span>
-          <p>The seven steps are defined. The measurement is not. Definitions and boundaries are open for comment before any figure is published.</p>
-          <a class="mlink" href="methodology.html">Explore methodology <svg viewBox="0 0 24 24"><path d="M5 12h13M12 6l6 6-6 6"/></svg></a>
-        </div>
-      </aside>
+      <div class="tr ">
+        <div class="tk"><code>--fs-num</code><span>clamp(3rem, 6.4vw, 84px)</span></div>
+        <div class="tu">Número de sección (mono, 14% opacidad)</div>
+        <div class="ts" style="font-size:clamp(3rem, 6.4vw, 84px)">01</div>
+      </div>
+      <div class="tr ">
+        <div class="tk"><code>--fs-h1</code><span>clamp(2.4rem, 6vw, 80px)</span></div>
+        <div class="tu">Título de capítulo</div>
+        <div class="ts" style="font-size:clamp(2.4rem, 6vw, 80px)">A gap with no name.</div>
+      </div>
+      <div class="tr ">
+        <div class="tk"><code>--fs-h2</code><span>clamp(1.9rem, 3.9vw, 44px)</span></div>
+        <div class="tu">Título de sección</div>
+        <div class="ts" style="font-size:clamp(1.9rem, 3.9vw, 44px)">How an entry qualifies</div>
+      </div>
+      <div class="tr ">
+        <div class="tk"><code>--fs-h3</code><span>24px</span></div>
+        <div class="tu">Subtítulo dentro de sección</div>
+        <div class="ts" style="font-size:24px">Three conditions</div>
+      </div>
+      <div class="tr d">
+        <div class="tk"><code>--fs-lead</code><span>21px</span></div>
+        <div class="tu">Bajada de capítulo</div>
+        <div class="ts" style="font-size:21px">Stranded capacity is not one failure.</div>
+      </div>
+      <div class="tr ">
+        <div class="tk"><code>--fs-lead-sm</code><span>18px</span></div>
+        <div class="tu">Bajada de sección</div>
+        <div class="ts" style="font-size:18px">Seven steps from nameplate to output.</div>
+      </div>
+      <div class="tr ">
+        <div class="tk"><code>--fs-card</code><span>17px</span></div>
+        <div class="tu">Título de fila o card</div>
+        <div class="ts" style="font-size:17px">Stranded power</div>
+      </div>
+      <div class="tr ">
+        <div class="tk"><code>--fs-body</code><span>16px</span></div>
+        <div class="tu">Texto base</div>
+        <div class="ts" style="font-size:16px">The industry reports how much capacity is installed.</div>
+      </div>
+      <div class="tr d">
+        <div class="tk"><code>--fs-sm</code><span>15px</span></div>
+        <div class="tu">Texto secundario, descripciones</div>
+        <div class="ts" style="font-size:15px">Contracted or UPS capacity that cannot admit load.</div>
+      </div>
+      <div class="tr ">
+        <div class="tk"><code>--fs-ui</code><span>14px</span></div>
+        <div class="tu">Botones, filtros, controles</div>
+        <div class="ts" style="font-size:14px">Read the report</div>
+      </div>
+      <div class="tr d">
+        <div class="tk"><code>--fs-meta</code><span>12.5px</span></div>
+        <div class="tu">Metadatos, códigos, mono</div>
+        <div class="ts" style="font-size:12.5px">FAC-01</div>
+      </div>
+      <div class="tr d">
+        <div class="tk"><code>--fs-micro</code><span>11px</span></div>
+        <div class="tu">Etiquetas, eyebrows, pies</div>
+        <div class="ts" style="font-size:11px">ESTABLISHED TERM</div>
+      </div>
     </div>
-    <div class="fmeta rvs">
-      <div class="fmL">
-        <p class="disc open" id="disc">Proportions are illustrative. No measurement has been collected for any step.</p>
-        <div class="s1">Source: PhysaFlow Stranded Capacity Index</div>
-        <div class="s2">Definition of each step pending validation · v0.1</div>
+    <div class="track rv">
+      <span class="ntw">Letter-spacing</span>
+      <div class="tg">
+        <div><code>--t1</code><b>−0.01em</b><p>Texto corrido y UI</p></div>
+        <div><code>--t2</code><b>−0.02em</b><p>Títulos medianos y nombres</p></div>
+        <div><code>--t3</code><b>−0.03em</b><p>Títulos grandes y mono</p></div>
       </div>
-      <div class="fdl">
-            <button class="fcite" id="fcite"><svg viewBox="0 0 24 24"><path d="M7 8h10M7 12h10M7 16h6"/></svg>Cite this figure</button>
-            <span class="soon">PNG · SVG · Table — pending</span>
-          </div>
     </div>
   </div>
 </section>
 
+<section class="dnot" id="deriva">
+  <div class="in">
+    <div class="shead rv"><div class="snum">03</div><div>
+      <h2>Decisiones pendientes</h2>
+      <p class="lede">Cuatro unificaciones. Cada una elimina reglas duplicadas sin que se note visualmente. Necesito el visto bueno antes de aplicarlas.</p>
+    </div></div>
+    <div class="ntable rv">
+      <div class="nt">
+        <div class="ntl"><h3>Unificar en 15px</h3><p class="ntd">Hoy conviven: 14.5px, 15px, 15.5px</p></div>
+        <div class="ntr"><span class="ntw">Por qué</span><p>Tres valores a menos de un píxel de distancia. Nadie los distingue y son tres reglas distintas de mantener.</p></div>
+      </div>
+      <div class="nt">
+        <div class="ntl"><h3>Unificar en 12.5px</h3><p class="ntd">Hoy conviven: 12px, 12.5px, 13px</p></div>
+        <div class="ntr"><span class="ntw">Por qué</span><p>Lo mismo en la franja de metadatos. Hay nueve reglas con 13px y cuatro con 12.5px.</p></div>
+      </div>
+      <div class="nt">
+        <div class="ntl"><h3>Unificar en 11px</h3><p class="ntd">Hoy conviven: 9px, 10px, 10.5px, 11px, 11.5px</p></div>
+        <div class="ntr"><span class="ntw">Por qué</span><p>Cinco tamaños para etiquetas. Abajo de 11px la Inter Tight en peso 500 empieza a cerrarse.</p></div>
+      </div>
+      <div class="nt">
+        <div class="ntl"><h3>Unificar en 21px</h3><p class="ntd">Hoy conviven: 19px, 21px, 22px</p></div>
+        <div class="ntr"><span class="ntw">Por qué</span><p>Tres bajadas distintas según la página. Debería ser una.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
 
+<section class="dnot" id="color">
+  <div class="in">
+    <div class="shead rv"><div class="snum">04</div><div>
+      <h2>Color</h2>
+      <p class="lede">Monocromo más un acento saturado. El dorado es secundario y aparece solo como detalle.</p>
+    </div></div>
+    <div class="cgrid rv">
+      <div class="cw"><span class="sw" style="background:#08090A"></span>
+        <code>--dark</code><b>#08090A</b><p>Texto principal, fondos oscuros</p></div>
+      <div class="cw"><span class="sw" style="background:#706F6F"></span>
+        <code>--grey</code><b>#706F6F</b><p>Texto secundario</p></div>
+      <div class="cw"><span class="sw" style="background:#EBEBEB"></span>
+        <code>--stroke</code><b>#EBEBEB</b><p>Filetes y bordes neutros</p></div>
+      <div class="cw"><span class="sw" style="background:#FFFFFF"></span>
+        <code>--light</code><b>#FFFFFF</b><p>Fondo</p></div>
+      <div class="cw"><span class="sw" style="background:#FAFAFA"></span>
+        <code>--off</code><b>#FAFAFA</b><p>Fondo de hover y bloques</p></div>
+      <div class="cw"><span class="sw" style="background:#00603A"></span>
+        <code>--green</code><b>#00603A</b><p>Acento único. El verde del logo.</p></div>
+      <div class="cw"><span class="sw" style="background:#0E4A2E"></span>
+        <code>--green-dp</code><b>#0E4A2E</b><p>Fondo del banner</p></div>
+      <div class="cw"><span class="sw" style="background:rgba(0,96,58,.22)"></span>
+        <code>--gline</code><b>rgba(0,96,58,.22)</b><p>Filete verde al 22%</p></div>
+      <div class="cw"><span class="sw" style="background:#C9A961"></span>
+        <code>--gold</code><b>#C9A961</b><p>Solo sobre fondo oscuro</p></div>
+      <div class="cw"><span class="sw" style="background:var(--gold-dk)"></span>
+        <code>var(--gold-dk)</code><b>var(--gold-dk)</b><p>Dorado para fondo claro. Sin token todavía.</p></div>
+    </div>
+    <div class="warn rv">
+      <span class="ntw">Conflicto abierto</span>
+      <p>El repo tiene <code>--color-forest-900: #012d1d</code> y <code>--color-forest-700: #1b4332</code> en <code>tokens.css</code>. El logo y el prototipo usan <code>#00603A</code>. Son tres verdes distintos para la misma marca. Hay que elegir uno antes de que el front lo consuma.</p>
+    </div>
+  </div>
+</section>
 
+<section class="dnot">
+  <div class="in">
+    <div class="shead rv"><div class="snum">05</div><div>
+      <h2>Espacio y grilla</h2>
+      <p class="lede">Ancho máximo de 1280 salvo la figura del embudo, que va a 1720 para que entre el riel.</p>
+    </div></div>
+    <div class="tg wide rv">
+      <div><code>--max</code><b>1280px</b><p>Ancho del contenido</p></div>
+      <div><code>--gut</code><b>clamp(20px, 4.4vw, 80px)</b><p>Margen lateral</p></div>
+      <div><code>columna de sección</code><b>150px + 1fr</b><p>Número a la izquierda, contenido a la derecha</p></div>
+      <div><code>radio de card</code><b>16px</b><p>Cards de vidrio</p></div>
+      <div><code>radio de botón</code><b>999px</b><p>Píldoras</p></div>
+      <div><code>radio de barra</code><b>4px</b><p>Barras del embudo</p></div>
+    </div>
+  </div>
+</section>
 
+<section class="dnot">
+  <div class="in">
+    <div class="shead rv"><div class="snum">06</div><div>
+      <h2>Movimiento</h2>
+      <p class="lede">Dos curvas. La larga para entradas, la corta para hovers.</p>
+    </div></div>
+    <div class="tg wide rv">
+      <div><code>cubic-bezier(.16, 1, .3, 1)</code><b>1.0 – 1.15s</b><p>Entradas al scrollear y palabras del título. Cola larga.</p></div>
+      <div><code>cubic-bezier(.22, .61, .36, 1)</code><b>.3 – .85s</b><p>Barras del embudo, acordeones, anillo.</p></div>
+      <div><code>sin curva, .18 – .24s</code><b>hover</b><p>Cambios de color y desplazamientos chicos.</p></div>
+      <div><code>blur 9px → 0</code><b>en toda entrada</b><p>Lo que hace que no se vea mecánico. Va junto a opacidad y translateY.</p></div>
+    </div>
+    <p class="fnote rv">Todo respeta <code>prefers-reduced-motion</code>. Si el sistema operativo tiene los efectos apagados, nada se mueve y todo queda en su estado final.</p>
+  </div>
+</section>
 
+<section class="chnav">
+  <div class="in">
+    <a class="b line" href="index.html">Volver al índice <svg viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+  </div>
+</section>
 <footer>
   <div class="fg">
     <div class="fb">
@@ -702,135 +963,40 @@ nav a.cur::after{transform:scaleX(1)}
   </div>
   <div class="fbot"><div class="in"><span>© Year PhysaFlow. All rights reserved.</span><span style="margin-left:auto">No partnership implied</span></div></div>
 </footer>
-<div class="toast" id="toast">Citation copied</div>
-
-<div class="lbox" id="lb">
-  <button class="sclose" id="lbx" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-  <div class="inner" id="lbin"></div>
-</div>
-
-<script>
-const hd=document.getElementById('hd'),pg=document.getElementById('pg'),nn=document.getElementById('nn'),nt=document.getElementById('nt'),cont=document.getElementById('cont');
+<div class="toast" id="toast">…</div><script>
+const hd=document.getElementById('hd'),pg=document.getElementById('pg'),
+      nn=document.getElementById('nn'),nt=document.getElementById('nt');
 addEventListener('scroll',()=>{
-  hd.classList.toggle('sm',scrollY>200);
-  cont.classList.toggle('hide',scrollY>140);
+  hd.classList.toggle('sm',scrollY>180);
   const m=document.body.scrollHeight-innerHeight;
   pg.style.width=(m>0?scrollY/m*100:0)+'%';
 },{passive:true});
+if(nn){nn.textContent='—';nt.textContent='Design system';}
 
-document.querySelectorAll('section.n[data-n]').forEach(s=>new IntersectionObserver(e=>e.forEach(x=>{
-  if(x.isIntersecting){nn.textContent=s.dataset.n;nt.textContent=s.dataset.t;
-     document.querySelectorAll('section.n').forEach(o=>o.classList.remove('cur'));
-     s.classList.add('cur');}
-}),{rootMargin:'-35% 0px -55% 0px'}).observe(s));
-
-const io=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target);}}),{rootMargin:'0px 0px -12% 0px',threshold:.08});
-document.querySelectorAll('.rv,.rvs').forEach(el=>io.observe(el));
-
-/* la caja entra como unidad y despues cargan las barras */
-const fn=document.getElementById('fn'), figbox=fn.closest('.fig')||fn;
-new IntersectionObserver((e,o)=>e.forEach(x=>{
-  if(x.isIntersecting){figbox.classList.add('boxin');setTimeout(()=>fn.classList.add('go'),260);o.disconnect();}
-}),{threshold:.25}).observe(fn);
-
-/* ilustración del banner — rayos */
-const bu=document.getElementById('bu');
-if(bu){
-  let s='<circle class="core" cx="150" cy="100" r="7"/><circle class="ring" cx="150" cy="100" r="16"/>';
-  for(let i=0;i<44;i++){
-    const a=(i/44)*Math.PI*2, L=34+((i*37)%1000)/1000*54;
-    const x1=150+Math.cos(a)*22, y1=100+Math.sin(a)*22;
-    const x2=150+Math.cos(a)*(22+L), y2=100+Math.sin(a)*(22+L);
-    s+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" style="--d:${(i*0.018).toFixed(3)}s"/>`;
-  }
-  bu.innerHTML=s;
-  new IntersectionObserver((e,o)=>e.forEach(x=>{if(x.isIntersecting){bu.classList.add('go');o.disconnect();}}),{threshold:.3}).observe(bu);
-}
-
-/* hover: qué saca capacidad antes del paso siguiente */
-const fcap=document.getElementById('fcap'), rows=[...fn.querySelectorAll('.r')];
-const idle='<span class="idle">Hover a step to see what removes capacity before the next one.</span>';
-rows.forEach((r,i)=>{
-  const show=()=>{
-    fcap.classList.add('on');
-    fcap.innerHTML='<span class="no">'+String(i+1).padStart(2,'0')+' → '+String(Math.min(i+2,7)).padStart(2,'0')+'</span>'+
-      '<span class="tx"><b>'+r.querySelector('.nm').textContent+'</b> — '+r.dataset.w+'</span>';
-  };
-  r.addEventListener('mouseenter',show);
-  r.addEventListener('focus',show);
-  r.addEventListener('click',show);
-});
-fn.addEventListener('mouseleave',()=>{fcap.classList.remove('on');fcap.innerHTML=idle;});
-
-/* expandir figura */
-const lb=document.getElementById('lb'),lbin=document.getElementById('lbin');
-document.getElementById('fx').onclick=()=>{
-  const f=document.getElementById('fx').closest('.fig').cloneNode(true);
-  f.querySelector('.fexp')?.remove();
-  f.querySelector('.fn')?.classList.add('go');
-  lbin.innerHTML=''; lbin.appendChild(f); lb.classList.add('on');
-};
-document.getElementById('lbx').onclick=()=>lb.classList.remove('on');
-addEventListener('keydown',e=>{if(e.key==='Escape')lb.classList.remove('on')});
-
-const mq=document.getElementById('mqt');
-(()=>{ const half=document.createElement('div'); half.className='half';
-  while(mq.firstChild) half.appendChild(mq.firstChild);
-  const twin=half.cloneNode(true); twin.setAttribute('aria-hidden','true');
-  mq.append(half,twin); })();
-
-
-/* anillo del riel: 7 arcos, los dos ultimos en verde */
-(()=>{const rg=document.querySelector('.dring'); if(!rg)return;
-  const g=rg&&rg.querySelector('.seg'); if(!g)return;
-  const _q=1, R=48,C=60,N=7,gap=6;
-  const step=360/N, sw=step-gap; let s='';
-  for(let i=0;i<N;i++){
-    const a0=(i*step)*Math.PI/180, a1=(i*step+sw)*Math.PI/180;
-    const x0=C+R*Math.cos(a0),y0=C+R*Math.sin(a0),x1=C+R*Math.cos(a1),y1=C+R*Math.sin(a1);
-    const L=(sw/360)*2*Math.PI*R;
-    s+=`<path class="${i>=N-2?'k':''}" d="M${x0.toFixed(2)} ${y0.toFixed(2)} A${R} ${R} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}" style="--l:${L.toFixed(1)};--dd:${(0.3+i*0.09).toFixed(2)}s"/>`;
-  }
-  g.innerHTML=s;
-  new IntersectionObserver((e,o)=>e.forEach(x=>{if(x.isIntersecting){rg.classList.add('go');o.disconnect();}}),{threshold:.4}).observe(rg);
-})();
-
-
-
-
-/* parte el texto en palabras sin romper los spans internos */
 function splitWords(root,start){
   let i=start||0;
-  const walk=n=>{
-    [...n.childNodes].forEach(c=>{
-      if(c.nodeType===3){
-        const parts=c.nodeValue.split(/(\s+)/).filter(s=>s.length);
-        if(!parts.length)return;
-        const f=document.createDocumentFragment();
-        parts.forEach(t=>{
-          if(/^\s+$/.test(t)){f.appendChild(document.createTextNode(t));return;}
-          const s=document.createElement('span');
-          s.className='wr'; s.style.setProperty('--i',i++); s.textContent=t;
-          f.appendChild(s);
-        });
-        c.replaceWith(f);
-      } else if(c.nodeType===1 && !c.classList.contains('wr')) walk(c);
-    });
-  };
+  const walk=n=>{[...n.childNodes].forEach(c=>{
+    if(c.nodeType===3){
+      const parts=c.nodeValue.split(/(\s+)/).filter(s=>s.length);
+      if(!parts.length)return;
+      const f=document.createDocumentFragment();
+      parts.forEach(t=>{
+        if(/^\s+$/.test(t)){f.appendChild(document.createTextNode(t));return;}
+        const s=document.createElement('span');
+        s.className='wr'; s.style.setProperty('--i',i++); s.textContent=t;
+        f.appendChild(s);
+      });
+      c.replaceWith(f);
+    } else if(c.nodeType===1 && !c.classList.contains('wr')) walk(c);
+  });};
   walk(root); return i;
 }
+(()=>{const t=document.querySelector('.mast h1'); if(t)splitWords(t,1);})();
 
-(()=>{const t=document.querySelector('.hero h1'); if(t)splitWords(t,0);})();
-
-/* citar la figura */
-(()=>{const b=document.getElementById('fcite'),t=document.getElementById('toast'); if(!b)return; let tt;
-  b.onclick=()=>{const d=new Date().toISOString().slice(0,10);
-    const txt='PhysaFlow Stranded Capacity Index (2026). Figure 01 — Capacity funnel, nameplate to useful output. Illustrative model. v0.1. Retrieved '+d+'.';
-    (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).catch(()=>{
-      const x=document.createElement('textarea');x.value=txt;document.body.appendChild(x);x.select();document.execCommand('copy');x.remove();});
-    t.textContent='Citation copied — Figure 01'; t.classList.add('on');
-    clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('on'),2200);};
-})();
+const io=new IntersectionObserver((e,o)=>e.forEach(x=>{
+  if(x.isIntersecting){x.target.classList.add('in');o.unobserve(x.target);}
+}),{rootMargin:'0px 0px -10% 0px',threshold:.06});
+document.querySelectorAll('.rv,.rvs').forEach(el=>io.observe(el));
 
 /* buscador real */
 const IDX=[
@@ -853,7 +1019,7 @@ function render(q){
   const s=q.trim().toLowerCase();
   const r=s?IDX.filter(i=>(i.k+' '+i.t+' '+i.e).toLowerCase().includes(s)):IDX;
   const T=x=>(document.documentElement.lang==='es'&&window.__ES&&window.__ES[x])?window.__ES[x]:x;
-  const H=k=>k.startsWith('FAC')||k.startsWith('IT-')||k.startsWith('WKL')?'taxonomy.html#'+k:(SDEST[k]||'taxonomy.html');
+  const H=k=>/^(FAC|IT-|WKL)/.test(k)?'taxonomy.html#'+k:(SDEST[k]||'taxonomy.html');
   sr.innerHTML = r.length ? r.map(i=>`<a href="${H(i.k)}"><span class="k">${i.k}</span><span><span class="ti">${T(i.t)}</span><span class="ex">${T(i.e)}</span></span></a>`).join('')
     : '<div class="none">'+T('No results. The index is still a draft — most chapters are pending.')+'</div>';
 }
@@ -861,55 +1027,41 @@ document.getElementById('sbtn').onclick=()=>{sheet.classList.add('on');sq.value=
 document.getElementById('sx').onclick=()=>sheet.classList.remove('on');
 addEventListener('keydown',e=>{if(e.key==='Escape')sheet.classList.remove('on')});
 sq.addEventListener('input',e=>render(e.target.value));
-window.__rerenderSearch=()=>{if(sheet.classList.contains('on'))render(sq.value||'');};
-</script>
-<script>
-window.__ES={"The problem": "El problema", "Definition": "Definición", "Chapters": "Capítulos", "Taxonomy": "Taxonomía", "Methodology": "Metodología", "Stranded Capacity Index": "Índice de Capacidad Varada", "Installed. Energized. Paid for.": "Instalada. Energizada. Pagada.", "And still unable to do work.": "Y sin poder producir trabajo.", "Between what a facility holds and what it can deliver,": "Entre lo que una instalación posee y lo que puede entregar,", "there is no agreed name.": "no hay un nombre acordado.", "This index proposes one — and a taxonomy of the eighteen forms it takes across facility, IT and workload.": "Este índice propone uno — y una taxonomía de las dieciocho formas que adopta en instalación, IT y carga de trabajo.", "Read the report": "Leer el informe", "Download PDF": "Descargar PDF", "Methodological benchmarking · Publicly accessible telemetry · No partnership implied": "Benchmarking metodológico · Telemetría de acceso público · No implica alianza", "Continue reading": "Seguir leyendo", "Built with support from the institutions backing the next generation of AI infrastructure.": "Construido con el apoyo de las instituciones que respaldan la próxima generación de infraestructura de IA.", "Capacity is reported at the top and consumed at the bottom": "La capacidad se informa arriba y se consume abajo", "Megawatts contracted, racks installed, accelerators delivered. Those figures describe what exists. They do not describe what can be used.": "Megavatios contratados, racks instalados, aceleradores entregados. Esas cifras describen lo que existe. No describen lo que se puede usar.", "Between the two sits a set of constraints — electrical, thermal, topological, temporal and organizational — that keeps installed infrastructure from converting into work. This index proposes a single vocabulary for that distance.": "Entre ambas hay un conjunto de restricciones —eléctricas, térmicas, topológicas, temporales y organizativas— que impide que la infraestructura instalada se convierta en trabajo. Este índice propone un vocabulario único para esa distancia.", "Read the definition": "Leer la definición", "Each chapter is its own page, so it can be linked and cited on its own.": "Cada capítulo es su propia página, para poder enlazarlo y citarlo por separado.", "The capacity funnel": "El embudo de capacidad", "Facility layer": "Capa de instalación", "IT layer": "Capa de IT", "Workload and operations layer": "Capa de carga de trabajo y operaciones", "Measurement approach": "Enfoque de medición", "What this index does not claim": "Lo que este índice no afirma", "References": "Referencias", "11 min": "11 min", "9 min": "9 min", "14 min": "14 min", "13 min": "13 min", "12 min": "12 min", "10 min": "10 min", "7 min": "7 min", "4 min": "4 min", "Milestone 01 / 04": "Hito 01 / 04", "Benchmarked against publicly accessible supercomputing telemetry — not private deployments.": "Comparado contra telemetría de supercómputo de acceso público — no contra despliegues privados.", "NERSC · Berkeley Lab · Perlmutter — no partnership implied": "NERSC · Berkeley Lab · Perlmutter — no implica alianza", "Seven steps from nameplate to useful output. The industry communicates the first three well. The last two decide whether the investment produced anything.": "Siete pasos desde la capacidad nominal hasta la salida útil. La industria comunica bien los tres primeros. Los dos últimos deciden si la inversión produjo algo.", "Figure 01": "Figura 01", "Capacity funnel — nameplate to useful output": "Embudo de capacidad — de nominal a salida útil", "Illustrative": "Ilustrativa", "Expand": "Ampliar", "Nameplate capacity": "Capacidad nominal", "Installed capacity": "Capacidad instalada", "Energized capacity": "Capacidad energizada", "Supportable capacity": "Capacidad sostenible", "Allocatable capacity": "Capacidad asignable", "Utilized capacity": "Capacidad utilizada", "Useful output capacity": "Capacidad de salida útil", "Hover a step to see what removes capacity before the next one.": "Posá el cursor sobre un paso para ver qué le quita capacidad antes del siguiente.", "What this figure shows": "Qué muestra esta figura", "steps": "pasos", "A monotonic loss model. Each step removes capacity for a different reason — and the reasons do not share a metric.": "Un modelo de pérdida monótona. Cada paso quita capacidad por un motivo distinto — y los motivos no comparten métrica.", "Illustrative model": "Modelo ilustrativo", "Where the losses come from": "De dónde vienen las pérdidas", "Facility": "Instalación", "Workload and operations": "Carga de trabajo y operaciones", "18 named phenomena across three layers.": "Dieciocho fenómenos nombrados en tres capas.", "The seven steps are defined. The measurement is not. Definitions and boundaries are open for comment before any figure is published.": "Los siete pasos están definidos. La medición no. Las definiciones y sus límites están abiertos a comentarios antes de publicar cualquier cifra.", "Explore methodology": "Ver metodología", "Proportions are illustrative. No measurement has been collected for any step.": "Las proporciones son ilustrativas. No se recolectó ninguna medición para ningún paso.", "Source: PhysaFlow Stranded Capacity Index": "Fuente: PhysaFlow Stranded Capacity Index", "Definition of each step pending validation · v0.1": "Definición de cada paso pendiente de validación · v0.1", "Table": "Tabla", "Cite this figure": "Citar esta figura", "Nature-inspired frontier AI networks. This index is published as open reference material — meant to be cited, contested and corrected.": "Redes de IA de frontera inspiradas en la naturaleza. Este índice se publica como material de referencia abierto — para ser citado, discutido y corregido.", "Report": "Informe", "Capacity funnel": "Embudo de capacidad", "Publication": "Publicación", "How to cite": "Cómo citar", "Changelog": "Registro de cambios", "Licence — pending": "Licencia — pendiente", "Contact": "Contacto", "Contact — pending": "Contacto — pendiente", "Press — pending": "Prensa — pendiente", "Author": "Autor", "PhysaFlow — pending": "PhysaFlow — pendiente", "Published": "Publicado", "Date pending": "Fecha pendiente", "Version": "Versión", "0.1 Draft": "0.1 Borrador", "Publisher": "Editor", "Pending": "Pendiente", "© Year PhysaFlow. All rights reserved.": "© Año PhysaFlow. Todos los derechos reservados.", "No partnership implied": "No implica alianza", "Search the index…": "Buscar en el índice…", "Taxonomy · v0.1 · 18 entries": "Taxonomía · v0.1 · 18 entradas", "Stranded capacity is not one failure. It is a family of them, spread across three layers — and each one is invisible to the metrics that watch the other two.": "La capacidad varada no es una falla. Es una familia de fallas repartidas en tres capas — y cada una es invisible para las métricas que vigilan las otras dos.", "What an entry is": "Qué es una entrada", "What an entry is not": "Qué no es una entrada", "A measurement. Nothing on this page is derived from data collected for this index. Naming has to come before counting.": "Una medición. Nada en esta página proviene de datos recolectados para este índice. Nombrar tiene que venir antes que contar.", "The two labels": "Las dos etiquetas", "Established term": "Término establecido", "Proposed here": "Propuesto aquí", "All": "Todas", "13 of 18 names come from existing literature. 5 are proposed by this index and are open for comment.": "13 de 18 nombres vienen de la literatura existente. 5 los propone este índice y están abiertos a comentarios.", "No entry matches that filter.": "Ninguna entrada coincide con ese filtro.", "Source: PhysaFlow Stranded Capacity Index · Taxonomy v0.1 · Naming and boundaries open for comment": "Fuente: PhysaFlow Stranded Capacity Index · Taxonomía v0.1 · Nombres y límites abiertos a comentarios", "Citation copied": "Cita copiada", "Filter entries": "Filtrar entradas", "What it is not": "Qué no es", "What you would observe": "Qué se observaría", "Where the name comes from": "De dónde viene el nombre", "Cite this entry": "Citar esta entrada", "Contracted or UPS capacity that cannot admit new critical load.": "Capacidad contratada o de UPS que no puede admitir nueva carga crítica.", "Not unused power. It is committed, paid for, and structurally unable to serve another rack.": "No es potencia sin usar. Está comprometida, pagada, y estructuralmente imposibilitada de servir otro rack.", "Contracted kW persistently above measured critical load, with no admission path.": "kW contratados persistentemente por encima de la carga crítica medida, sin vía de admisión.", "Data-centre capacity planning. Long-standing operator term for sold-out power that cannot be resold.": "Planificación de capacidad de centros de datos. Término histórico de operadores para potencia vendida que no se puede revender.", "Stranded cooling": "Refrigeración varada", "Active thermal capacity not removing heat from useful IT load.": "Capacidad térmica activa que no extrae calor de carga de IT útil.", "Not overcooling. The plant runs while the load it serves is idle or absent.": "No es sobreenfriamiento. La planta funciona mientras la carga que sirve está ociosa o ausente.", "Cooling plant duty sustained while IT load in the served zone falls.": "Régimen de la planta de frío sostenido mientras cae la carga de IT en la zona servida.", "Facility engineering. Used alongside stranded power in mechanical design literature.": "Ingeniería de instalaciones. Se usa junto a potencia varada en la literatura de diseño mecánico.", "Stranded space": "Espacio varado", "Whitespace with floor area available and no power or cooling to serve it.": "Sala blanca con superficie disponible y sin potencia ni refrigeración que la sirvan.", "Not vacancy. The shell is finished; the infrastructure to energize it is not.": "No es vacancia. La obra está terminada; la infraestructura para energizarla no.", "Commissioned floor area with no upstream capacity assigned.": "Superficie puesta en servicio sin capacidad aguas arriba asignada.", "Commercial real estate and colocation. Standard leasing term.": "Bienes raíces comerciales y colocación. Término estándar de arrendamiento.", "Distribution-limited capacity": "Capacidad limitada por distribución", "Power available at the room level but not deliverable at the rack.": "Potencia disponible a nivel de sala pero no entregable en el rack.", "Distinct from stranded power. Capacity exists upstream; busway, branch circuit or PDU is the constraint.": "Distinta de la potencia varada. La capacidad existe aguas arriba; la restricción es la canalización, el circuito ramal o el PDU.", "Room-level headroom coexisting with rack-level breaker saturation.": "Margen a nivel de sala conviviendo con saturación de interruptores a nivel de rack.", "Proposed here. The constraint is discussed in practice; no agreed name was identified.": "Propuesto aquí. La restricción se discute en la práctica; no se identificó un nombre acordado.", "Redundancy-reserved capacity": "Capacidad reservada por redundancia", "Capacity held to satisfy a resiliency tier and never used in normal operation.": "Capacidad retenida para cumplir un nivel de resiliencia y nunca usada en operación normal.", "Not waste. This is capacity working exactly as designed — and never producing output.": "No es desperdicio. Es capacidad funcionando exactamente como fue diseñada — y sin producir salida nunca.", "The delta between installed and single-path usable capacity.": "La diferencia entre la capacidad instalada y la utilizable en vía única.", "Resiliency tier standards. Follows directly from N+1 and 2N design conventions.": "Estándares de niveles de resiliencia. Se desprende directamente de las convenciones de diseño N+1 y 2N.", "Grid-deferred capacity": "Capacidad diferida por red", "Equipment installed but not energized, pending interconnection or transmission.": "Equipamiento instalado pero no energizado, a la espera de interconexión o transmisión.", "Not a construction delay. The facility is built; the grid connection is the binding constraint.": "No es un retraso de obra. La instalación está construida; la conexión a la red es la restricción activa.", "Commissioned equipment with an interconnection date in the future.": "Equipamiento puesto en servicio con fecha de interconexión a futuro.", "Proposed here. Interconnection queues are widely reported; this specific framing is ours.": "Propuesto aquí. Las colas de interconexión se reportan ampliamente; este encuadre específico es nuestro.", "Derated capacity": "Capacidad reducida por derrateo", "Nameplate ratings reduced in practice by ambient conditions, altitude or safety margin.": "Valores nominales reducidos en la práctica por condiciones ambientales, altitud o margen de seguridad.", "Not a failure. The gap between the rating on the plate and the rating in the room.": "No es una falla. La brecha entre el valor de la placa y el valor real en la sala.", "Sustained operating ceiling below manufacturer nameplate.": "Techo operativo sostenido por debajo del nominal del fabricante.", "Electrical and mechanical engineering. Derating is a standard specification practice.": "Ingeniería eléctrica y mecánica. El derrateo es una práctica estándar de especificación.", "Uncommissioned hardware": "Hardware sin poner en servicio", "Accelerators racked and powered but not yet accepted into the production pool.": "Aceleradores montados y alimentados pero todavía no aceptados en el pool de producción.", "Not inventory in transit. The hardware is in place and drawing power.": "No es inventario en tránsito. El hardware está instalado y consumiendo energía.", "Powered nodes absent from the scheduler inventory.": "Nodos alimentados ausentes del inventario del planificador.", "Proposed here. Named as a distinct state so it is not counted as available.": "Propuesto aquí. Se nombra como estado propio para que no se cuente como disponible.", "Failed or quarantined nodes": "Nodos fallados o en cuarentena", "Hardware present in the fleet but excluded by health checks.": "Hardware presente en la flota pero excluido por chequeos de salud.", "Not decommissioned hardware. These nodes remain racked, powered and counted in the fleet.": "No es hardware dado de baja. Estos nodos siguen montados, alimentados y contados en la flota.", "Nodes in a drain, quarantine or failed state across consecutive intervals.": "Nodos en estado de drenaje, cuarentena o falla durante intervalos consecutivos.", "Cluster operations. Drain and quarantine states are standard scheduler vocabulary.": "Operación de clústeres. Los estados de drenaje y cuarentena son vocabulario estándar de planificadores.", "GPU fragmentation": "Fragmentación de GPU", "Accelerators free individually but not assemblable into a contiguous set.": "Aceleradores libres individualmente pero no ensamblables en un conjunto contiguo.", "Not low utilization. Aggregate free capacity can be high while no single job can be placed.": "No es baja utilización. La capacidad libre agregada puede ser alta mientras ningún trabajo logra ubicarse.", "Free accelerator count above job size, with placement still failing.": "Cantidad de aceleradores libres por encima del tamaño del trabajo, y la ubicación falla igual.", "Scheduling and HPC research. Fragmentation is an established term in resource allocation.": "Investigación en planificación y HPC. La fragmentación es un término establecido en asignación de recursos.", "Memory-bound idle compute": "Cómputo ocioso limitado por memoria", "Accelerators whose memory is exhausted before their compute is.": "Aceleradores cuya memoria se agota antes que su cómputo.", "Not a scheduling problem. The device is busy by any occupancy metric and its arithmetic units are idle.": "No es un problema de planificación. El dispositivo está ocupado según cualquier métrica de ocupación y sus unidades aritméticas están ociosas.", "High memory occupancy with sustained low compute utilization.": "Alta ocupación de memoria con baja utilización de cómputo sostenida.", "Accelerator performance analysis. The roofline distinction between memory and compute bound.": "Análisis de rendimiento de aceleradores. La distinción roofline entre limitado por memoria y por cómputo.", "Topology-bottlenecked compute": "Cómputo con cuello de botella topológico", "Accelerators present but outside the interconnect domain a run requires.": "Aceleradores presentes pero fuera del dominio de interconexión que requiere una ejecución.", "Not fragmentation. The nodes are contiguous in the scheduler and not contiguous in the fabric.": "No es fragmentación. Los nodos son contiguos en el planificador y no lo son en la red interna.", "Eligible node count falling as the required interconnect domain widens.": "La cantidad de nodos elegibles cae a medida que se amplía el dominio de interconexión requerido.", "Distributed training and HPC networking. Topology-aware placement is well described.": "Entrenamiento distribuido y redes de HPC. La ubicación consciente de topología está bien documentada.", "Generation-mismatched capacity": "Capacidad desfasada por generación", "Older accelerators excluded because the workload assumes a uniform fleet.": "Aceleradores más viejos excluidos porque la carga asume una flota uniforme.", "Not obsolescence. The hardware works and would contribute if the run tolerated heterogeneity.": "No es obsolescencia. El hardware funciona y aportaría si la ejecución tolerara heterogeneidad.", "Prior-generation nodes idle while current-generation nodes queue.": "Nodos de generación anterior ociosos mientras los de generación actual hacen cola.", "Proposed here. Heterogeneity is discussed; this exclusion has no settled name.": "Propuesto aquí. La heterogeneidad se discute; esta exclusión no tiene nombre asentado.", "Reserved-but-unused capacity": "Capacidad reservada sin usar", "Capacity held by a reservation or commitment that is not consuming it.": "Capacidad retenida por una reserva o compromiso que no la está consumiendo.", "Not idle capacity. This capacity is unavailable to anyone else by policy, not by physics.": "No es capacidad ociosa. Está indisponible para el resto por política, no por física.", "Reservation window active with no corresponding running job.": "Ventana de reserva activa sin un trabajo en ejecución que le corresponda.", "Proposed here. The behaviour is familiar to operators; the name is ours.": "Propuesto aquí. El comportamiento le resulta familiar a los operadores; el nombre es nuestro.", "Queue inefficiency": "Ineficiencia de cola", "Idle capacity coexisting with a non-empty queue.": "Capacidad ociosa conviviendo con una cola no vacía.", "Not underdemand. Demand is present and measurable; the two simply do not meet.": "No es falta de demanda. La demanda está presente y es medible; simplemente no se encuentran.", "Simultaneous non-zero queue depth and non-zero free capacity.": "Profundidad de cola distinta de cero y capacidad libre distinta de cero al mismo tiempo.", "Scheduling theory. A classic diagnostic in batch and HPC systems.": "Teoría de planificación. Un diagnóstico clásico en sistemas batch y de HPC.", "Failed-run capacity": "Capacidad de ejecuciones fallidas", "Accelerator-hours consumed by runs that terminate without producing output.": "Horas de acelerador consumidas por ejecuciones que terminan sin producir salida.", "Not utilization. The device was busy. Nothing was produced.": "No es utilización. El dispositivo estuvo ocupado. No se produjo nada.", "Accelerator-hours attributed to jobs ending in a failure state.": "Horas de acelerador atribuidas a trabajos que terminan en estado de falla.", "Large-scale training operations. Failure and restart overhead is openly discussed.": "Operaciones de entrenamiento a gran escala. La sobrecarga por fallas y reinicios se discute abiertamente.", "Idle allocation": "Asignación ociosa", "Capacity assigned to a job that is not computing — waiting on data, checkpointing or stalled.": "Capacidad asignada a un trabajo que no está computando — esperando datos, guardando checkpoint o detenido.", "Not free capacity. The allocation is held and cannot be reassigned.": "No es capacidad libre. La asignación está retenida y no se puede reasignar.", "Allocated devices with sustained near-zero compute utilization.": "Dispositivos asignados con utilización de cómputo sostenida cerca de cero.", "Cluster operations. The gap between allocation and utilization is a standard concern.": "Operación de clústeres. La brecha entre asignación y utilización es una preocupación estándar.", "Over-provisioned allocation": "Asignación sobredimensionada", "Capacity requested above what the job actually uses.": "Capacidad solicitada por encima de lo que el trabajo realmente usa.", "Not a scheduling failure. The scheduler honoured the request; the request was wrong.": "No es una falla de planificación. El planificador respetó el pedido; el pedido estaba mal.", "Requested resources persistently above observed peak usage.": "Recursos solicitados persistentemente por encima del pico de uso observado.", "Capacity management. Request-versus-usage drift is widely documented in cluster practice.": "Gestión de capacidad. La desviación entre pedido y uso está ampliamente documentada en la práctica de clústeres.", "Entry FAC-01 · Taxonomy v0.1 · no measurement collected": "Entrada FAC-01 · Taxonomía v0.1 · sin medición recolectada", "Entry FAC-02 · Taxonomy v0.1 · no measurement collected": "Entrada FAC-02 · Taxonomía v0.1 · sin medición recolectada", "Entry FAC-03 · Taxonomy v0.1 · no measurement collected": "Entrada FAC-03 · Taxonomía v0.1 · sin medición recolectada", "Entry FAC-04 · Taxonomy v0.1 · no measurement collected": "Entrada FAC-04 · Taxonomía v0.1 · sin medición recolectada", "Entry FAC-05 · Taxonomy v0.1 · no measurement collected": "Entrada FAC-05 · Taxonomía v0.1 · sin medición recolectada", "Entry FAC-06 · Taxonomy v0.1 · no measurement collected": "Entrada FAC-06 · Taxonomía v0.1 · sin medición recolectada", "Entry FAC-07 · Taxonomy v0.1 · no measurement collected": "Entrada FAC-07 · Taxonomía v0.1 · sin medición recolectada", "Entry IT-01 · Taxonomy v0.1 · no measurement collected": "Entrada IT-01 · Taxonomía v0.1 · sin medición recolectada", "Entry IT-02 · Taxonomy v0.1 · no measurement collected": "Entrada IT-02 · Taxonomía v0.1 · sin medición recolectada", "Entry IT-03 · Taxonomy v0.1 · no measurement collected": "Entrada IT-03 · Taxonomía v0.1 · sin medición recolectada", "Entry IT-04 · Taxonomy v0.1 · no measurement collected": "Entrada IT-04 · Taxonomía v0.1 · sin medición recolectada", "Entry IT-05 · Taxonomy v0.1 · no measurement collected": "Entrada IT-05 · Taxonomía v0.1 · sin medición recolectada", "Entry IT-06 · Taxonomy v0.1 · no measurement collected": "Entrada IT-06 · Taxonomía v0.1 · sin medición recolectada", "Entry WKL-01 · Taxonomy v0.1 · no measurement collected": "Entrada WKL-01 · Taxonomía v0.1 · sin medición recolectada", "Entry WKL-02 · Taxonomy v0.1 · no measurement collected": "Entrada WKL-02 · Taxonomía v0.1 · sin medición recolectada", "Entry WKL-03 · Taxonomy v0.1 · no measurement collected": "Entrada WKL-03 · Taxonomía v0.1 · sin medición recolectada", "Entry WKL-04 · Taxonomy v0.1 · no measurement collected": "Entrada WKL-04 · Taxonomía v0.1 · sin medición recolectada", "Entry WKL-05 · Taxonomy v0.1 · no measurement collected": "Entrada WKL-05 · Taxonomía v0.1 · sin medición recolectada", "Chapter 01 · Definition · v0.1": "Capítulo 01 · Definición · v0.1", "The industry reports how much capacity is installed and how much is utilized. Neither number describes the distance between them. This chapter defines that distance.": "La industria informa cuánta capacidad está instalada y cuánta se utiliza. Ninguna de las dos cifras describe la distancia entre ambas. Este capítulo define esa distancia.", "The definition": "La definición", "PhysaFlow Stranded Capacity Index · Definition v0.1 · open for comment": "PhysaFlow Stranded Capacity Index · Definición v0.1 · abierta a comentarios", "Three conditions": "Tres condiciones", "All three must hold. Drop any one and the phenomenon belongs to a different category — usually one that already has a name.": "Las tres tienen que cumplirse. Si falta una, el fenómeno pertenece a otra categoría — normalmente una que ya tiene nombre.", "Committed": "Comprometida", "Paid for, contracted or built. Capital has already been spent. A plan is not stranded capacity.": "Pagada, contratada o construida. El capital ya se gastó. Un plan no es capacidad varada.", "Present": "Presente", "It exists physically and can be pointed at in a building. A forecast is not stranded capacity.": "Existe físicamente y se puede señalar dentro de un edificio. Una proyección no es capacidad varada.", "Unreachable by demand": "Inalcanzable por la demanda", "There is demand it cannot serve. This is the condition that separates it from capacity that is merely unused.": "Existe demanda que no puede atender. Esta es la condición que la separa de la capacidad meramente sin usar.", "Six adjacent terms are already in use. None of them describes the same thing, and treating them as synonyms is how the gap stays invisible.": "Ya hay seis términos vecinos en uso. Ninguno describe lo mismo, y tratarlos como sinónimos es exactamente lo que mantiene invisible la brecha.", "Idle capacity": "Capacidad ociosa", "Capacity that is not in use right now.": "Capacidad que no está en uso en este momento.", "Why it is different": "Por qué es distinta", "Stranded capacity is always idle. Idle capacity is not always stranded — if no demand exists, the capacity is simply unused, and nothing is being lost.": "La capacidad varada siempre está ociosa. La ociosa no siempre está varada — si no hay demanda, la capacidad simplemente no se usa, y no se está perdiendo nada.", "Underutilization": "Subutilización", "A ratio between what is used and what is available.": "Una razón entre lo que se usa y lo que está disponible.", "A measurement, not a cause. Stranded capacity is one of several things that can produce a low ratio, and the ratio alone does not tell you which.": "Una medición, no una causa. La capacidad varada es una de varias cosas que pueden producir una razón baja, y la razón sola no te dice cuál.", "Overprovisioning": "Sobreaprovisionamiento", "A deliberate decision to build beyond expected demand.": "Una decisión deliberada de construir más allá de la demanda esperada.", "Intentional and planned for. Stranded capacity is the unintended residue that appears after the decision, often for reasons unrelated to it.": "Intencional y planificado. La capacidad varada es el residuo no buscado que aparece después de la decisión, muchas veces por motivos ajenos a ella.", "Spare or reserve capacity": "Capacidad de reserva", "Capacity held on purpose for resilience or growth.": "Capacidad retenida a propósito para resiliencia o crecimiento.", "Working exactly as designed. Part of it still never produces output, so this index names it (FAC-05) instead of excluding it — but it is not a failure.": "Funciona exactamente como fue diseñada. Aun así, parte de ella nunca produce salida, por eso este índice la nombra (FAC-05) en vez de excluirla — pero no es una falla.", "Stranded assets": "Activos varados", "In finance and energy: assets written down early due to market or regulatory change.": "En finanzas y energía: activos depreciados antes de tiempo por cambios de mercado o regulatorios.", "A different field and a different mechanism. This index borrows the adjective because it is precise, not the underlying model.": "Otro campo y otro mecanismo. Este índice toma prestado el adjetivo porque es preciso, no el modelo que hay detrás.", "Curtailment": "Recorte de generación", "In power systems: deliberately reducing available generation.": "En sistemas eléctricos: reducir deliberadamente la generación disponible.", "Supply-side and voluntary. Stranded capacity is involuntary and sits on the demand-facing side of the meter.": "Del lado de la oferta y voluntario. La capacidad varada es involuntaria y está del lado del medidor que mira a la demanda.", "Why it needs a name": "Por qué necesita un nombre", "Naming is not a formality. It is the precondition for everything that follows.": "Nombrar no es una formalidad. Es la precondición de todo lo que viene después.", "You cannot measure what you cannot name": "No se puede medir lo que no se puede nombrar", "There is no field in any standard reporting format for the capacity described above. It is absorbed into utilization, where it becomes indistinguishable from low demand.": "No hay ningún campo en ningún formato de reporte estándar para la capacidad descrita arriba. Se absorbe dentro de la utilización, donde se vuelve indistinguible de la falta de demanda.", "You cannot compare across facilities": "No se puede comparar entre instalaciones", "Two sites reporting the same utilization can have entirely different amounts of capacity they cannot reach. Without a shared name, the comparison is not possible.": "Dos sitios que reportan la misma utilización pueden tener cantidades completamente distintas de capacidad inalcanzable. Sin un nombre compartido, la comparación no es posible.", "You cannot price it": "No se puede poner en precio", "Capacity that cannot be named cannot be written into a contract, a service level or a valuation. It stays a private operational problem instead of a market one.": "La capacidad que no se puede nombrar no se puede escribir en un contrato, en un nivel de servicio ni en una valuación. Queda como problema operativo privado en vez de problema de mercado.", "Where it appears": "Dónde aparece", "The definition holds across three layers. Eighteen named phenomena satisfy all three conditions — seven in the facility, six in IT, five in workload and operations.": "La definición se sostiene en tres capas. Dieciocho fenómenos nombrados cumplen las tres condiciones — siete en la instalación, seis en IT, cinco en carga de trabajo y operaciones.", "7 entries": "7 entradas", "6 entries": "6 entradas", "5 entries": "5 entradas", "Electrical, thermal and spatial limits of the building itself.": "Límites eléctricos, térmicos y espaciales del edificio mismo.", "Hardware present in the building but not reachable as a usable set.": "Hardware presente en el edificio pero inalcanzable como conjunto utilizable.", "Admission, placement and reservation behaviour once hardware is reachable.": "Comportamiento de admisión, ubicación y reserva una vez que el hardware es alcanzable.", "Back to": "Volver a", "The index": "El índice", "Chapter 02": "Capítulo 02", "Chapter 06": "Capítulo 06", "Chapter 08": "Capítulo 08", "Chapter 06 · Methodology · v0.1": "Capítulo 06 · Metodología · v0.1", "An index that names things it has not measured has one obligation above all others: to be explicit about the difference.": "Un índice que nombra cosas que no midió tiene una obligación por encima de todas: ser explícito sobre esa diferencia.", "Current status": "Estado actual", "Entries defined": "Entradas definidas", "Entries measured": "Entradas medidas", "Figures published": "Figuras publicadas", "1 illustrative": "1 ilustrativa", "PhysaFlow Stranded Capacity Index · Methodology v0.1 · open for comment": "PhysaFlow Stranded Capacity Index · Metodología v0.1 · abierta a comentarios", "How an entry qualifies": "Cómo califica una entrada", "Five tests. The first three come from the definition; the last two are editorial and exist to keep the taxonomy usable.": "Cinco pruebas. Las tres primeras vienen de la definición; las dos últimas son editoriales y existen para que la taxonomía siga siendo usable.", "Capital already spent. A plan does not qualify.": "Capital ya gastado. Un plan no califica.", "Physically in a building and identifiable. A forecast does not qualify.": "Físicamente en un edificio e identificable. Una proyección no califica.", "Demand exists that this capacity cannot serve.": "Existe demanda que esta capacidad no puede atender.", "Distinguishable": "Distinguible", "It can be told apart from the entries next to it. If two entries always co-occur, they are one entry.": "Se puede diferenciar de las entradas vecinas. Si dos entradas siempre aparecen juntas, son una sola entrada.", "Falsifiable": "Falsable", "At least one observable signal could confirm or deny its presence. Without one, it stays out.": "Al menos una señal observable podría confirmar o negar su presencia. Sin eso, queda afuera.", "Evidence labels": "Etiquetas de evidencia", "Two labels for names, four for figures. They exist so that no reader has to guess how much weight a statement carries.": "Dos etiquetas para nombres, cuatro para figuras. Existen para que ningún lector tenga que adivinar cuánto peso carga una afirmación.", "Labels used on names": "Etiquetas usadas en nombres", "The name already exists in public literature. This index adopts it and defines its boundary. Thirteen of eighteen entries.": "El nombre ya existe en la literatura pública. Este índice lo adopta y define su límite. Trece de dieciocho entradas.", "No agreed name was identified in public sources. This index proposes one, and it is open for comment. Five of eighteen entries.": "No se identificó un nombre acordado en fuentes públicas. Este índice propone uno, y está abierto a comentarios. Cinco de dieciocho entradas.", "Labels used on figures": "Etiquetas usadas en figuras", "The shape is a hypothesis. Proportions carry no information. The capacity funnel is currently the only figure, and it sits here.": "La forma es una hipótesis. Las proporciones no cargan información. El embudo de capacidad es hoy la única figura, y está acá.", "Conceptual example": "Ejemplo conceptual", "A worked case built to explain a mechanism. Not drawn from any real facility.": "Un caso trabajado para explicar un mecanismo. No proviene de ninguna instalación real.", "Modelled": "Modelada", "Derived from published inputs through a stated calculation. Nothing has reached this label yet.": "Derivada de insumos publicados mediante un cálculo declarado. Todavía nada alcanzó esta etiqueta.", "Measured": "Medida", "Built from telemetry collected under a stated protocol. Nothing has reached this label yet.": "Construida con telemetría recolectada bajo un protocolo declarado. Todavía nada alcanzó esta etiqueta.", "What would have to be measured": "Qué habría que medir", "Each layer needs a different dataset, held by a different party, with a different reason for being hard to obtain.": "Cada capa necesita un conjunto de datos distinto, en manos de un actor distinto, y difícil de obtener por un motivo distinto.", "What would be needed": "Qué haría falta", "Who holds it": "Quién lo tiene", "Building management and DCIM records, plus utility interconnection filings.": "Registros de gestión del edificio y DCIM, más presentaciones de interconexión ante la distribuidora.", "Operators and utilities. DCIM data is commercially sensitive; interconnection queues are public in some jurisdictions and not in others.": "Operadores y distribuidoras. Los datos de DCIM son comercialmente sensibles; las colas de interconexión son públicas en algunas jurisdicciones y en otras no.", "Scheduler inventory, node health state and fabric topology.": "Inventario del planificador, estado de salud de los nodos y topología de la red interna.", "Cluster operators. Rarely published, and the schema differs between schedulers, so cross-site comparison needs a mapping that does not yet exist.": "Operadores de clústeres. Casi nunca se publica, y el esquema difiere entre planificadores, así que comparar entre sitios exige un mapeo que todavía no existe.", "Job accounting logs: requests, allocations, runtimes and exit states.": "Registros contables de trabajos: pedidos, asignaciones, tiempos de ejecución y estados de salida.", "The same operators. Publicly accessible supercomputing facilities are the only class that publishes this openly, which is why the index is benchmarked against them first.": "Los mismos operadores. Las instalaciones de supercómputo de acceso público son la única clase que publica esto abiertamente, y por eso el índice se compara primero contra ellas.", "Stated up front, because an index of things nobody has counted is easy to misread — and easier to misquote.": "Declarado por adelantado, porque un índice de cosas que nadie contó es fácil de malinterpretar — y más fácil todavía de citar mal.", "No global figure": "Ninguna cifra global", "This index does not estimate how much capacity is stranded worldwide, in any region, or in any market. No such number is published here, and any number attributed to this index that is not on this site did not come from it.": "Este índice no estima cuánta capacidad está varada en el mundo, en ninguna región ni en ningún mercado. Acá no se publica ninguna cifra así, y cualquier número atribuido a este índice que no esté en este sitio no salió de él.", "No judgement of any operator": "Ningún juicio sobre ningún operador", "Naming a phenomenon is not an accusation. Most of the entries describe constraints that competent operators manage deliberately, and several describe systems working exactly as designed.": "Nombrar un fenómeno no es una acusación. La mayoría de las entradas describe restricciones que operadores competentes gestionan deliberadamente, y varias describen sistemas funcionando exactamente como fueron diseñados.", "No claim about relative size": "Ninguna afirmación sobre tamaño relativo", "The eighteen entries are not ranked. Nothing here suggests that fragmentation matters more than interconnection delay, or the reverse. Ordering in the taxonomy is structural, not hierarchical.": "Las dieciocho entradas no están rankeadas. Nada acá sugiere que la fragmentación importe más que la demora de interconexión, ni al revés. El orden de la taxonomía es estructural, no jerárquico.", "No claim of completeness": "Ninguna afirmación de completitud", "Eighteen is what we could define and defend, not what exists. The taxonomy is expected to grow, and entries are expected to merge or split as boundaries get tested.": "Dieciocho es lo que pudimos definir y defender, no lo que existe. Se espera que la taxonomía crezca, y que las entradas se fusionen o se dividan a medida que se pongan a prueba los límites.", "No causal model": "Ningún modelo causal", "The capacity funnel shows seven steps in sequence. It does not claim that each step causes the next, or that removing one constraint releases capacity downstream.": "El embudo de capacidad muestra siete pasos en secuencia. No afirma que cada paso cause el siguiente, ni que quitar una restricción libere capacidad aguas abajo.", "No institutional endorsement": "Ningún aval institucional", "Institutions named anywhere on this site are cited as sources or acknowledged as supporters of the organisation. None of them has reviewed, approved or endorsed this index.": "Las instituciones nombradas en cualquier parte de este sitio se citan como fuentes o se reconocen como apoyo a la organización. Ninguna revisó, aprobó ni avaló este índice.", "Versioning": "Versionado", "Every version is dated and kept. Nothing is edited silently.": "Cada versión se fecha y se conserva. Nada se edita en silencio.", "What moves 0.1 to 0.2": "Qué lleva de 0.1 a 0.2", "Any entry added, removed or merged. Any change to a boundary. Any figure that moves from illustrative to modelled.": "Cualquier entrada agregada, quitada o fusionada. Cualquier cambio en un límite. Cualquier figura que pase de ilustrativa a modelada.", "What moves 0.x to 1.0": "Qué lleva de 0.x a 1.0", "At least one figure supported by measurement collected under a published protocol, and a taxonomy that has survived external review.": "Al menos una figura sostenida por mediciones recolectadas bajo un protocolo publicado, y una taxonomía que haya sobrevivido a revisión externa.", "How to comment": "Cómo comentar", "Entries can be cited individually from the taxonomy. Disagreement about a boundary is the most useful kind of comment this draft can receive.": "Las entradas se pueden citar individualmente desde la taxonomía. El desacuerdo sobre un límite es el comentario más útil que puede recibir este borrador.", "Stranded power": "Potencia varada", "Evidence states": "Estados de evidencia", "What stranded capacity is, and which terms it is not.": "Qué es la capacidad varada, y qué términos no lo son.", "Seven steps from nameplate to useful output.": "Siete pasos desde la capacidad nominal hasta la salida útil.", "Electrical, thermal and spatial constraints.": "Restricciones eléctricas, térmicas y espaciales.", "Hardware that is present but not reachable as a set.": "Hardware presente pero inalcanzable como conjunto.", "Admission, placement and reservation behaviour.": "Comportamiento de admisión, ubicación y reserva.", "Active thermal capacity that is not cooling useful IT load.": "Capacidad térmica activa que no refrigera carga de IT útil.", "Accelerators available individually but not as a contiguous set.": "Aceleradores disponibles individualmente pero no como conjunto contiguo.", "Accelerators present but not eligible for certain training runs.": "Aceleradores presentes pero no elegibles para ciertos entrenamientos.", "Illustrative model. Source: PhysaFlow Stranded Capacity Index.": "Modelo ilustrativo. Fuente: PhysaFlow Stranded Capacity Index.", "Seven states, from documented to open question.": "Siete estados, de documentado a pregunta abierta.", "No results. The index is still a draft — most chapters are pending.": "Sin resultados. El índice sigue siendo un borrador — la mayoría de los capítulos está pendiente.", "PNG · SVG · Table — pending": "PNG · SVG · Tabla — pendiente", "What the equipment is rated for": "Para cuánto está especificado el equipo", "Racked and on site": "Montada y en el sitio", "Connected and receiving power": "Conectada y recibiendo energía", "Within thermal and electrical limits": "Dentro de los límites térmicos y eléctricos", "Free and schedulable as a set": "Libre y asignable como conjunto", "Assigned to a running job": "Asignada a un trabajo en ejecución", "Producing a completed result": "Produciendo un resultado terminado", "Benchmarked against publicly accessible supercomputing telemetry.": "Comparado contra telemetría de supercómputo de acceso público.", "* NERSC · Berkeley Lab · Perlmutter. Cited as a public data source. No partnership implied.": "* NERSC · Berkeley Lab · Perlmutter. Citados como fuente pública de datos. No implica alianza.", "Each step removes capacity for a different reason. The label on the right names what is lost before the next step — those are the categories of the taxonomy. Percentages are an illustrative model, not measurements.": "Cada paso quita capacidad por un motivo distinto. La etiqueta de la derecha nombra qué se pierde antes del paso siguiente — esas son las categorías de la taxonomía. Los porcentajes son un modelo ilustrativo, no mediciones.", "Procurement and build-out": "Compra y construcción", "Grid interconnection delay": "Demora de interconexión a la red", "Cooling and power distribution": "Refrigeración y distribución eléctrica", "Hardware availability and topology": "Disponibilidad de hardware y topología", "Scheduling and fragmentation": "Planificación y fragmentación", "Queues and reservations": "Colas y reservas", "− Procurement and build-out": "− Compra y construcción", "− Grid interconnection delay": "− Demora de interconexión a la red", "− Cooling and power distribution": "− Refrigeración y distribución eléctrica", "− Hardware availability and topology": "− Disponibilidad de hardware y topología", "− Scheduling and fragmentation": "− Planificación y fragmentación", "− Queues and reservations": "− Colas y reservas", "This page": "Esta página", "v0.1 draft — not published yet": "v0.1 borrador — todavía sin publicar", "Back to top": "Volver arriba"};
-(function(){
-  var recs=[],ph=[];
-  var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:function(n){
-    if(!n.nodeValue.trim())return NodeFilter.FILTER_REJECT;
-    var p=n.parentElement; if(!p)return NodeFilter.FILTER_REJECT;
-    if(p.closest('script,style,[data-es]'))return NodeFilter.FILTER_REJECT;
-    return NodeFilter.FILTER_ACCEPT;}});
-  var n; while(n=w.nextNode()) recs.push({n:n,en:n.nodeValue});
-  document.querySelectorAll('[placeholder]').forEach(function(e){ph.push({e:e,en:e.getAttribute('placeholder')});});
-  var fulls=[].slice.call(document.querySelectorAll('[data-es]')).map(function(e){
-    return {e:e,en:e.innerHTML,es:e.getAttribute('data-es')};});
 
-  window.__applyLang=function(l){
-    var es=l==='es', D=window.__ES;
-    recs.forEach(function(r){
-      var t=r.en.trim();
-      if(!es){r.n.nodeValue=r.en;return;}
-      var v=D[t]; if(v==null)return;
-      r.n.nodeValue=r.en.replace(t,v);
-    });
-    ph.forEach(function(o){o.e.setAttribute('placeholder', es&&D[o.en]?D[o.en]:o.en);});
-    fulls.forEach(function(o){
-      o.e.innerHTML = es? o.es : o.en;
-      o.e.querySelectorAll('.wr').forEach(function(s){s.classList.add('instant');});
-    });
-    if(es&&typeof splitWords==='function'){
-      fulls.forEach(function(o){ if(o.e.tagName==='H1'){ splitWords(o.e,0);
-        o.e.querySelectorAll('.wr').forEach(function(s){s.classList.add('instant');}); }});
+
+
+/* __RAILJS__ */
+(()=>{
+  const secs=[...document.querySelectorAll('section')].filter(s=>s.querySelector('.shead .snum'));
+  if(secs.length<2)return;
+  const rail=document.createElement('nav');
+  rail.className='rail-read'; rail.setAttribute('aria-label','Sections');
+  const inner=document.createElement('div'); inner.className='in'; rail.appendChild(inner);
+  secs.forEach((s,i)=>{
+    if(!s.id) s.id='sec-'+(i+1);
+    const n=s.querySelector('.shead .snum').textContent.trim();
+    const t=s.querySelector('.shead h2').textContent.trim();
+    const a=document.createElement('a');
+    a.className='rr'; a.href='#'+s.id;
+    a.innerHTML='<b>'+n+'</b><span>'+t+'</span>';
+    inner.appendChild(a);
+  });
+  const mast=document.querySelector('.mast');
+  if(mast&&mast.nextElementSibling){mast.parentNode.insertBefore(rail,mast.nextElementSibling);}
+  else{document.body.insertBefore(rail,document.body.firstElementChild);}
+  const links=[...inner.children];
+  const io=new IntersectionObserver(e=>e.forEach(x=>{
+    if(x.isIntersecting){
+      const i=secs.indexOf(x.target);
+      links.forEach((l,j)=>l.classList.toggle('on',j===i));
+      const l=links[i]; if(l&&inner.scrollTo) inner.scrollTo({left:Math.max(0,l.offsetLeft-24),behavior:'smooth'});
     }
-    document.documentElement.lang = es?'es':'en';
-    if(window.__rerenderSearch)window.__rerenderSearch();
-    document.querySelectorAll('.lgs button').forEach(function(b){
-      b.setAttribute('aria-current', (b.textContent.trim().toLowerCase()===l)?'true':'false');});
-    try{var u=new URL(location); es?u.searchParams.set('lang','es'):u.searchParams.delete('lang');
-        history.replaceState(null,'',u);}catch(e){}
-  };
-  document.querySelectorAll('.lgs button').forEach(function(b){
-    b.addEventListener('click',function(){window.__applyLang(b.textContent.trim().toLowerCase());});});
-  var pre=new URLSearchParams(location.search).get('lang');
-  document.querySelectorAll('a[href]').forEach(function(a){
-    a.addEventListener('click',function(){
-      if(document.documentElement.lang!=='es')return;
-      var h=a.getAttribute('href'); if(!h||h.startsWith('#')||h.startsWith('http'))return;
-      if(h.indexOf('lang=')<0)a.setAttribute('href',h+(h.indexOf('?')<0?'?':'&')+'lang=es');});});
-  if(pre==='es') addEventListener('load',function(){window.__applyLang('es');});
+  }),{rootMargin:'-25% 0px -60% 0px'});
+  secs.forEach(s=>io.observe(s));
+  window.__railSync=()=>secs.forEach((s,i)=>{
+    const t=s.querySelector('.shead h2'); const sp=links[i]&&links[i].querySelector('span');
+    if(t&&sp) sp.textContent=t.textContent.trim();
+  });
 })();
 
 /* el PDF todavia no existe: se ve, pero avisa en vez de mentir */

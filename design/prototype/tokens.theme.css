@@ -1,0 +1,51 @@
+/* ------------------------------------------------------------------
+   PhysaFlow — tokens para Tailwind v4
+   Pegar dentro de client/src/styles/tokens.css, junto al @theme que
+   ya existe. Genera utilidades: text-body, text-lead, text-meta,
+   text-green, rounded-card, ease-in-soft, etc.
+   ------------------------------------------------------------------ */
+
+@theme {
+  --font-sans: 'Inter Tight', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  --text-display: clamp(2.6rem, 6.6vw, 84px);
+  --text-h1:      clamp(2.4rem, 6vw, 80px);
+  --text-h2:      clamp(1.9rem, 3.9vw, 44px);
+  --text-h3:      24px;
+  --text-lead:    21px;
+  --text-lead-sm: 18px;
+  --text-card:    17px;
+  --text-body:    16px;
+  --text-sm:      15px;
+  --text-ui:      14px;
+  --text-meta:    12.5px;
+  --text-micro:   11px;
+
+  --tracking-t1: -.01em;
+  --tracking-t2: -.02em;
+  --tracking-t3: -.03em;
+
+  --color-ink:      #08090A;
+  --color-grey:     #706F6F;
+  --color-meta:     #6F6F6F;
+  --color-stroke:   #EBEBEB;
+  --color-off:      #FAFAFA;
+  --color-green:    #00603A;
+  --color-green-dp: #0E4A2E;
+  --color-gold:     #C9A961;
+  --color-gold-dk:  #7A6630;
+  --color-cream:    #F0EDE4;
+
+  --radius-card: 16px;
+  --radius-box:  12px;
+  --radius-bar:  4px;
+
+  --ease-in-soft:  cubic-bezier(.16, 1, .3, 1);
+  --ease-out-soft: cubic-bezier(.22, .61, .36, 1);
+}
+
+/* NOTA PARA EL EQUIPO
+   El repo ya tiene --color-forest-900 (#012d1d) y --color-forest-700
+   (#1b4332). El logo y el prototipo usan #00603A. Son tres verdes para
+   la misma marca. Hay que elegir uno antes de consumir estos tokens.   */

@@ -1,0 +1,84 @@
+/* ------------------------------------------------------------------
+   PhysaFlow — Stranded Capacity Index
+   Design tokens · v0.1
+   Fuente unica de verdad. Si cambia un valor, cambia aca y en ningun
+   otro lado. La guia visual esta en design-system.html
+   ------------------------------------------------------------------ */
+
+:root {
+  /* --- familias --------------------------------------------------- */
+  --font-sans: 'Inter Tight', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  /* --- escala tipografica ----------------------------------------- */
+  --fs-display: clamp(2.6rem, 6.6vw, 84px);  /* titulo de portada     */
+  --fs-num:     clamp(3rem, 6.4vw, 84px);    /* numero de seccion     */
+  --fs-h1:      clamp(2.4rem, 6vw, 80px);    /* titulo de capitulo    */
+  --fs-h2:      clamp(1.9rem, 3.9vw, 44px);  /* titulo de seccion     */
+  --fs-input:   clamp(1.6rem, 3.4vw, 34px);  /* campo de busqueda     */
+  --fs-quote:   clamp(1.35rem, 2.9vw, 34px); /* definicion destacada  */
+  --fs-num-sm:  30px;                        /* dato en anillo        */
+  --fs-h3:      24px;                        /* subtitulo             */
+  --fs-lead:    21px;                        /* bajada de capitulo    */
+  --fs-lead-sm: 18px;                        /* bajada de seccion     */
+  --fs-card:    17px;                        /* titulo de fila o card */
+  --fs-body:    16px;                        /* texto base            */
+  --fs-sm:      15px;                        /* texto secundario      */
+  --fs-ui:      14px;                        /* botones y controles   */
+  --fs-meta:    12.5px;                      /* metadatos y codigos   */
+  --fs-micro:   11px;                        /* etiquetas y pies      */
+
+  /* --- letter-spacing --------------------------------------------- */
+  --t1: -.01em;   /* texto corrido y UI            */
+  --t2: -.02em;   /* titulos medianos y nombres    */
+  --t3: -.03em;   /* titulos grandes y monoespacio */
+
+  /* --- pesos ------------------------------------------------------- */
+  --fw-regular: 400;   /* parrafos                          */
+  --fw-medium:  500;   /* titulos, botones, enfasis (marca) */
+
+  /* --- color ------------------------------------------------------- */
+  --dark:     #08090A;   /* texto principal                       */
+  --grey:     #706F6F;   /* texto secundario   — AA 5.01:1        */
+  --c-meta:   #6F6F6F;   /* metadatos y pies   — AA 5.02:1        */
+  --stroke:   #EBEBEB;   /* filetes neutros                       */
+  --light:    #FFFFFF;   /* fondo                                 */
+  --off:      #FAFAFA;   /* fondo de hover y bloques              */
+  --green:    #00603A;   /* acento unico       — AA 7.68:1        */
+  --green-dp: #0E4A2E;   /* fondo de banner                       */
+  --gline:    rgba(0, 96, 58, .22);  /* filete verde              */
+  --gold:     #C9A961;   /* dorado, SOLO sobre fondo oscuro       */
+  --gold-dk:  #7A6630;   /* dorado sobre claro — AA 5.57:1        */
+  --cream:    #F0EDE4;   /* texto sobre banner oscuro             */
+
+  /* --- layout ------------------------------------------------------ */
+  --max:      1280px;                    /* ancho de contenido     */
+  --max-wide: 1720px;                    /* figuras con riel       */
+  --gut:      clamp(20px, 4.4vw, 80px);  /* margen lateral         */
+  --col-num:  150px;                     /* columna del numero     */
+
+  /* --- radios ------------------------------------------------------ */
+  --r-card: 16px;
+  --r-box:  12px;
+  --r-bar:  4px;
+  --r-pill: 999px;
+
+  /* --- movimiento --------------------------------------------------- */
+  --ease-in:    cubic-bezier(.16, 1, .3, 1);      /* entradas        */
+  --ease-out:   cubic-bezier(.22, .61, .36, 1);   /* barras, paneles */
+  --dur-reveal: 1.15s;
+  --dur-load:   .85s;
+  --dur-hover:  .2s;
+  --blur-in:    9px;   /* desenfoque de entrada, va a 0 */
+}
+
+/* Foco visible: obligatorio, no opcional. */
+:where(a, button, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-reveal: .01ms; --dur-load: .01ms; --blur-in: 0px; }
+}
