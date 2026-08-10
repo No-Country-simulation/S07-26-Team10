@@ -14,6 +14,8 @@ from app.modules.sections.router import router as sections_router
 from app.modules.uploads.router import router as uploads_router
 from app.modules.users.router import router as users_router
 
+# se declaran las rutas
+
 api_router = APIRouter(prefix=API_PREFIX)
 
 api_router.include_router(auth_router)
