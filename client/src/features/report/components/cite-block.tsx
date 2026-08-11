@@ -24,15 +24,16 @@ export function CiteBlock({ label, text }: CiteBlockProps) {
   };
 
   return (
-    <div className="rounded-xl border border-border/60 bg-muted/20 overflow-hidden">
-      <div className="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-border/50">
-        <span className="font-mono text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          {label}
-        </span>
+    <div className="nt rvs">
+      <div className="ntl">
+        <span className="ntw">{label}</span>
+        <p className="ntd">{text}</p>
+      </div>
+      <div className="ntr">
         <button
           type="button"
           onClick={handleCopy}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+          className="reflink"
         >
           {copied ? (
             <>
@@ -47,9 +48,6 @@ export function CiteBlock({ label, text }: CiteBlockProps) {
           )}
         </button>
       </div>
-      <p className="px-4 py-3.5 text-sm sm:text-base text-foreground leading-relaxed font-mono">
-        {text}
-      </p>
     </div>
   );
 }
