@@ -30,6 +30,7 @@ class ConceptService:
 
     def get_concept(
         self,
+        category_id: uuid.UUID,
         concept_id: uuid.UUID,
     ) -> ConceptRead:
         """
@@ -41,6 +42,8 @@ class ConceptService:
             raise NotFoundException(
                 message="Concepto no encontrado.",
             )
+
+        self._validate_category_exists(category_id)
 
         return ConceptRead.model_validate(concept)
 

@@ -86,7 +86,25 @@ def get_public_category(
     """
     return service.get_category(report_version_id, category_id)
 
-
+@router.get(
+    "/admin/{category_id}",
+    response_model=CategoryRead,
+    status_code=HTTP_200_OK,
+    summary="Obtener categoría por ID (admin)",
+    description="Obtiene una categoría específica por su ID con todos los detalles. (Requiere autenticación)",
+)
+def get_category_admin(
+    report_version_id: uuid.UUID,
+    category_id: uuid.UUID,
+    service: CategoryService = Depends(get_category_service),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Obtiene una categoría específica por su ID con todos los detalles.
+    Incluye categorías DRAFT y PUBLISHED.
+    Requiere autenticación.
+    """
+    return service.get_category(report_version_id, category_id)
 # ==================== ENDPOINTS dinamicas ====================
 
 

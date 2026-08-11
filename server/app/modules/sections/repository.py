@@ -126,3 +126,17 @@ class SectionRepository:
             stmt = stmt.where(Section.id != exclude_id)
 
         return self.db.execute(stmt).scalars().first() is not None
+
+    def exists_by_display_order(
+        self,
+        report_version_id: uuid.UUID,
+        display_order: int,
+        exclude_id: uuid.UUID | None = None,
+    ) -> bool:
+        stmt = select(Section).where(
+            Section.report_version_id == report_version_id,
+            Section.display_order == display_order,
+        )
+        if exclude_id:
+            stmt = stmt.where(Section.id != exclude_id)
+        return self.db.execute(stmt).scalars().first() is not None

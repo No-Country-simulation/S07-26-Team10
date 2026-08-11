@@ -84,6 +84,27 @@ def get_public_concept(
     return service.get_public_concept(category_id, concept_id)
 
 
+@router.get(
+    "/admin/{concept_id}",
+    response_model=ConceptRead,
+    status_code=HTTP_200_OK,
+    summary="Obtener concepto por ID (admin)",
+    description="Obtiene un concepto específico por su ID con todos los detalles. (Requiere autenticación)",
+)
+def get_concept_admin(
+    category_id: uuid.UUID,
+    concept_id: uuid.UUID,
+    service: ConceptService = Depends(get_concept_service),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Obtiene un concepto específico por su ID con todos los detalles.
+    Incluye conceptos de categorías DRAFT y PUBLISHED.
+    Requiere autenticación.
+    """
+    return service.get_concept(category_id, concept_id)
+
+
 # ==================== ENDPOINTS PRIVADOS (requieren autenticación) ====================
 
 

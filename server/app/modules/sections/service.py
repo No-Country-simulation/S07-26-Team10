@@ -50,8 +50,34 @@ class SectionService:
 
         return SectionRead.model_validate(section)
 
+    def get_section_admin(
+        self,
+        report_version_id: uuid.UUID,
+        section_id: uuid.UUID,
+    ) -> SectionRead:
+        """
+        Obtiene una sección por su ID (admin).
+        No filtra por status - ve DRAFT y PUBLISHED.
+        """
+        section = self.repository.get_by_id(section_id)
+
+        if not section:
+            raise NotFoundException(
+                message="Sección no encontrada.",
+            )
+
+        self._validate_report_version_exists(report_version_id)
+
+        if section.report_version_id != report_version_id:
+            raise NotFoundException(
+                message="Sección no encontrada en esta versión de reporte.",
+            )
+
+        return SectionRead.model_validate(section)
+
     def get_public_section(
         self,
+        report_version_id: uuid.UUID,
         section_id: uuid.UUID,
     ) -> SectionPublicRead:
         """
@@ -59,9 +85,11 @@ class SectionService:
         """
         section = self.repository.get_by_id(section_id)
 
-        if not section:
+        self._validate_report_version_exists(report_version_id)
+
+        if section.report_version_id != report_version_id:
             raise NotFoundException(
-                message="Sección no encontrada.",
+                message="Sección no encontrada en esta versión de reporte.",
             )
 
         if section.status != PublicationStatus.PUBLISHED:
@@ -215,6 +243,14 @@ class SectionService:
             max_order = self.repository.get_max_display_order(report_version_id)
             display_order = max_order + 1
 
+        if display_order is not None:
+            if self.repository.exists_by_display_order(
+                report_version_id, display_order
+            ):
+                raise ConflictException(
+                    message=f"Ya existe una sección con el orden '{display_order}' en esta versión."
+                )
+
         section = Section(
             report_version_id=report_version_id,
             title=data.title,
@@ -230,6 +266,7 @@ class SectionService:
 
     def update_section(
         self,
+        report_version_id: uuid.UUID,
         section_id: uuid.UUID,
         data: SectionUpdate,
     ) -> SectionRead:
@@ -248,10 +285,13 @@ class SectionService:
                 message="Sección no encontrada.",
             )
 
+        self._validate_report_version_exists(report_version_id)
+
         update_data = data.model_dump(
             exclude_unset=True,
         )
 
+        # Si se actualiza el título, generar nuevo slug y validar unicidad
         if "title" in update_data:
             new_slug = generate_slug(update_data["title"])
 
@@ -266,6 +306,18 @@ class SectionService:
 
             update_data["slug"] = new_slug
 
+        # Si se actualiza display_order, validar unicidad
+        if "display_order" in update_data:
+            if self.repository.exists_by_display_order(
+                section.report_version_id,
+                update_data["display_order"],
+                exclude_id=section_id,
+            ):
+                raise ConflictException(
+                    message=f"Ya existe una sección con el orden '{update_data['display_order']}' en esta versión."
+                )
+
+        # Aplicar cambios
         for field, value in update_data.items():
             setattr(section, field, value)
 
@@ -275,6 +327,7 @@ class SectionService:
 
     def delete_section(
         self,
+        report_version_id: uuid.UUID,
         section_id: uuid.UUID,
     ) -> None:
         """
@@ -286,6 +339,8 @@ class SectionService:
             raise NotFoundException(
                 message="Sección no encontrada.",
             )
+
+        self._validate_report_version_exists(report_version_id)
 
         self.repository.delete(section)
 
