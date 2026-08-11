@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useRef, useState, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -10,6 +11,11 @@ import {
 } from "@/hooks/use-funnel";
 import { useReveal } from "@/hooks/use-reveal";
 import { funnelSteps, lossSources } from "../data/funnel";
+import {
+  downloadFunnelCsv,
+  downloadFunnelPng,
+  downloadFunnelSvg,
+} from "@/lib/figure-downloads";
 
 function ExpandIcon() {
   return (
@@ -129,7 +135,7 @@ function FunnelFigure({
         <span className="fnum">{t("figureNum")}</span>
         <span className="ftt">{t("figureTitle")}</span>
         <span className="chip">
-          <i style={{ color: "var(--phi-gold)" }} />
+          <i style={{ color: "var(--gold)" }} />
           {t("illustrative")}
         </span>
         {!expanded && onExpand && (
@@ -199,11 +205,27 @@ function FunnelRing() {
 
 export function HomeFunnel() {
   const t = useTranslations("HomePage");
+  const router = useRouter();
   const fnRef = useRef<HTMLDivElement>(null);
   const [lightbox, setLightbox] = useState(false);
 
   useReveal(".phi .rv, .phi .rvs");
   useFunnelAnimation(fnRef);
+
+  const exportRows = funnelSteps.map((step) => ({
+    label: t(`${step.tKey}.name`),
+    value: step.value,
+  }));
+  const sourceText = t("source");
+
+  const handlePng = () => {
+    void downloadFunnelPng(exportRows, sourceText);
+  };
+  const handleSvg = () => downloadFunnelSvg(exportRows, sourceText);
+  const handleTable = () => downloadFunnelCsv(exportRows);
+  const handleCite = () => {
+    router.push("/report/how-to-cite#figure-01");
+  };
 
   return (
     <section
@@ -212,6 +234,7 @@ export function HomeFunnel() {
       id="s03"
       data-n="03"
       data-t="theCapacityFunnel"
+      suppressHydrationWarning
     >
       <div className="wrap in">
         <div className="shead rv">
@@ -235,7 +258,7 @@ export function HomeFunnel() {
               <FunnelRing />
               <p>{t("gc1Body")}</p>
               <span className="chip sm">
-                <i style={{ color: "var(--phi-gold)" }} />
+<i style={{ color: "var(--gold)" }} />
                 {t("illustrativeModel")}
               </span>
             </div>
@@ -270,22 +293,22 @@ export function HomeFunnel() {
             <div className="s2">{t("version")}</div>
           </div>
           <div className="fdl">
-            <a href="#">
+            <button type="button" onClick={handlePng}>
               <DownloadIcon />
               PNG
-            </a>
-            <a href="#">
+            </button>
+            <button type="button" onClick={handleSvg}>
               <DownloadIcon />
               SVG
-            </a>
-            <a href="#">
+            </button>
+            <button type="button" onClick={handleTable}>
               <TableIcon />
               {t("downloadTable")}
-            </a>
-            <a href="#">
+            </button>
+            <button type="button" onClick={handleCite}>
               <CiteIcon />
               {t("citeFigure")}
-            </a>
+            </button>
           </div>
         </div>
       </div>

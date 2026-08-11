@@ -22,14 +22,18 @@ export function NavigationFooter() {
           <Link href="/" className="lock">
             <img
               className="iso"
-              style={{ height: 34, width: 34 }}
-              src="/images/physaflow-logo.jpg"
+              style={{ height: 56, width: "auto" }}
+              src="/physaflow-isotipo.png"
               alt="PhysaFlow"
             />
-            <p className="wmk">PhysaFlow</p>
+            <img
+              className="wmk"
+              src="/physaflow-wordmark-black.png"
+              alt="PhysaFlow"
+            />
           </Link>
           <p>{t("description")}</p>
-          <a className="b line fdl-b" style={{ marginTop: 22 }} href="#">
+          <a className="b line fdl-b" style={{ marginTop: 22 }} href="/report">
             {t("downloadPdf")} <DownloadSvg />
           </a>
         </div>
@@ -39,19 +43,20 @@ export function NavigationFooter() {
           <Link href="/#s02">{t("capacityFunnel")}</Link>
           <Link href="/report/taxonomy">{t("taxonomy")}</Link>
           <Link href="/methodology">{t("methodology")}</Link>
-          <Link href="/report">{t("references")}</Link>
+          <Link href="/report/references">{t("references")}</Link>
+          <Link href="/about">{t("about")}</Link>
         </div>
         <div>
           <h4>{t("publication")}</h4>
-          <a href="#">{t("howToCite")}</a>
-          <a href="#">{t("changelog")}</a>
-          <a href="#">{t("licence")}</a>
+          <Link href="/report/how-to-cite">{t("howToCite")}</Link>
+          <span className="pending">{t("changelog")}</span>
+          <span className="pending">{t("licence")}</span>
         </div>
         <div>
           <h4>{t("contact")}</h4>
-          <a href="#">{t("linkedin")}</a>
-          <a href="#">{t("contactPending")}</a>
-          <a href="#">{t("pressPending")}</a>
+          <a href="https://www.linkedin.com/company/physaflow" target="_blank" rel="noopener noreferrer">{t("linkedin")}</a>
+          <span className="pending">{t("contactPending")}</span>
+          <span className="pending">{t("pressPending")}</span>
         </div>
       </div>
       <div className="pubmeta">

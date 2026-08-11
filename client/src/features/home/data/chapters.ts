@@ -55,6 +55,6 @@ export const chapters: ChapterItem[] = [
     titleKey: "references",
     ns: "nav",
     time: "4 min",
-    href: "/report",
+    href: "/report/references",
   },
 ];
