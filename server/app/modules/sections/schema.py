@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
-
+from app.modules.resources.schema import ResourceRead  # ← AGREGAR
 from app.shared.enums.publication_status import PublicationStatus
 
 
@@ -125,4 +125,15 @@ class SectionNavigationRead(BaseModel):
 
     model_config = ConfigDict(
         from_attributes=True,
+    )
+
+
+class SectionWithResourcesRead(SectionRead):
+    """
+    Schema de salida para una sección con todos sus recursos.
+    """
+
+    resources: list[ResourceRead] = Field(
+        default_factory=list,
+        description="Recursos asociados a la sección",
     )

@@ -105,5 +105,16 @@ class CategoryPublicRead(BaseModel):
     )
 
 
+class CategoryWithConceptsRead(CategoryRead):
+    """
+    Schema de salida para una categoría con todos sus conceptos.
+    """
+
+    concepts: list[ConceptRead] = Field(
+        default_factory=list,
+        description="Conceptos asociados a la categoría",
+    )
+
+
 # Para resolver referencias circulares (cuando exista ConceptRead)
 # CategoryDetailRead.model_rebuild()

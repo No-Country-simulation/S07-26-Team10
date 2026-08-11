@@ -14,6 +14,7 @@ from app.modules.categories.schema import (
     CategoryPublicRead,
     CategoryRead,
     CategoryUpdate,
+    CategoryWithConceptsRead,
 )
 from app.modules.categories.service import CategoryService
 from app.modules.users.model import User
@@ -69,6 +70,28 @@ def get_all_categories(
 
 
 @router.get(
+    "/admin/with-concepts",
+    response_model=list[CategoryWithConceptsRead],
+    status_code=HTTP_200_OK,
+    summary="Listar categorías con conceptos (admin)",
+    description="Obtiene todas las categorías de una versión de reporte con sus conceptos cargados. (Requiere autenticación)",
+)
+def get_all_categories_with_concepts(
+    report_version_id: uuid.UUID,
+    skip: int = Query(default=0, ge=0, description="Número de registros a saltar"),
+    limit: int = Query(default=100, ge=1, le=100, description="Límite de registros"),
+    service: CategoryService = Depends(get_category_service),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Obtiene todas las categorías de una versión de reporte con sus conceptos cargados.
+    Incluye categorías DRAFT y PUBLISHED.
+    Requiere autenticación.
+    """
+    return service.get_all_categories_with_concepts(report_version_id, skip, limit)
+
+
+@router.get(
     "/{category_id}",
     response_model=CategoryPublicRead,
     status_code=HTTP_200_OK,
@@ -85,6 +108,7 @@ def get_public_category(
     Acceso público - No requiere autenticación.
     """
     return service.get_category(report_version_id, category_id)
+
 
 @router.get(
     "/admin/{category_id}",
@@ -105,6 +129,8 @@ def get_category_admin(
     Requiere autenticación.
     """
     return service.get_category(report_version_id, category_id)
+
+
 # ==================== ENDPOINTS dinamicas ====================
 
 

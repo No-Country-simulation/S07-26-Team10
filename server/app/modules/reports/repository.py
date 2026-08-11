@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.modules.reports.model import Report
+from sqlalchemy.orm import selectinload
 
 
 class ReportRepository:
@@ -60,3 +61,16 @@ class ReportRepository:
         """
         stmt = select(Report).where(Report.slug == slug)
         return self.db.execute(stmt).scalars().first() is not None
+
+    def get_all_with_versions(self, skip: int = 0, limit: int = 100) -> list[Report]:
+        """
+        Obtiene todos los reportes con sus versiones cargadas.
+        """
+        stmt = (
+            select(Report)
+            .options(selectinload(Report.report_versions))
+            .order_by(Report.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+        )
+        return list(self.db.execute(stmt).scalars().all())

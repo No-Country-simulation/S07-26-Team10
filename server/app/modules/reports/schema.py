@@ -1,7 +1,8 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+from app.modules.report_versions.schema import ReportVersionRead
 
 
 class ReportCreate(BaseModel):
@@ -44,6 +45,21 @@ class ReportPublicRead(BaseModel):
 
     id: uuid.UUID
     slug: str
+
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
+
+
+class ReportWithVersionsRead(ReportRead):
+    """
+    Schema de salida para un reporte con todas sus versiones.
+    """
+
+    report_versions: list[ReportVersionRead] = Field(
+        default_factory=list,
+        description="Versiones del reporte",
+    )
 
     model_config = ConfigDict(
         from_attributes=True,
