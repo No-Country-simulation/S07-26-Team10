@@ -51,6 +51,22 @@ class ReferenceService:
 
         return ReferenceRead.model_validate(reference)
 
+    def get_all_references(
+        self,
+        report_version_id: uuid.UUID,
+    ) -> list[ReferenceRead]:
+        """
+        Obtiene todas las referencias de una versión de reporte (admin).
+        No valida que la versión esté publicada - ve DRAFT y PUBLISHED.
+        """
+        validate_report_version_exists(
+            report_version_id, self.report_version_repository
+        )
+
+        references = self.repository.get_by_report_version_id(report_version_id)
+
+        return [ReferenceRead.model_validate(reference) for reference in references]
+
     def get_references_by_report_version(
         self,
         report_version_id: uuid.UUID,

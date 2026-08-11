@@ -44,6 +44,26 @@ def get_references_by_report_version(
 
 
 @router.get(
+    "/admin",
+    response_model=list[ReferenceRead],
+    status_code=HTTP_200_OK,
+    summary="Listar todas las referencias (admin)",
+    description="Obtiene todas las referencias de una versión de reporte. (Requiere autenticación)",
+)
+def get_all_references(
+    report_version_id: uuid.UUID,
+    service: ReferenceService = Depends(get_reference_service),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Obtiene todas las referencias de una versión de reporte.
+    Incluye referencias de versiones DRAFT y PUBLISHED.
+    Requiere autenticación.
+    """
+    return service.get_all_references(report_version_id)
+
+
+@router.get(
     "/{reference_id}",
     response_model=ReferenceRead,
     status_code=HTTP_200_OK,
