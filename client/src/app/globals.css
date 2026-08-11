@@ -3,6 +3,8 @@
 @import "shadcn/tailwind.css";
 @import "../styles/tokens.css";
 @import "../styles/landing.css";
+@import "../styles/taxonomy.css";
+@import "../styles/report.css";
 
 @custom-variant dark (&:is(.dark *));
 

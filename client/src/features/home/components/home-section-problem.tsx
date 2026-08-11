@@ -14,7 +14,13 @@ export function HomeSectionProblem() {
   const t = useTranslations("HomePage");
 
   return (
-    <section className="n" id="s01" data-n="01" data-t="theProblem">
+    <section
+      className="n"
+      id="s01"
+      data-n="01"
+      data-t="theProblem"
+      suppressHydrationWarning
+    >
       <div className="img" />
       <div className="fade" />
       <div className="wrap in">
@@ -29,7 +35,7 @@ export function HomeSectionProblem() {
           <div />
           <div style={{ maxWidth: 720 }}>
             <p>{t("problemBody")}</p>
-            <a className="b line" style={{ marginTop: 26 }} href="#">
+            <a className="b line" style={{ marginTop: 26 }} href="/report">
               {t("readTheDefinition")} <ArrowIcon />
             </a>
           </div>

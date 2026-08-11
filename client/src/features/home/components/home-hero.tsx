@@ -83,7 +83,7 @@ export function HomeHero() {
           <a className="b solid" href="#s01">
             {t("readTheReport")} <ArrowIcon />
           </a>
-          <a className="b line" href="#">
+          <a className="b line" href="/report">
             {t("downloadPdf")} <DownloadIcon />
           </a>
         </Block>

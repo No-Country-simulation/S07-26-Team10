@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useLanguage } from "@/context/language-context";
@@ -13,7 +14,7 @@ const NAV_LINKS = [
   { href: "/#s02", key: "chapters", match: "/" },
   { href: "/report/taxonomy", key: "taxonomy", match: "/report/taxonomy" },
   { href: "/methodology", key: "methodology", match: "/methodology" },
-  { href: "/report", key: "references" },
+  { href: "/report/references", key: "references", match: "/report/references" },
 ];
 
 function SearchIcon() {
@@ -107,17 +108,25 @@ export function NavigationHeader() {
   const active = useSectionTracker(".phi section.n[data-n]");
   const [searchOpen, setSearchOpen] = useState(false);
 
+  const pathname = usePathname();
+  const onHome = pathname === "/";
+  const shrunk = !onHome ? false : shrink;
+
   return (
     <>
-      <header id="hd" className={shrink ? "sm" : undefined}>
+      <header id="hd" className={shrunk ? "sm" : undefined}>
         <div className="hr">
           <Link href="/" className="lock">
             <img
               className="iso"
-              src="/images/physaflow-logo.jpg"
+              src="/physaflow-isotipo.png"
               alt="PhysaFlow"
             />
-            <p className="wmk">PhysaFlow</p>
+            <img
+              className="wmk"
+              src="/physaflow-wordmark-black.png"
+              alt="PhysaFlow"
+            />
           </Link>
           <span className="sep" />
           <span className="rep">{t("strandedCapacityIndex")}</span>

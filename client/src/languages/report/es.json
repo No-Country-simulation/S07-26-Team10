@@ -1,0 +1,396 @@
+{
+  "taxonomyTitle": "Taxonomía de Capacidad Estancada",
+  "taxonomyBadge": "TAXONOMÍA",
+  "strandedCapacityReport": "Reporte de Capacidad Estancada",
+  "taxonomyMono": "Taxonomía · v0.1 · {count} entradas",
+  "mastTitle1": "Dieciocho formas",
+  "mastTitle2Pre": "que toma el mismo",
+  "mastTitleAccent": "problema",
+  "mastTitle2Post": ".",
+  "mastLead": "La capacidad varada no es una sola falla. Es una familia de ellas, extendida en tres capas — y cada una es invisible para las métricas que miran las otras dos.",
+  "entryIsTitle": "Qué es una entrada",
+  "entryIsBody": "Un nombre, un límite y una señal. Qué es el fenómeno, qué <em>no</em> es, y qué habría que observar para afirmar que está presente.",
+  "entryIsNotTitle": "Qué no es una entrada",
+  "entryIsNotBody": "Una medición. Nada de esta página se deriva de datos recogidos para este índice. Nombrar tiene que ocurrir antes de contar.",
+  "twoLabelsTitle": "Las dos etiquetas",
+  "twoLabelsBody": "<est>Término establecido</est> significa que el nombre ya existe en la literatura pública y lo adoptamos. <prop>Propuesto aquí</prop> significa que no encontramos un nombre acordado y proponemos uno.",
+  "establishedTerm": "Término establecido",
+  "proposedHere": "Propuesto aquí",
+  "filterAll": "Todas",
+  "filterFacility": "Instalación",
+  "filterIT": "IT",
+  "filterWorkload": "Carga de trabajo y operaciones",
+  "filterEntries": "Filtrar entradas",
+  "legendLine": "{est} de {total} nombres vienen de la literatura existente. {prop} son propuestos por este índice y están abiertos a comentarios.",
+  "whatItIsNot": "Qué no es",
+  "whatYouWouldObserve": "Qué observarías",
+  "whereTheNameComesFrom": "De dónde viene el nombre",
+  "entryCitationPrefix": "Entrada {code} · Taxonomía v0.1 · sin medición recogida",
+  "citeThisEntry": "Citar esta entrada",
+  "citationCopied": "Cita copiada — {code}",
+  "noEntryMatches": "Ninguna entrada coincide con ese filtro.",
+  "sourceLine": "Fuente: PhysaFlow Stranded Capacity Index · Taxonomía v0.1 · Nombres y límites abiertos a comentarios",
+  "failedToLoad": "No se pudo cargar la taxonomía. Inténtalo de nuevo.",
+  "def": {
+    "mono": "Capítulo 01 · Definición · v0.1",
+    "title1": "Una brecha",
+    "title2": "sin nombre.",
+    "accent": "nombre.",
+    "lead": "La industria informa cuánta capacidad está instalada y cuánta se utiliza. Ninguna de las dos cifras describe la distancia entre ambas. Este capítulo define esa distancia.",
+    "cardLabel": "La definición",
+    "cardQuote": "<b>Capacidad varada</b> es capacidad que ya fue comprometida, está físicamente presente, y no puede usarse para atender una demanda que existe.",
+    "src": "PhysaFlow Stranded Capacity Index · Definición v0.1 · abierta a comentarios",
+    "condLabel": "Tres condiciones",
+    "condLead": "Las tres tienen que cumplirse. Si falta una, el fenómeno pertenece a otra categoría — normalmente una que ya tiene nombre.",
+    "conditions": [
+      {
+        "n": "01",
+        "title": "Comprometida",
+        "body": "Pagada, contratada o construida. El capital ya se gastó. Un plan no es capacidad varada."
+      },
+      {
+        "n": "02",
+        "title": "Presente",
+        "body": "Existe físicamente y se puede señalar dentro de un edificio. Una proyección no es capacidad varada."
+      },
+      {
+        "n": "03",
+        "title": "Inalcanzable por la demanda",
+        "body": "Existe demanda que no puede atender. Esta es la condición que la separa de la capacidad meramente sin usar."
+      }
+    ],
+    "notLabel": "Qué no es",
+    "notLede": "Ya hay seis términos vecinos en uso. Ninguno describe lo mismo, y tratarlos como sinónimos es exactamente lo que mantiene invisible la brecha.",
+    "not": [
+      {
+        "t": "Capacidad ociosa",
+        "d": "Capacidad que no está en uso en este momento.",
+        "w": "Por qué es distinta",
+        "b": "La capacidad varada siempre está ociosa. La ociosa no siempre está varada — si no hay demanda, la capacidad simplemente no se usa, y no se está perdiendo nada."
+      },
+      {
+        "t": "Subutilización",
+        "d": "Una razón entre lo que se usa y lo que está disponible.",
+        "w": "Por qué es distinta",
+        "b": "Una medición, no una causa. La capacidad varada es una de varias cosas que pueden producir una razón baja, y la razón sola no te dice cuál."
+      },
+      {
+        "t": "Sobreaprovisionamiento",
+        "d": "Una decisión deliberada de construir más allá de la demanda esperada.",
+        "w": "Por qué es distinta",
+        "b": "Intencional y planificado. La capacidad varada es el residuo no buscado que aparece después de la decisión, muchas veces por motivos ajenos a ella."
+      },
+      {
+        "t": "Capacidad de reserva",
+        "d": "Capacidad retenida a propósito para resiliencia o crecimiento.",
+        "w": "Por qué es distinta",
+        "b": "Funciona exactamente como fue diseñada. Aun así, parte de ella nunca produce salida, por eso este índice la nombra (FAC-05) en vez de excluirla — pero no es una falla."
+      },
+      {
+        "t": "Activos varados",
+        "d": "En finanzas y energía: activos depreciados antes de tiempo por cambios de mercado o regulatorios.",
+        "w": "Por qué es distinta",
+        "b": "Otro campo y otro mecanismo. Este índice toma prestado el adjetivo porque es preciso, no el modelo que hay detrás."
+      },
+      {
+        "t": "Recorte de generación",
+        "d": "En sistemas eléctricos: reducir deliberadamente la generación disponible.",
+        "w": "Por qué es distinta",
+        "b": "Del lado de la oferta y voluntario. La capacidad varada es involuntaria y está del lado del medidor que mira a la demanda."
+      }
+    ],
+    "whyLabel": "Por qué necesita un nombre",
+    "whyLede": "Nombrar no es una formalidad. Es la precondición de todo lo que viene después.",
+    "why": [
+      {
+        "title": "No se puede medir lo que no se puede nombrar",
+        "body": "No hay ningún campo en ningún formato de reporte estándar para la capacidad descrita arriba. Se absorbe dentro de la utilización, donde se vuelve indistinguible de la falta de demanda."
+      },
+      {
+        "title": "No se puede comparar entre instalaciones",
+        "body": "Dos sitios que reportan la misma utilización pueden tener cantidades completamente distintas de capacidad inalcanzable. Sin un nombre compartido, la comparación no es posible."
+      },
+      {
+        "title": "No se puede poner en precio",
+        "body": "La capacidad que no se puede nombrar no se puede escribir en un contrato, en un nivel de servicio ni en una valuación. Queda como problema operativo privado en vez de problema de mercado."
+      }
+    ],
+    "whereLabel": "Dónde aparece",
+    "whereLede": "La definición se sostiene en tres capas. Dieciocho fenómenos nombrados cumplen las tres condiciones — siete en la instalación, seis en IT, cinco en carga de trabajo y operaciones.",
+    "where": [
+      {
+        "name": "Instalación",
+        "count": "7 entradas",
+        "body": "Límites eléctricos, térmicos y espaciales del edificio mismo.",
+        "href": "/report/taxonomy#FAC"
+      },
+      {
+        "name": "IT",
+        "count": "6 entradas",
+        "body": "Hardware presente en el edificio pero inalcanzable como conjunto utilizable.",
+        "href": "/report/taxonomy#IT"
+      },
+      {
+        "name": "Carga de trabajo y operaciones",
+        "count": "5 entradas",
+        "body": "Comportamiento de admisión, ubicación y reserva una vez que el hardware es alcanzable.",
+        "href": "/report/taxonomy#WKL"
+      }
+    ],
+    "backLabel": "Volver al índice",
+    "backTitle": "Índice de Capacidad Varada",
+    "nextLabel": "Siguiente capítulo",
+    "nextTitle": "La taxonomía"
+  },
+  "meth": {
+    "mono": "Capítulo 06 · Metodología · v0.1",
+    "title1": "Lo que podemos decir.",
+    "title2": "Y lo que no.",
+    "accent": "no.",
+    "lead": "Este índice nombra fenómenos que no midió. Todo este capítulo existe para mantener esa distinción a la vista.",
+    "statusLabel": "Estado actual",
+    "statusQuote": "No se recolectó ninguna medición para ninguna entrada ni ninguna figura de este índice.",
+    "lkVersion": "Versión",
+    "lkVersionVal": "0.1 · borrador",
+    "lkDefined": "Entradas definidas",
+    "lkDefinedVal": "18",
+    "lkMeasured": "Entradas medidas",
+    "lkMeasuredVal": "0",
+    "lkFigures": "Figuras publicadas",
+    "lkFiguresVal": "1 · ilustrativa",
+    "src": "PhysaFlow Stranded Capacity Index · Metodología v0.1 · abierta a comentarios",
+    "qualifyLabel": "Cómo califica una entrada",
+    "qualifyLede": "Cinco pruebas. Las tres primeras vienen de la definición. Las dos últimas son editoriales, y existen para que la taxonomía siga siendo usable a medida que crece.",
+    "qualify": [
+      {
+        "title": "01 · Comprometida",
+        "def": "El capital ya se gastó.",
+        "why": "Por qué importa",
+        "body": "Un plan o una partida presupuestaria no califica. La plata tiene que haber salido."
+      },
+      {
+        "title": "02 · Presente",
+        "def": "Físicamente en un edificio e identificable.",
+        "why": "Por qué importa",
+        "body": "Una proyección no califica. Alguien tiene que poder señalarla."
+      },
+      {
+        "title": "03 · Inalcanzable por la demanda",
+        "def": "Existe demanda que esta capacidad no puede atender.",
+        "why": "Por qué importa",
+        "body": "Esta es la condición que separa la capacidad varada de la capacidad meramente sin usar."
+      },
+      {
+        "title": "04 · Distinguible",
+        "def": "Se puede diferenciar de las entradas vecinas.",
+        "why": "Por qué importa",
+        "body": "Si dos entradas siempre aparecen juntas y nunca por separado, son una sola entrada con dos nombres."
+      },
+      {
+        "title": "05 · Falsable",
+        "def": "Al menos una señal observable podría confirmarla o negarla.",
+        "why": "Por qué importa",
+        "body": "Sin una señal, la entrada no se puede poner a prueba nunca — y una entrada no comprobable no tiene lugar en un índice."
+      }
+    ],
+    "labelsLabel": "Etiquetas de evidencia",
+    "labelsLede": "Seis etiquetas, dos para nombres y cuatro para figuras. Existen para que ningún lector tenga que adivinar cuánto peso carga una afirmación.",
+    "labels": [
+      {
+        "title": "Término establecido",
+        "def": "Se usa en nombres. Trece de dieciocho entradas.",
+        "why": "Qué significa",
+        "body": "El nombre ya existe en la literatura pública. Este índice lo adopta y define su límite con más precisión."
+      },
+      {
+        "title": "Propuesto aquí",
+        "def": "Se usa en nombres. Cinco de dieciocho entradas.",
+        "why": "Qué significa",
+        "body": "No se identificó un nombre acordado en fuentes públicas. Este índice propone uno, y está abierto a comentarios."
+      },
+      {
+        "title": "Modelo ilustrativo",
+        "def": "Se usa en figuras. Hoy la lleva una figura.",
+        "why": "Qué significa",
+        "body": "La forma es una hipótesis. Las proporciones no cargan información y no deben leerse como cantidades."
+      },
+      {
+        "title": "Ejemplo conceptual",
+        "def": "Se usa en figuras. Todavía sin uso.",
+        "why": "Qué significa",
+        "body": "Un caso trabajado para explicar un mecanismo. No proviene de ninguna instalación real."
+      },
+      {
+        "title": "Modelada",
+        "def": "Se usa en figuras. Todavía sin uso.",
+        "why": "Qué significa",
+        "body": "Derivada de insumos publicados mediante un cálculo declarado. Nada alcanzó esta etiqueta."
+      },
+      {
+        "title": "Medida",
+        "def": "Se usa en figuras. Todavía sin uso.",
+        "why": "Qué significa",
+        "body": "Construida con telemetría recolectada bajo un protocolo publicado. Nada alcanzó esta etiqueta."
+      }
+    ],
+    "measureLabel": "Qué habría que medir",
+    "measureLede": "Cada capa necesita un conjunto de datos distinto, en manos de un actor distinto, difícil de obtener por un motivo distinto.",
+    "measure": [
+      {
+        "title": "Instalación",
+        "def": "Registros de gestión del edificio y DCIM, más presentaciones de interconexión ante la distribuidora.",
+        "why": "Quién lo tiene",
+        "body": "Operadores y distribuidoras. Los datos de DCIM son comercialmente sensibles, y las colas de interconexión son públicas en algunas jurisdicciones y en otras no."
+      },
+      {
+        "title": "IT",
+        "def": "Inventario del planificador, estado de salud de los nodos y topología de la red interna.",
+        "why": "Quién lo tiene",
+        "body": "Operadores de clústeres. Casi nunca se publica, y el esquema difiere entre planificadores, así que comparar entre sitios exige un mapeo que todavía no existe."
+      },
+      {
+        "title": "Carga de trabajo y operaciones",
+        "def": "Registros contables de trabajos: pedidos, asignaciones, tiempos de ejecución y estados de salida.",
+        "why": "Quién lo tiene",
+        "body": "Los mismos operadores. Las instalaciones de supercómputo de acceso público son la única clase que publica esto abiertamente, y por eso el índice arranca ahí."
+      }
+    ],
+    "claimsLabel": "Lo que este índice no afirma",
+    "claimsLede": "Declarado por adelantado, porque un índice de cosas que nadie contó es fácil de malinterpretar — y más fácil todavía de citar mal.",
+    "claims": [
+      {
+        "title": "Ninguna cifra global",
+        "def": "Este índice no estima cuánta capacidad está varada en ningún lado.",
+        "why": "En la práctica",
+        "body": "Acá no se publica ninguna cifra así. Cualquier número atribuido a este índice que no aparezca en este sitio no salió de él."
+      },
+      {
+        "title": "Ningún juicio sobre ningún operador",
+        "def": "Nombrar un fenómeno no es una acusación.",
+        "why": "En la práctica",
+        "body": "La mayoría de las entradas describe restricciones que operadores competentes gestionan deliberadamente, y varias describen sistemas funcionando exactamente como fueron diseñados."
+      },
+      {
+        "title": "Ninguna afirmación sobre tamaño relativo",
+        "def": "Las dieciocho entradas no están rankeadas.",
+        "why": "En la práctica",
+        "body": "Nada acá sugiere que la fragmentación importe más que la demora de interconexión, ni al revés. El orden es estructural, no jerárquico."
+      },
+      {
+        "title": "Ninguna afirmación de completitud",
+        "def": "Dieciocho es lo que pudimos definir y defender.",
+        "why": "En la práctica",
+        "body": "Se espera que la taxonomía crezca, y que las entradas se fusionen o se dividan a medida que se pongan a prueba sus límites."
+      },
+      {
+        "title": "Ningún modelo causal",
+        "def": "El embudo muestra siete pasos en secuencia, no una cadena de causas.",
+        "why": "En la práctica",
+        "body": "No afirma que cada paso cause el siguiente, ni que quitar una restricción libere capacidad aguas abajo."
+      },
+      {
+        "title": "Ningún aval institucional",
+        "def": "Las instituciones se citan o se reconocen, nunca se presentan como revisoras.",
+        "why": "En la práctica",
+        "body": "Ninguna de las instituciones nombradas en este sitio revisó, aprobó ni avaló este índice."
+      }
+    ],
+    "versioningLabel": "Versionado",
+    "versioningLede": "Cada versión se fecha y se conserva. Nada se edita en silencio.",
+    "versioning": [
+      {
+        "title": "Qué lleva de 0.1 a 0.2",
+        "body": "Cualquier entrada agregada, quitada o fusionada. Cualquier cambio en un límite. Cualquier figura que pase de ilustrativa a modelada."
+      },
+      {
+        "title": "Qué lleva de 0.x a 1.0",
+        "body": "Al menos una figura sostenida por mediciones recolectadas bajo un protocolo publicado, y una taxonomía que haya sobrevivido a revisión externa."
+      },
+      {
+        "title": "Cómo comentar",
+        "body": "Las entradas se pueden citar individualmente desde la taxonomía. El desacuerdo sobre un límite es el comentario más útil que puede recibir este borrador."
+      }
+    ],
+    "backLabel": "Capítulo anterior",
+    "backTitle": "Volver a taxonomía",
+    "nextLabel": "Volver al índice",
+    "nextTitle": "Índice de Capacidad Varada"
+  },
+  "refs": {
+    "mono": "Capítulo 08 · Referencias · v0.1",
+    "title1": "Todas las fuentes,",
+    "title2": "listadas y fechadas.",
+    "accent": "fechadas.",
+    "lead": "Esta lista es corta porque el índice es un borrador. Va a crecer solo a medida que se agreguen afirmaciones — nunca antes que ellas.",
+    "statusLabel": "Estado de esta lista",
+    "statusQuote": "Hoy ninguna entrada de la taxonomía cita una fuente específica. Los nombres se atribuyen a un campo de literatura, no a un documento.",
+    "lkEntries": "Entradas que citan una fuente específica",
+    "lkEntriesVal": "0 de 18",
+    "lkFigures": "Figuras que citan una fuente específica",
+    "lkFiguresVal": "0 de 1",
+    "lkBackground": "Fuentes de contexto listadas abajo",
+    "lkBackgroundVal": "{count}",
+    "src": "PhysaFlow Stranded Capacity Index · Referencias v0.1 · abierta a comentarios",
+    "sourcesLabel": "Fuentes de contexto",
+    "sourcesLede": "Consultadas al construir la definición y el embudo. Ninguna es el origen de ningún número publicado acá, porque acá no se publica ningún número.",
+    "howUsed": "Cómo se usa",
+    "ioUsage": "Usada como contexto sobre plazos de interconexión a la red y demanda eléctrica de centros de datos. Ninguna cifra de este informe se reproduce en el índice.",
+    "stanfordUsage": "Usada como contexto sobre escala de entrenamiento y crecimiento del cómputo. Ninguna cifra de este informe se reproduce en el índice.",
+    "missingLabel": "Qué falta",
+    "missingLede": "Dicho abiertamente, para que nadie tenga que descubrirlo buscando.",
+    "missing": [
+      {
+        "title": "Citas por entrada",
+        "body": "Cada uno de los trece términos establecidos debería apuntar a un documento donde se use el término, no solo a un campo. Ese trabajo no está hecho."
+      },
+      {
+        "title": "Un protocolo de medición",
+        "body": "Ninguna fuente acá describe cómo se mediría alguno de los dieciocho fenómenos. Ese protocolo todavía no existe, ni en este índice ni afuera."
+      },
+      {
+        "title": "Revisión por pares",
+        "body": "Nada en este sitio fue revisado fuera del equipo que lo escribió."
+      }
+    ],
+    "backLabel": "Capítulo anterior",
+    "backTitle": "Volver a metodología",
+    "nextLabel": "Volver al índice",
+    "nextTitle": "Índice de Capacidad Varada"
+  },
+  "about": {
+    "mono": "Capítulo 10 · Acerca de · v0.1",
+    "title1": "Acerca de",
+    "title2": "PhysaFlow.",
+    "accent": "PhysaFlow.",
+    "lead": "Pioneros en el análisis de infraestructura física para la era de la inteligencia artificial generativa.",
+    "cardLabel": "Nuestra misión",
+    "cardQuote": "Desentrañar los desafíos operacionales más complejos que enfrentan los centros de datos modernos a medida que la escala computacional de los modelos de IA se expande globalmente.",
+    "src": "PhysaFlow Research · Reporte público",
+    "missionLabel": "Qué hacemos",
+    "missionLede": "Investigación independiente para líderes de tecnología, ingenieros de instalaciones y tomadores de decisiones.",
+    "missionTitle": "Investigación independiente",
+    "missionBody": "Nuestros reportes e investigaciones proporcionan claridad analítica para optimizar el rendimiento y reducir el desperdicio de infraestructura.",
+    "missionTag": "Enfoque",
+    "missionNote": "Datos abiertos, métricas replicables y atribución obligatoria de figuras.",
+    "pillarsLabel": "Cómo trabajamos",
+    "pillarsLede": "Tres principios sostienen cada reporte del Stranded Capacity Index.",
+    "pillars": [
+      {
+        "title": "Métricas replicables",
+        "body": "Cada cifra publicada puede volver a calcularse desde los datos de origen."
+      },
+      {
+        "title": "Fuentes citadas",
+        "body": "Ninguna afirmación entra al índice sin una fuente específica y fechada."
+      },
+      {
+        "title": "Atribución abierta",
+        "body": "Las figuras son material abierto; citarlas es obligatorio y gratuito."
+      }
+    ],
+    "backLabel": "Capítulo anterior",
+    "backTitle": "Volver a referencias",
+    "nextLabel": "Siguiente capítulo",
+    "nextTitle": "Cómo citar este reporte"
+  }
+}
