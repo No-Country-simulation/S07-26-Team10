@@ -4,8 +4,24 @@ import { HomeIntroData } from "./home-types";
 import { env } from "@/lib/env";
 import { FALLBACK_HOME_DATA } from "./data/HomeIntro";
 
+interface ApiReport {
+  id: string;
+  slug: string;
+}
 
+interface ApiVersion {
+  id: string;
+  title: string | null;
+  version: string | null;
+  language: string;
+  summary: string | null;
+  citation_text: string | null;
+}
 
+interface ApiSection {
+  slug: string;
+  content: string | null;
+}
 
 /**
  * Server-only query to fetch the home intro data and MDX content for a given language ("es" | "en").
@@ -14,12 +30,12 @@ import { FALLBACK_HOME_DATA } from "./data/HomeIntro";
 export const getHomeIntro = cache(
   async (lang: "es" | "en" = "es"): Promise<HomeIntroData> => {
     const targetLang = lang === "en" ? "en" : "es";
-
+    const fallback = FALLBACK_HOME_DATA[targetLang];
 
     if (env.apiUrl) {
       try {
         const response = await fetch(
-          `${env.apiUrl}/reports/stranded-capacity-ai-infrastructure`,
+          `${env.apiUrl}/reports/by-slug/stranded-capacity-ai-infrastructure`,
           {
             headers: { "Content-Type": "application/json" },
             next: { revalidate: 3600 },
@@ -27,50 +43,57 @@ export const getHomeIntro = cache(
         );
 
         if (response.ok) {
-          const data = await response.json();
-          const fallback = FALLBACK_HOME_DATA[targetLang];
+          const data: ApiReport = await response.json();
 
-          let introduction = data.introduction || data.content || fallback.introduction;
-          let methodology = data.methodology || fallback.methodology;
+          const versionsRes = await fetch(
+            `${env.apiUrl}/reports/${data.id}/versions/published`,
+            { headers: { "Content-Type": "application/json" } },
+          );
 
-          // If the report has no inline intro/methodology, pull from its sections.
-          if ((!data.introduction || !data.methodology) && data.id) {
-            try {
-              const sectionsRes = await fetch(
-                `${env.apiUrl}/sections/report/${data.id}`,
-                { headers: { "Content-Type": "application/json" } },
-              );
-              if (sectionsRes.ok) {
-                const sections: { slug: string; content?: string }[] =
-                  await sectionsRes.json();
-                const introSection = sections.find((s) =>
-                  s.slug.toLowerCase().includes("intro"),
+          if (versionsRes.ok) {
+            const versions: ApiVersion[] = await versionsRes.json();
+            const version =
+              versions.find(
+                (v) => v.language.toLowerCase() === targetLang,
+              ) || versions[0];
+
+            if (version) {
+              let introduction = fallback.introduction;
+              let methodology = fallback.methodology;
+
+              try {
+                const sectionsRes = await fetch(
+                  `${env.apiUrl}/report-versions/${version.id}/sections`,
+                  { headers: { "Content-Type": "application/json" } },
                 );
-                const methSection = sections.find((s) =>
-                  s.slug.toLowerCase().includes("method"),
-                );
-                if (introSection?.content) introduction = introSection.content;
-                if (methSection?.content) methodology = methSection.content;
+                if (sectionsRes.ok) {
+                  const sections: ApiSection[] = await sectionsRes.json();
+                  const introSection = sections.find((s) =>
+                    s.slug.toLowerCase().includes("intro"),
+                  );
+                  const methSection = sections.find((s) =>
+                    s.slug.toLowerCase().includes("method"),
+                  );
+                  if (introSection?.content) introduction = introSection.content;
+                  if (methSection?.content) methodology = methSection.content;
+                }
+              } catch {
+                // sections unreachable → keep fallback
               }
-            } catch {
-              // sections unreachable → keep fallback
+
+              return {
+                id: data.id || fallback.id,
+                title: version.title || fallback.title,
+                slug: data.slug || fallback.slug,
+                description: version.summary || fallback.description,
+                introduction,
+                methodology,
+                citation_text: version.citation_text || fallback.citation_text,
+                created_at: fallback.created_at,
+                updated_at: fallback.updated_at,
+              };
             }
           }
-
-          return {
-            id: data.id || fallback.id,
-            title: data.title || fallback.title,
-            slug: data.slug || fallback.slug,
-            description: data.summary || data.description || fallback.description,
-            introduction,
-            methodology,
-            citation_text:
-              data.citation_text || data.citationText || fallback.citation_text,
-            created_at:
-              data.created_at || data.createdAt || fallback.created_at,
-            updated_at:
-              data.updated_at || data.updatedAt || fallback.updated_at,
-          };
         }
       } catch (error) {
         console.warn(
@@ -81,7 +104,7 @@ export const getHomeIntro = cache(
     }
 
     // Fallback to local content when the API is unavailable
-    return FALLBACK_HOME_DATA[targetLang];
+    return fallback;
   },
 );
 
@@ -98,6 +121,3 @@ export const getHomeIntrosMap = cache(
     return { es, en };
   },
 );
-
-
-
