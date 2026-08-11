@@ -4,7 +4,7 @@ export default function NotFound() {
   return (
     <div className="phi min-h-screen flex flex-col items-center justify-center bg-background text-foreground px-6 text-center">
       <p className="font-mono text-sm uppercase tracking-widest text-primary">404</p>
-      <h1 className="mt-4 text-4xl font-serif font-bold tracking-tight">
+      <h1 className="mt-4 text-4xl font-sans font-medium tracking-tight">
         Página no encontrada
       </h1>
       <p className="mt-3 text-muted-foreground max-w-md leading-relaxed">
