@@ -9,6 +9,9 @@ import { useScrollProgress } from "@/hooks/use-scroll-progress";
 import { useSectionTracker } from "@/hooks/use-section-tracker";
 import { searchIndex } from "@/features/home/data/search-index";
 
+import { ReportToggle } from "./report-toggle";
+import { VersionToggle } from "./version-toggle";
+
 const NAV_LINKS = [
   { href: "/report", key: "definition" },
   { href: "/#s02", key: "chapters", match: "/" },
@@ -16,6 +19,7 @@ const NAV_LINKS = [
   { href: "/methodology", key: "methodology", match: "/methodology" },
   { href: "/report/references", key: "references", match: "/report/references" },
 ];
+
 
 function SearchIcon() {
   return (
@@ -145,8 +149,11 @@ export function NavigationHeader() {
               </Link>
             ))}
           </nav>
-          <div className="tools">
+          <div className="tools flex items-center gap-2">
+            <ReportToggle />
+            <VersionToggle />
             <button
+
               className="ic"
               id="sbtn"
               aria-label="Search"

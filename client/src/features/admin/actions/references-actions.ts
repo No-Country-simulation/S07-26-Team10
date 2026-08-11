@@ -10,6 +10,7 @@ import {
   type ReferenceItem,
 } from "../schemas/reference-schema";
 import { getApiUrl } from "@/lib/api-url";
+import { getAllReportVersionsAction } from "./reports-actions";
 
 async function getAuthHeaders(): Promise<HeadersInit> {
   const cookieStore = await cookies();
@@ -27,21 +28,28 @@ async function getAuthHeaders(): Promise<HeadersInit> {
  * GET /api/v1/references/report/{report_id}/admin
  * Listar todas las referencias de un reporte (admin)
  */
-export async function getReferencesAction(reportId?: string): Promise<ReferenceItem[]> {
-  if (!reportId) return [];
+export async function getReferencesAction(reportVersionId?: string): Promise<ReferenceItem[]> {
+  if (!reportVersionId) return [];
 
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(getApiUrl(`/references/report/${reportId}/admin`), {
-      headers,
-      cache: "no-store",
-    });
+    const urlsToTry = [
+      `/report-versions/${reportVersionId}/references`,
+      `/references/report/${reportVersionId}/admin`,
+      `/references/`,
+    ];
 
-    if (res.ok) {
-      const data = (await res.json()) as ReferenceItem[];
-      return data;
+    for (const url of urlsToTry) {
+      const res = await fetch(getApiUrl(url), {
+        headers,
+        cache: "no-store",
+      });
+
+      if (res.ok) {
+        const data = (await res.json()) as ReferenceItem[];
+        return data;
+      }
     }
-    console.warn("getReferencesAction: API returned status", res.status);
   } catch (error) {
     console.error("Error fetching references from API:", error);
   }
@@ -49,32 +57,56 @@ export async function getReferencesAction(reportId?: string): Promise<ReferenceI
   return [];
 }
 
-export async function getReferencesByReportAction(reportId: string): Promise<ReferenceItem[]> {
-  return getReferencesAction(reportId);
+export async function getReferencesByReportAction(reportVersionId: string): Promise<ReferenceItem[]> {
+  return getReferencesAction(reportVersionId);
 }
 
-/**
- * GET /api/v1/references/{reference_id}
- * Obtener referencia por ID
- */
-export async function getReferenceByIdAction(referenceId: string): Promise<ReferenceItem | undefined> {
+export async function getReferenceByIdAction(referenceId: string, reportVersionId?: string): Promise<ReferenceItem | undefined> {
   if (!referenceId) return undefined;
 
   try {
     const headers = await getAuthHeaders();
+
+    if (reportVersionId) {
+      const urlsToTry = [
+        `/report-versions/${reportVersionId}/references/${referenceId}`,
+        `/references/${referenceId}`,
+      ];
+
+      for (const url of urlsToTry) {
+        const res = await fetch(getApiUrl(url), {
+          headers,
+          cache: "no-store",
+        });
+
+        if (res.ok) {
+          const data = (await res.json()) as ReferenceItem;
+          return data;
+        }
+      }
+    }
+
+    const reportVersions = await getAllReportVersionsAction();
+    for (const rv of reportVersions) {
+      const res = await fetch(getApiUrl(`/report-versions/${rv.id}/references/${referenceId}`), {
+        headers,
+        cache: "no-store",
+      });
+
+      if (res.ok) {
+        const data = (await res.json()) as ReferenceItem;
+        return data;
+      }
+    }
+
     const res = await fetch(getApiUrl(`/references/${referenceId}`), {
       headers,
       cache: "no-store",
     });
-
     if (res.ok) {
       const data = (await res.json()) as ReferenceItem;
       return data;
     }
-    if (res.status === 404) {
-      return undefined;
-    }
-    console.warn("getReferenceByIdAction: API returned status", res.status);
   } catch (error) {
     console.error("Error fetching reference by ID from API:", error);
   }
@@ -82,10 +114,6 @@ export async function getReferenceByIdAction(referenceId: string): Promise<Refer
   return undefined;
 }
 
-/**
- * POST /api/v1/references/
- * Crear referencia asociada a un reporte
- */
 export async function createReferenceAction(input: CreateReferenceInput): Promise<{
   success: boolean;
   data?: ReferenceItem;
@@ -104,37 +132,52 @@ export async function createReferenceAction(input: CreateReferenceInput): Promis
 
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(getApiUrl("/references/"), {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        report_id: result.data.report_id,
-        authors: result.data.authors,
-        title: result.data.title,
-        year: result.data.year,
-        source: result.data.source,
-        citation_url: result.data.citation_url || "",
-      }),
-    });
-
-    if (res.status === 201 || res.ok) {
-      const data = (await res.json()) as ReferenceItem;
-      revalidatePath("/admin/references");
-      return {
-        success: true,
-        data,
-        message: "Referencia creada exitosamente.",
-      };
+    const reportVersionId = result.data.report_version_id || result.data.report_id;
+    if (!reportVersionId) {
+      return { success: false, message: "ID de versión de reporte no proporcionado." };
     }
 
-    if (res.status === 401) {
-      return {
-        success: false,
-        message: "Sesión expirada o token inválido.",
-      };
+    const payload: Record<string, unknown> = {
+      authors: result.data.authors,
+      title: result.data.title,
+      year: result.data.year,
+      source: result.data.source,
+      citation_url: result.data.citation_url || "",
+    };
+    if (result.data.display_order !== undefined) {
+      payload.display_order = result.data.display_order;
     }
 
-    const errorBody = await res.json().catch(() => ({}));
+    const urlsToTry = [
+      `/report-versions/${reportVersionId}/references`,
+      `/references/`,
+    ];
+
+    let lastRes: Response | null = null;
+    for (const url of urlsToTry) {
+      const res = await fetch(getApiUrl(url), {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload),
+      });
+
+      if (res.status === 201 || res.ok) {
+        const data = (await res.json()) as ReferenceItem;
+        revalidatePath("/admin/references");
+        return {
+          success: true,
+          data,
+          message: "Referencia creada exitosamente.",
+        };
+      }
+      lastRes = res;
+    }
+
+    if (lastRes?.status === 401) {
+      return { success: false, message: "Sesión expirada o token inválido." };
+    }
+
+    const errorBody = lastRes ? await lastRes.json().catch(() => ({})) : {};
     return {
       success: false,
       message: errorBody.detail?.[0]?.msg || errorBody.detail || "Error al crear la referencia.",
@@ -148,13 +191,10 @@ export async function createReferenceAction(input: CreateReferenceInput): Promis
   }
 }
 
-/**
- * PATCH /api/v1/references/{reference_id}
- * Actualizar referencia parcialmente
- */
 export async function updateReferenceAction(
   referenceId: string,
-  input: UpdateReferenceInput
+  input: UpdateReferenceInput,
+  reportVersionId?: string
 ): Promise<{
   success: boolean;
   data?: ReferenceItem;
@@ -173,38 +213,52 @@ export async function updateReferenceAction(
 
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(getApiUrl(`/references/${referenceId}`), {
-      method: "PATCH",
-      headers,
-      body: JSON.stringify({
-        authors: result.data.authors,
-        title: result.data.title,
-        year: result.data.year,
-        source: result.data.source,
-        citation_url: result.data.citation_url || "",
-        display_order: result.data.display_order ?? 0,
-      }),
-    });
+    const targetVersionId = reportVersionId || result.data.report_version_id || result.data.report_id;
 
-    if (res.ok) {
-      const data = (await res.json()) as ReferenceItem;
-      revalidatePath("/admin/references");
-      return {
-        success: true,
-        data,
-        message: "Referencia actualizada exitosamente.",
-      };
+    const payload: Record<string, unknown> = {};
+    if (result.data.authors !== undefined) payload.authors = result.data.authors;
+    if (result.data.title !== undefined) payload.title = result.data.title;
+    if (result.data.year !== undefined) payload.year = result.data.year;
+    if (result.data.source !== undefined) payload.source = result.data.source;
+    if (result.data.citation_url !== undefined) payload.citation_url = result.data.citation_url;
+    if (result.data.display_order !== undefined) payload.display_order = result.data.display_order;
+
+    const urlsToTry = targetVersionId
+      ? [
+          `/report-versions/${targetVersionId}/references/${referenceId}`,
+          `/references/${referenceId}`,
+        ]
+      : [`/references/${referenceId}`];
+
+    let lastRes: Response | null = null;
+    for (const url of urlsToTry) {
+      const res = await fetch(getApiUrl(url), {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        const data = (await res.json()) as ReferenceItem;
+        revalidatePath("/admin/references");
+        return {
+          success: true,
+          data,
+          message: "Referencia actualizada exitosamente.",
+        };
+      }
+      lastRes = res;
     }
 
-    if (res.status === 404) {
+    if (lastRes?.status === 404) {
       return { success: false, message: "Referencia no encontrada." };
     }
 
-    if (res.status === 401) {
+    if (lastRes?.status === 401) {
       return { success: false, message: "Sesión expirada o token inválido." };
     }
 
-    const errorBody = await res.json().catch(() => ({}));
+    const errorBody = lastRes ? await lastRes.json().catch(() => ({})) : {};
     return {
       success: false,
       message: errorBody.detail?.[0]?.msg || errorBody.detail || "Error al actualizar la referencia.",
@@ -218,33 +272,84 @@ export async function updateReferenceAction(
   }
 }
 
-/**
- * DELETE /api/v1/references/{reference_id}
- * Eliminar una referencia
- */
-export async function deleteReferenceAction(referenceId: string): Promise<{ success: boolean; message?: string }> {
-  try {
-    const headers = await getAuthHeaders();
-    const res = await fetch(getApiUrl(`/references/${referenceId}`), {
-      method: "DELETE",
-      headers,
-    });
+export async function deleteReferenceAction(
+  referenceId: string,
+  reportVersionId?: string
+): Promise<{ success: boolean; message?: string }> {
+  if (!referenceId) return { success: false, message: "ID de referencia no válido." };
 
-    if (res.ok || res.status === 204) {
-      revalidatePath("/admin/references");
-      return { success: true, message: "Referencia eliminada exitosamente." };
+  try {
+    let targetVersionId = reportVersionId;
+
+    if (!targetVersionId) {
+      const refItem = await getReferenceByIdAction(referenceId, reportVersionId);
+      if (refItem?.report_version_id || refItem?.report_id) {
+        targetVersionId = refItem.report_version_id || refItem.report_id;
+      }
     }
 
-    const errorBody = await res.json().catch(() => ({}));
+    const headers = await getAuthHeaders();
+    const urlsToTry: string[] = [];
+
+    if (targetVersionId) {
+      urlsToTry.push(`/report-versions/${targetVersionId}/references/${referenceId}`);
+    } else {
+      const reportVersions = await getAllReportVersionsAction();
+      for (const rv of reportVersions) {
+        if (rv.id) {
+          urlsToTry.push(`/report-versions/${rv.id}/references/${referenceId}`);
+        }
+      }
+    }
+    urlsToTry.push(`/references/${referenceId}`);
+
+    let deletedFromDb = false;
+    let lastRes: Response | null = null;
+    let lastErrorMsg = "";
+
+    for (const url of urlsToTry) {
+      try {
+        const res = await fetch(getApiUrl(url), {
+          method: "DELETE",
+          headers,
+        });
+
+        if (res.ok || res.status === 204) {
+          deletedFromDb = true;
+          break;
+        }
+        lastRes = res;
+        const errJson = await res.json().catch(() => ({}));
+        lastErrorMsg = errJson.detail?.[0]?.msg || errJson.detail || errJson.message || "";
+      } catch (err) {
+        console.warn(`Fetch delete failed for ${url}:`, err);
+      }
+    }
+
+    if (deletedFromDb || lastRes?.status === 404) {
+      revalidatePath("/admin/references");
+      return {
+        success: true,
+        message: deletedFromDb
+          ? "Referencia eliminada exitosamente."
+          : "La referencia ya no existía en el servidor y ha sido removida.",
+      };
+    }
+
+    if (lastRes?.status === 401) {
+      return { success: false, message: "Sesión expirada o token inválido." };
+    }
+
     return {
       success: false,
-      message: errorBody.detail?.[0]?.msg || errorBody.detail || "Error al eliminar la referencia.",
+      message: lastErrorMsg || (lastRes ? `Error ${lastRes.status}: No se pudo eliminar la referencia.` : "Error al eliminar la referencia."),
     };
   } catch (error) {
     console.error("Error deleting reference via API:", error);
     return {
       success: false,
-      message: "No se pudo conectar con el servidor de la API.",
+      message: error instanceof Error ? error.message : "No se pudo conectar con el servidor de la API.",
     };
   }
 }
+

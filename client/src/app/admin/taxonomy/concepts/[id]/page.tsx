@@ -1,15 +1,20 @@
+import { notFound } from "next/navigation";
 import { ConceptForm } from "@/features/admin/components/taxonomy/concept-form";
-import type { ConceptItem } from "@/features/admin/schemas/taxonomy-schema";
+import { getConceptByIdAction } from "@/features/admin/actions/taxonomy-actions";
 
-const MOCK_EDIT_CONCEPT: ConceptItem = {
-  id: "c1b2c3d4-e5f6-7890-abcd-111111111111",
-  category_id: "a1b2c3d4-e5f6-7890-abcd-111111111111",
-  section_id: "sec-001-intro",
-  name: "Enfriamiento ineficiente",
-  description: "Métrica técnica sobre disipación térmica",
-  display_order: 1,
-};
+interface EditConceptPageProps {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ category_id?: string }>;
+}
 
-export default function EditConceptPage() {
-  return <ConceptForm isEditMode={true} initialData={MOCK_EDIT_CONCEPT} />;
+export default async function EditConceptPage({ params, searchParams }: EditConceptPageProps) {
+  const { id } = await params;
+  const { category_id } = await searchParams;
+  const concept = await getConceptByIdAction(id, category_id);
+
+  if (!concept) {
+    notFound();
+  }
+
+  return <ConceptForm isEditMode={true} initialData={concept} />;
 }

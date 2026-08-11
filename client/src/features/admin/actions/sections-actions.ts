@@ -23,21 +23,87 @@ async function getAuthHeaders(): Promise<HeadersInit> {
   return headers;
 }
 
-export async function getSectionsAction(reportId?: string): Promise<SectionItem[]> {
+function parseApiError(errorBody: Record<string, unknown> | null | undefined, defaultMessage: string): { message: string; errors?: Record<string, string[]> } {
+  if (!errorBody) return { message: defaultMessage };
+
+  if (typeof errorBody.detail === "string") {
+    return { message: errorBody.detail };
+  }
+
+  if (Array.isArray(errorBody.detail)) {
+    const fieldErrors: Record<string, string[]> = {};
+    const messages: string[] = [];
+
+    errorBody.detail.forEach((err: unknown) => {
+      if (typeof err === "string") {
+        messages.push(err);
+      } else if (err && typeof err === "object") {
+        const errObj = err as Record<string, unknown>;
+        const fieldName = Array.isArray(errObj.loc) ? String(errObj.loc[errObj.loc.length - 1]) : "general";
+        const msg = String(errObj.msg || JSON.stringify(errObj));
+        if (!fieldErrors[fieldName]) fieldErrors[fieldName] = [];
+        fieldErrors[fieldName].push(msg);
+        messages.push(`${fieldName}: ${msg}`);
+      }
+    });
+
+    return {
+      message: messages.length > 0 ? messages.join(" | ") : defaultMessage,
+      errors: Object.keys(fieldErrors).length > 0 ? fieldErrors : undefined,
+    };
+  }
+
+  if (typeof errorBody.message === "string") {
+    return { message: errorBody.message };
+  }
+
+  const jsonMsg = JSON.stringify(errorBody.detail || errorBody);
+  return { message: jsonMsg && jsonMsg !== "{}" ? jsonMsg : defaultMessage };
+}
+
+function mapSectionResponse(sec: Record<string, unknown>): SectionItem {
+  const statusVal = (sec.status as string) || (sec.published ? "PUBLISHED" : "DRAFT");
+  const isPublished = statusVal === "PUBLISHED";
+  return {
+    id: sec.id as string,
+    report_version_id: (sec.report_version_id || sec.report_id) as string,
+    report_id: (sec.report_id || sec.report_version_id) as string,
+    title: (sec.title as string) ?? "",
+    slug: (sec.slug as string) ?? "",
+    content: (sec.content as string) ?? "",
+    display_order: typeof sec.display_order === "number" ? sec.display_order : 1,
+    status: statusVal as "DRAFT" | "PUBLISHED",
+    published: isPublished,
+    created_at: sec.created_at as string | undefined,
+    updated_at: sec.updated_at as string | undefined,
+  };
+}
+
+export async function getSectionsAction(reportId?: string, status?: string): Promise<SectionItem[]> {
   if (!reportId) return [];
 
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(getApiUrl(`/sections/report/${reportId}/admin`), {
-      headers,
-      cache: "no-store",
-    });
+    const query = status ? `?status=${status}` : "";
+    const urlsToTry = [
+      `/report-versions/${reportId}/sections/admin${query}`,
+      `/report-versions/${reportId}/sections${query}`,
+      `/sections/report/${reportId}/admin${query}`,
+      `/sections/report/${reportId}${query}`,
+    ];
 
-    if (res.ok) {
-      const data = (await res.json()) as SectionItem[];
-      return data;
+    for (const url of urlsToTry) {
+      const res = await fetch(getApiUrl(url), {
+        headers,
+        cache: "no-store",
+      });
+
+      if (res.ok) {
+        const data = (await res.json()) as Record<string, unknown>[];
+        return data.map(mapSectionResponse);
+      }
     }
-    console.warn("getSectionsAction: API returned status", res.status);
+    console.warn("getSectionsAction: None of the endpoints returned OK for ID:", reportId);
   } catch (error) {
     console.error("Error fetching sections from API:", error);
   }
@@ -45,28 +111,65 @@ export async function getSectionsAction(reportId?: string): Promise<SectionItem[
   return [];
 }
 
-export async function getSectionByIdAction(sectionId: string): Promise<SectionItem | undefined> {
+
+import { getAllReportVersionsAction } from "./reports-actions";
+
+export async function getSectionByIdAction(sectionId: string, reportVersionId?: string): Promise<SectionItem | undefined> {
+  if (!sectionId) return undefined;
+
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(getApiUrl(`/sections/${sectionId}/admin`), {
-      headers,
-      cache: "no-store",
-    });
 
-    if (res.ok) {
-      const data = (await res.json()) as SectionItem;
-      return data;
+    if (reportVersionId) {
+      const urlsToTry = [
+        `/report-versions/${reportVersionId}/sections/admin/${sectionId}`,
+        `/report-versions/${reportVersionId}/sections/${sectionId}`,
+      ];
+
+      for (const u of urlsToTry) {
+        const res = await fetch(getApiUrl(u), { headers, cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          return mapSectionResponse(data);
+        }
+      }
     }
-    if (res.status === 404) {
-      return undefined;
+
+    const directUrls = [
+      `/sections/${sectionId}/admin`,
+      `/sections/${sectionId}`,
+    ];
+
+    for (const u of directUrls) {
+      const res = await fetch(getApiUrl(u), { headers, cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        return mapSectionResponse(data);
+      }
     }
-    console.warn("getSectionByIdAction: API returned status", res.status);
+
+    const reportVersions = await getAllReportVersionsAction();
+    for (const rv of reportVersions) {
+      const urlsToTry = [
+        `/report-versions/${rv.id}/sections/admin/${sectionId}`,
+        `/report-versions/${rv.id}/sections/${sectionId}`,
+      ];
+
+      for (const u of urlsToTry) {
+        const res = await fetch(getApiUrl(u), { headers, cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          return mapSectionResponse(data);
+        }
+      }
+    }
   } catch (error) {
     console.error("Error fetching section by ID from API:", error);
   }
 
   return undefined;
 }
+
 
 export async function getSectionOptionsAction(reportId?: string): Promise<{ id: string; title: string }[]> {
   if (!reportId) return [];
@@ -95,24 +198,30 @@ export async function createSectionAction(input: CreateSectionInput): Promise<{
 
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(getApiUrl("/sections/"), {
+    const reportVersionId = result.data.report_id;
+    const statusVal = result.data.status || (result.data.published ? "PUBLISHED" : "DRAFT");
+
+    const payload: Record<string, unknown> = {
+      title: result.data.title,
+      content: result.data.content,
+      status: statusVal,
+    };
+    if (result.data.display_order !== undefined && result.data.display_order !== null) {
+      payload.display_order = result.data.display_order;
+    }
+
+    const res = await fetch(getApiUrl(`/report-versions/${reportVersionId}/sections`), {
       method: "POST",
       headers,
-      body: JSON.stringify({
-        report_id: result.data.report_id,
-        title: result.data.title,
-        content: result.data.content,
-        display_order: result.data.display_order,
-        published: result.data.published,
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (res.status === 201 || res.ok) {
-      const data = (await res.json()) as SectionItem;
+      const data = await res.json();
       revalidatePath("/admin/sections");
       return {
         success: true,
-        data,
+        data: mapSectionResponse(data),
         message: "Sección creada exitosamente.",
       };
     }
@@ -132,9 +241,11 @@ export async function createSectionAction(input: CreateSectionInput): Promise<{
     }
 
     const errorBody = await res.json().catch(() => ({}));
+    const parsedErr = parseApiError(errorBody, "Error al crear la sección.");
     return {
       success: false,
-      message: errorBody.detail?.[0]?.msg || errorBody.detail || "Error al crear la sección.",
+      message: parsedErr.message,
+      errors: parsedErr.errors,
     };
   } catch (error) {
     console.error("Error creating section via API:", error);
@@ -147,7 +258,8 @@ export async function createSectionAction(input: CreateSectionInput): Promise<{
 
 export async function updateSectionAction(
   sectionId: string,
-  input: UpdateSectionInput
+  input: UpdateSectionInput,
+  reportVersionId?: string
 ): Promise<{
   success: boolean;
   data?: SectionItem;
@@ -166,43 +278,64 @@ export async function updateSectionAction(
 
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(getApiUrl(`/sections/${sectionId}`), {
-      method: "PATCH",
-      headers,
-      body: JSON.stringify({
-        title: result.data.title,
-        content: result.data.content,
-        display_order: result.data.display_order,
-        published: result.data.published,
-      }),
-    });
+    const statusVal = result.data.status || (result.data.published !== undefined ? (result.data.published ? "PUBLISHED" : "DRAFT") : undefined);
 
-    if (res.ok) {
-      const data = (await res.json()) as SectionItem;
-      revalidatePath("/admin/sections");
-      return {
-        success: true,
-        data,
-        message: "Sección actualizada exitosamente.",
-      };
+    const payload: Record<string, unknown> = {};
+    if (result.data.title !== undefined) payload.title = result.data.title;
+    if (result.data.content !== undefined) payload.content = result.data.content;
+    if (result.data.display_order !== undefined) payload.display_order = result.data.display_order;
+    if (statusVal !== undefined) payload.status = statusVal;
+
+    const urlsToTry: string[] = [];
+
+    if (reportVersionId) {
+      urlsToTry.push(`/report-versions/${reportVersionId}/sections/${sectionId}`);
+    } else {
+      const versions = await getAllReportVersionsAction();
+      versions.forEach((rv) => {
+        urlsToTry.push(`/report-versions/${rv.id}/sections/${sectionId}`);
+      });
+    }
+    urlsToTry.push(`/sections/${sectionId}`);
+
+    let lastRes: Response | null = null;
+    for (const u of urlsToTry) {
+      const res = await fetch(getApiUrl(u), {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        revalidatePath("/admin/sections");
+        return {
+          success: true,
+          data: mapSectionResponse(data),
+          message: "Sección actualizada exitosamente.",
+        };
+      }
+      lastRes = res;
     }
 
-    if (res.status === 404) {
+    if (lastRes?.status === 404) {
       return { success: false, message: "Sección no encontrada." };
     }
 
-    if (res.status === 409) {
+    if (lastRes?.status === 409) {
       return { success: false, message: "El slug ya se encuentra registrado." };
     }
 
-    if (res.status === 401) {
+    if (lastRes?.status === 401) {
       return { success: false, message: "Sesión expirada o token inválido." };
     }
 
-    const errorBody = await res.json().catch(() => ({}));
+    const errorBody = lastRes ? await lastRes.json().catch(() => ({})) : {};
+    const parsedErr = parseApiError(errorBody, "Error al actualizar la sección.");
     return {
       success: false,
-      message: errorBody.detail?.[0]?.msg || errorBody.detail || "Error al actualizar la sección.",
+      message: parsedErr.message,
+      errors: parsedErr.errors,
     };
   } catch (error) {
     console.error("Error updating section via API:", error);
@@ -213,23 +346,36 @@ export async function updateSectionAction(
   }
 }
 
-export async function deleteSectionAction(sectionId: string): Promise<{ success: boolean; message?: string }> {
+export async function deleteSectionAction(sectionId: string, reportVersionId?: string): Promise<{ success: boolean; message?: string }> {
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(getApiUrl(`/sections/${sectionId}`), {
-      method: "DELETE",
-      headers,
-    });
+    const urlsToTry: string[] = [];
 
-    if (res.ok || res.status === 204) {
-      revalidatePath("/admin/sections");
-      return { success: true, message: "Sección eliminada exitosamente." };
+    if (reportVersionId) {
+      urlsToTry.push(`/report-versions/${reportVersionId}/sections/${sectionId}`);
+    } else {
+      const versions = await getAllReportVersionsAction();
+      versions.forEach((rv) => {
+        urlsToTry.push(`/report-versions/${rv.id}/sections/${sectionId}`);
+      });
+    }
+    urlsToTry.push(`/sections/${sectionId}`);
+
+    for (const u of urlsToTry) {
+      const res = await fetch(getApiUrl(u), {
+        method: "DELETE",
+        headers,
+      });
+
+      if (res.ok || res.status === 204) {
+        revalidatePath("/admin/sections");
+        return { success: true, message: "Sección eliminada exitosamente." };
+      }
     }
 
-    const errorBody = await res.json().catch(() => ({}));
     return {
       success: false,
-      message: errorBody.detail?.[0]?.msg || errorBody.detail || "Error al eliminar la sección.",
+      message: "Error al eliminar la sección.",
     };
   } catch (error) {
     console.error("Error deleting section via API:", error);
@@ -239,4 +385,6 @@ export async function deleteSectionAction(sectionId: string): Promise<{ success:
     };
   }
 }
+
+
 

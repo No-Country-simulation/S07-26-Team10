@@ -21,20 +21,21 @@ import { useVersion } from "@/context/version-context";
 
 export function SectionsManagement() {
   const t = useTranslations("AdminPage");
-  const { activeReportId, activeReport, version } = useVersion();
+  const { activeReportId, activeReport, activeReportVersion, activeVersionId, version } = useVersion();
+  const targetVersionId = activeReportVersion?.id || activeVersionId || activeReportId;
   const [sections, setSections] = useState<SectionItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadSections() {
-      if (!activeReportId) {
+      if (!targetVersionId) {
         setSections([]);
         setLoading(false);
         return;
       }
       setLoading(true);
       try {
-        const data = await getSectionsAction(activeReportId);
+        const data = await getSectionsAction(targetVersionId);
         setSections(data);
       } catch (err) {
         console.error("Failed to load sections", err);
@@ -43,7 +44,8 @@ export function SectionsManagement() {
       }
     }
     loadSections();
-  }, [activeReportId]);
+  }, [targetVersionId]);
+
 
   return (
     <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-2">
@@ -51,21 +53,19 @@ export function SectionsManagement() {
       <div className="space-y-1">
         <div className="flex items-center gap-2 text-xs font-mono font-semibold text-amber-700 dark:text-amber-500 uppercase tracking-widest">
           <span className="w-6 h-[2px] bg-amber-600/70 inline-block" />
-          <span>GESTIÓN DE ESTRUCTURA</span>
+          <span>{t("sections.headerTag")}</span>
         </div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-              {t("pages.sectionsTitle")}
-            </h1>
-            <p className="text-sm text-muted-foreground max-w-3xl pt-1 leading-relaxed">
-              {t("pages.sectionsDesc")}
-            </p>
-          </div>
+        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+          {t("sections.title")}
+        </h1>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+          <p className="text-sm text-muted-foreground max-w-3xl leading-relaxed">
+            {t("sections.subtitle")}
+          </p>
           <Link href="/admin/sections/new">
-            <Button className="bg-emerald-950 text-emerald-100 hover:bg-emerald-900 rounded-lg text-xs font-semibold tracking-wider px-4 py-2 shadow-sm gap-1.5 uppercase shrink-0">
+            <Button className="rounded-xl px-4 gap-2 shadow-xs bg-emerald-950 text-emerald-100 hover:bg-emerald-900 text-xs font-bold">
               <PlusCircle className="size-4" />
-              <span>{t("pages.newSection")}</span>
+              <span>{t("sections.newSectionBtn")}</span>
             </Button>
           </Link>
         </div>
@@ -88,7 +88,7 @@ export function SectionsManagement() {
             </div>
             <div>
               <CardTitle className="text-base font-semibold">
-                {t("pages.sectionsTableTitle")}{activeReport ? ` — ${activeReport.title}` : ""}
+                {t("pages.sectionsTableTitle")}{activeReportVersion ? ` — ${activeReportVersion.title}` : activeReport ? ` — ${activeReport.slug}` : ""}
               </CardTitle>
               <CardDescription className="text-xs">{t("pages.sectionsTableDesc")}</CardDescription>
             </div>
@@ -152,7 +152,7 @@ export function SectionsManagement() {
                           </Tooltip>
                         </TableCell>
                         <TableCell className="w-24">
-                          {section.published ? (
+                          {section.status === "PUBLISHED" || section.published ? (
                             <Badge className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 font-semibold text-[11px]">
                               Publicada
                             </Badge>

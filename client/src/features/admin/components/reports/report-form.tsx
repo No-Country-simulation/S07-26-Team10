@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,8 +10,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Save, FileText, Wand2, Eye } from "lucide-react";
-import type { ReportItem } from "../../schemas/report-schema";
-import { createReportAction, updateReportAction } from "../../actions/reports-actions";
+import type { BaseReport, ReportVersion } from "../../schemas/report-schema";
+import {
+  createReportAction,
+  getReportsAction,
+  createReportVersionAction,
+  updateReportVersionAction,
+} from "../../actions/reports-actions";
 import { MDXEditorComponent } from "@/features/admin/components/ui/mdx/mdx-editor-component";
 import { MdxPreview } from "@/features/admin/components/ui/mdx/mdx-preview";
 
@@ -21,34 +26,45 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Badge } from "@/components/ui/badge";
 
 interface ReportFormProps {
-  initialData?: ReportItem;
+  initialData?: ReportVersion;
   isEditMode?: boolean;
 }
 
-const parseInitialTitle = (rawTitle?: string) => {
-  if (!rawTitle) return { versionNumber: "1", lang: "es" };
-  const match = rawTitle.match(/^(?:v)?([0-9.]+)-(es|en)$/i);
-  if (match) {
-    return { versionNumber: match[1], lang: match[2].toLowerCase() as "es" | "en" };
-  }
-  return { versionNumber: rawTitle.replace(/[^0-9.]/g, "") || "1", lang: "es" };
+const parseInitialVersion = (initialVersion?: string) => {
+  if (!initialVersion) return "1";
+  const sanitized = initialVersion.replace(/[^0-9]/g, "");
+  return sanitized || "1";
 };
 
 export function ReportForm({ initialData, isEditMode = false }: ReportFormProps) {
   const t = useTranslations("AdminPage.reports.reportForm");
   const router = useRouter();
-  const { language: currentContextLang } = useLanguage();
-  const { contentLanguage } = useVersion();
+  const searchParams = useSearchParams();
+  const preselectedReportId = searchParams?.get("reportId");
 
-  const initialParsed = parseInitialTitle(initialData?.title);
-  const [versionNumber, setVersionNumber] = useState<string>(initialParsed.versionNumber);
-  const [language, setLanguage] = useState<"es" | "en">(
-    isEditMode ? (initialParsed.lang as "es" | "en") : (contentLanguage as "es" | "en") || (currentContextLang as "es" | "en") || (initialParsed.lang as "es" | "en")
+  const { language: currentContextLang } = useLanguage();
+  const { contentLanguage, refreshReports } = useVersion();
+
+  const [availableBaseReports, setAvailableBaseReports] = useState<BaseReport[]>([]);
+  const [selectedReportId, setSelectedReportId] = useState<string>("new");
+
+  const [versionNumber, setVersionNumber] = useState<string>(
+    parseInitialVersion(initialData?.version)
   );
-  
-  const cleanVer = versionNumber.replace(/[^0-9.]/g, "");
+  const [language, setLanguage] = useState<"ES" | "EN">(
+    isEditMode
+      ? (initialData?.language as "ES" | "EN") || "ES"
+      : (contentLanguage.toUpperCase() as "ES" | "EN") ||
+        (currentContextLang.toUpperCase() as "ES" | "EN") ||
+        "ES"
+  );
+  const [status, setStatus] = useState<"DRAFT" | "PUBLISHED">(
+    initialData?.status || "DRAFT"
+  );
+
+  const cleanVer = versionNumber.replace(/[^0-9]/g, "");
   const formattedVersion = `v${cleanVer || "1"}`;
-  const title = `${formattedVersion}-${language}`;
+  const [title, setTitle] = useState(initialData?.title || "");
 
   const [summary, setSummary] = useState(initialData?.summary || "");
   const [citationText, setCitationText] = useState(initialData?.citation_text || "");
@@ -57,6 +73,27 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [successMsg, setSuccessMsg] = useState("");
 
+  useEffect(() => {
+    async function loadBaseReports() {
+      try {
+        const reports = await getReportsAction();
+        setAvailableBaseReports(reports);
+        if (!isEditMode) {
+          if (preselectedReportId && reports.some((r) => r.id === preselectedReportId)) {
+            setSelectedReportId(preselectedReportId);
+          } else if (reports.length > 0) {
+            setSelectedReportId(reports[0].id);
+          } else {
+            setSelectedReportId("new");
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load base reports for version form", err);
+      }
+    }
+    loadBaseReports();
+  }, [isEditMode, preselectedReportId]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -64,22 +101,69 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
     setSuccessMsg("");
 
     try {
-      const input = { title, summary, citation_text: citationText };
+      if (isEditMode && initialData?.report_id && initialData?.id) {
+        const result = await updateReportVersionAction(
+          initialData.report_id,
+          initialData.id,
+          {
+            title,
+            summary,
+            citation_text: citationText,
+            status,
+          }
+        );
 
-      const result = isEditMode && initialData?.id
-        ? await updateReportAction(initialData.id, input)
-        : await createReportAction(input);
-
-      if (result.success) {
-        setSuccessMsg(result.message || "");
-        setTimeout(() => {
-          router.push("/admin/reports");
-        }, 400);
+        if (result.success) {
+          setSuccessMsg(result.message || "Versión actualizada con éxito.");
+          await refreshReports();
+          setTimeout(() => {
+            router.push("/admin/reports");
+          }, 400);
+        } else {
+          const mergedErrors: Record<string, string[]> = { ...(result.errors || {}) };
+          if (result.message) {
+            mergedErrors.general = [result.message];
+          }
+          setErrors(mergedErrors);
+        }
       } else {
-        if (result.errors) setErrors(result.errors);
+        let targetReportId = selectedReportId;
+
+        if (targetReportId === "new" || !targetReportId) {
+          const createBaseRes = await createReportAction();
+          if (createBaseRes.success && createBaseRes.data?.id) {
+            targetReportId = createBaseRes.data.id;
+          } else {
+            setErrors({ general: [createBaseRes.message || "Error al crear el reporte base."] });
+            setIsSubmitting(false);
+            return;
+          }
+        }
+
+        const result = await createReportVersionAction(targetReportId, {
+          title,
+          version: formattedVersion,
+          language,
+          summary,
+          citation_text: citationText,
+        });
+
+        if (result.success) {
+          setSuccessMsg(result.message || "Versión creada exitosamente.");
+          await refreshReports();
+          setTimeout(() => {
+            router.push("/admin/reports");
+          }, 400);
+        } else {
+          const mergedErrors: Record<string, string[]> = { ...(result.errors || {}) };
+          if (result.message) {
+            mergedErrors.general = [result.message];
+          }
+          setErrors(mergedErrors);
+        }
       }
     } catch {
-      setErrors({ general: ["Ocurrió un error inesperado."] });
+      setErrors({ general: ["Ocurrió un error inesperado al procesar la solicitud."] });
     } finally {
       setIsSubmitting(false);
     }
@@ -148,19 +232,63 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
         </CardHeader>
 
         <CardContent className="p-0 space-y-5">
-          {/* Title Selector (Version Input & Language Dropdown) */}
+          {/* Version Details Grid */}
           <div className="space-y-3 p-4 rounded-2xl border border-border/60 bg-muted/20">
             <div className="flex items-center justify-between">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("titleLabel")} <span className="text-destructive">*</span>
+                Configuración de Versión <span className="text-destructive">*</span>
               </Label>
               <Badge variant="outline" className="font-mono text-xs font-bold px-3 py-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 rounded-lg">
-                {title}
+                {formattedVersion} ({language})
               </Badge>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-              {/* Input de Versión */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+              {/* Selector de Reporte Base (Solo en modo creación) */}
+              {!isEditMode && (
+                <div className="space-y-1.5 sm:col-span-3">
+                  <Label htmlFor="base-report-select" className="text-xs text-muted-foreground font-medium">
+                    Reporte Base Contenedor <span className="text-destructive">*</span>
+                  </Label>
+                  <NativeSelect
+                    id="base-report-select"
+                    value={selectedReportId}
+                    onChange={(e) => setSelectedReportId(e.target.value)}
+                    className="w-full bg-background rounded-xl text-xs font-mono"
+                  >
+                    <NativeSelectOption value="new">
+                      + Crear nuevo Reporte Base (generar slug automáticamente)
+                    </NativeSelectOption>
+                    {availableBaseReports.map((b) => (
+                      <NativeSelectOption key={b.id} value={b.id}>
+                        Reporte Base: {b.slug} (ID: {b.id.substring(0, 8)}...)
+                      </NativeSelectOption>
+                    ))}
+                  </NativeSelect>
+                  <p className="text-[10px] text-muted-foreground">
+                    {selectedReportId === "new"
+                      ? "Se creará automáticamente un nuevo contenedor de reporte base al guardar."
+                      : "La nueva versión se asociará al reporte base seleccionado."}
+                  </p>
+                </div>
+              )}
+
+              {/* Título de la versión */}
+              <div className="space-y-1.5 sm:col-span-3">
+                <Label htmlFor="version-title" className="text-xs text-muted-foreground font-medium">
+                  Título de la Versión
+                </Label>
+                <Input
+                  id="version-title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Ej: Stranded Capacity Report v1"
+                  className="rounded-xl bg-background text-sm font-medium"
+                  required
+                />
+              </div>
+
+              {/* Input de Número de Versión */}
               <div className="space-y-1.5">
                 <Label htmlFor="version-input" className="text-xs text-muted-foreground font-medium">
                   {t("versionLabel")}
@@ -172,17 +300,19 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
                   <Input
                     id="version-input"
                     value={versionNumber}
+                    disabled={isEditMode}
                     onChange={(e) => {
-                      const sanitized = e.target.value.replace(/[^0-9.]/g, "");
+                      const sanitized = e.target.value.replace(/[^0-9]/g, "");
                       setVersionNumber(sanitized);
                     }}
-                    placeholder="1.2.2"
+                    placeholder="1"
                     className="border-0 rounded-none bg-transparent text-sm font-mono focus-visible:ring-0 focus-visible:border-transparent"
                     required
                   />
                 </div>
-                <p className="text-[10px] text-muted-foreground">{t("versionHelper")}</p>
+                <p className="text-[10px] text-muted-foreground">Número entero (ej: 1, 2, 3)</p>
               </div>
+
 
               {/* Selector de Idioma */}
               <div className="space-y-1.5">
@@ -192,18 +322,32 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
                 <NativeSelect
                   id="lang-select"
                   value={language}
-                  onChange={(e) => setLanguage(e.target.value as "es" | "en")}
+                  disabled={isEditMode}
+                  onChange={(e) => setLanguage(e.target.value as "ES" | "EN")}
                   className="w-full bg-background rounded-xl"
                 >
-                  <NativeSelectOption value="es">Español (es)</NativeSelectOption>
-                  <NativeSelectOption value="en">English (en)</NativeSelectOption>
+                  <NativeSelectOption value="ES">Español (ES)</NativeSelectOption>
+                  <NativeSelectOption value="EN">English (EN)</NativeSelectOption>
+                </NativeSelect>
+              </div>
+
+              {/* Selector de Estado */}
+              <div className="space-y-1.5">
+                <Label htmlFor="status-select" className="text-xs text-muted-foreground font-medium">
+                  Estado de Publicación
+                </Label>
+                <NativeSelect
+                  id="status-select"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as "DRAFT" | "PUBLISHED")}
+                  className="w-full bg-background rounded-xl"
+                >
+                  <NativeSelectOption value="DRAFT">Borrador (DRAFT)</NativeSelectOption>
+                  <NativeSelectOption value="PUBLISHED">Publicado (PUBLISHED)</NativeSelectOption>
                 </NativeSelect>
               </div>
             </div>
 
-            <p className="text-[11px] text-muted-foreground italic pt-0.5">
-              Identificador generado para la página principal: <strong>{title}</strong>
-            </p>
             {errors.title && <p className="text-xs text-destructive">{errors.title.join(", ")}</p>}
           </div>
 
@@ -267,25 +411,6 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
             />
             {errors.citation_text && <p className="text-xs text-destructive">{errors.citation_text.join(", ")}</p>}
           </div>
-
-          {/* Read-only slug displayed only when editing */}
-          {isEditMode && initialData?.slug && (
-            <div className="space-y-2 pt-2 border-t border-border/40">
-              <Label htmlFor="rpt-slug" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("slugLabel")}
-              </Label>
-              <Input
-                id="rpt-slug"
-                value={initialData.slug}
-                disabled
-                readOnly
-                className="rounded-xl bg-muted/40 text-sm font-mono text-muted-foreground cursor-not-allowed opacity-80"
-              />
-              <p className="text-[11px] text-muted-foreground">
-                {t("slugHelper")}
-              </p>
-            </div>
-          )}
         </CardContent>
       </Card>
     </form>
@@ -293,3 +418,5 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
 }
 
 export default ReportForm;
+
+

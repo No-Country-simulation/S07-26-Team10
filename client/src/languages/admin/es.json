@@ -68,7 +68,14 @@
     "reportsTitle": "Gestión de Reportes",
     "reportsDesc": "Administra los reportes técnicos del sistema."
   },
+  "sections": {
+    "headerTag": "GESTIÓN DE ESTRUCTURA",
+    "title": "Gestión de Secciones",
+    "subtitle": "Administra y organiza el contenido y las secciones estructuradas del reporte activo.",
+    "newSectionBtn": "Nueva Sección"
+  },
   "references": {
+
     "headerTag": "MÓDULO DE CITACIÓN",
     "title": "Administrar referencias",
     "subtitle": "Gestiona las referencias bibliográficas del reporte. Asegura la integridad académica y la trazabilidad de los datos técnicos presentados.",
@@ -214,6 +221,8 @@
       "descLabel": "Descripción",
       "descPlaceholder": "Ej. Energía y cooling",
       "orderLabel": "Orden de Visualización",
+      "autoOrderLabel": "Asignar orden automáticamente al final",
+      "autoOrderNotice": "El sistema ubicará la categoría automáticamente al final si no se ingresa un número.",
       "statusLabel": "Estado Activo",
       "statusDesc": "Determina si la categoría está disponible y visible en el sistema.",
       "statusActive": "ACTIVO",
@@ -285,6 +294,10 @@
     "configTitle": "Atributos de Configuración",
     "orderLabel": "Orden de visualización",
     "orderHelper": "Prioridad en el índice",
+    "autoOrderLabel": "Asignación de orden",
+    "autoOrderToggle": "Asignar automáticamente al final",
+    "customOrderToggle": "Especificar orden personalizado",
+    "autoOrderNotice": "El sistema ubicará la sección automáticamente al final del reporte si no se especifica un número de orden.",
     "statusLabel": "Estado de sección",
     "statusActive": "Activa en reporte",
     "statusInactive": "Inactiva (Borrador)",

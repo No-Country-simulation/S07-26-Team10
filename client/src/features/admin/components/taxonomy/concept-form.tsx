@@ -9,10 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Save, PlusCircle } from "lucide-react";
 import type { ConceptItem } from "../../schemas/taxonomy-schema";
-import { getCategoryOptionsAction, createConceptAction } from "../../actions/taxonomy-actions";
+import { getCategoryOptionsAction, createConceptAction, updateConceptAction } from "../../actions/taxonomy-actions";
 import { useVersion } from "@/context/version-context";
 
 interface ConceptFormProps {
@@ -23,12 +24,14 @@ interface ConceptFormProps {
 export function ConceptForm({ initialData, isEditMode = false }: ConceptFormProps) {
   const t = useTranslations("AdminPage.taxonomy.conceptForm");
   const router = useRouter();
-  const { activeReportId } = useVersion();
+  const { activeReportId, activeVersionId, activeReportVersion } = useVersion();
+  const targetVersionId = activeReportVersion?.id || activeVersionId || activeReportId;
 
   const [name, setName] = useState(initialData?.name || "");
   const [description, setDescription] = useState(initialData?.description || "");
   const [categoryId, setCategoryId] = useState(initialData?.category_id || "");
   const [displayOrder, setDisplayOrder] = useState(initialData?.display_order || 1);
+  const [autoOrder, setAutoOrder] = useState<boolean>(!isEditMode && initialData?.display_order === undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -38,7 +41,7 @@ export function ConceptForm({ initialData, isEditMode = false }: ConceptFormProp
   useEffect(() => {
     async function loadOptions() {
       try {
-        const cats = await getCategoryOptionsAction(activeReportId || undefined);
+        const cats = await getCategoryOptionsAction(targetVersionId || undefined);
         setCategoryOptions(cats);
 
         // Set default selected category if not pre-populated
@@ -50,7 +53,7 @@ export function ConceptForm({ initialData, isEditMode = false }: ConceptFormProp
       }
     }
     loadOptions();
-  }, [initialData, activeReportId]);
+  }, [initialData, activeReportId, targetVersionId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,15 +61,29 @@ export function ConceptForm({ initialData, isEditMode = false }: ConceptFormProp
     setErrorMessage(null);
 
     try {
-      if (isEditMode) {
-        // Edit mode will be handled once PATCH concept is added
-        router.push("/admin/taxonomy");
+      if (isEditMode && initialData?.id) {
+        const res = await updateConceptAction(
+          initialData.id,
+          {
+            name,
+            description,
+            ...(autoOrder ? {} : { display_order: displayOrder }),
+          },
+          categoryId
+        );
+
+        if (res.success) {
+          router.push("/admin/taxonomy");
+          router.refresh();
+        } else {
+          setErrorMessage(res.message || t("errorUpdate"));
+        }
       } else {
         const res = await createConceptAction({
           category_id: categoryId,
           name,
           description,
-          display_order: displayOrder,
+          ...(autoOrder ? {} : { display_order: displayOrder }),
         });
 
         if (res.success) {
@@ -156,28 +173,53 @@ export function ConceptForm({ initialData, isEditMode = false }: ConceptFormProp
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="con-order" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("orderLabel")}
-              </Label>
-              <Input
-                id="con-order"
-                type="number"
-                min={1}
-                value={displayOrder}
-                onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 1)}
-                className="rounded-xl bg-background text-sm font-mono font-semibold"
-              />
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="con-order" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("orderLabel")}
+                </Label>
+                <div className="flex items-center gap-1.5">
+                  <Switch
+                    id="auto-order-concept-switch"
+                    checked={autoOrder}
+                    onCheckedChange={(checked) => setAutoOrder(checked)}
+                  />
+                  <Label htmlFor="auto-order-concept-switch" className="text-xs cursor-pointer text-muted-foreground font-medium">
+                    Asignar al final
+                  </Label>
+                </div>
+              </div>
+              {autoOrder ? (
+                <div className="h-10 px-3 flex items-center rounded-xl bg-muted/40 border border-dashed border-border text-xs text-muted-foreground italic">
+                  Se asignará automáticamente al final de los conceptos.
+                </div>
+              ) : (
+                <Input
+                  id="con-order"
+                  type="number"
+                  min={1}
+                  value={displayOrder}
+                  onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 1)}
+                  className="rounded-xl bg-background text-sm font-mono font-semibold"
+                />
+              )}
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="con-cat" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {t("categoryLabel")} <span className="text-destructive">*</span>
-            </Label>
-            <Select value={categoryId} onValueChange={(val) => { if (val) setCategoryId(val); }}>
-              <SelectTrigger id="con-cat" className="rounded-xl bg-background text-sm">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="con-cat" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {t("categoryLabel")} <span className="text-destructive">*</span>
+              </Label>
+              {isEditMode && (
+                <span className="text-[11px] font-medium text-amber-700 dark:text-amber-500 italic">
+                  (La categoría no se puede modificar al editar)
+                </span>
+              )}
+            </div>
+            <Select value={categoryId} onValueChange={(val) => { if (val) setCategoryId(val); }} disabled={isEditMode}>
+              <SelectTrigger id="con-cat" className="rounded-xl bg-background text-sm disabled:opacity-70 disabled:cursor-not-allowed">
                 <SelectValue placeholder={t("categoryPlaceholder")}>
-                  {categoryOptions.find((c) => c.id === categoryId)?.name}
+                  {categoryOptions.find((c) => c.id === categoryId)?.name || categoryId}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent className="rounded-xl">

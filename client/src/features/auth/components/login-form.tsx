@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Eye, EyeOff, AlertCircle, ArrowRight } from "lucide-react";
@@ -36,7 +36,7 @@ export function LoginForm() {
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -47,7 +47,7 @@ export function LoginForm() {
     },
   });
 
-  const rememberMe = watch("rememberMe");
+  const rememberMe = useWatch({ control, name: "rememberMe" });
 
   const onSubmit = async (data: LoginFormData) => {
     setServerError(null);

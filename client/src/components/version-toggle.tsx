@@ -20,19 +20,30 @@ export function VersionToggle() {
     return null;
   }
 
-  const displayVersion = version || (availableVersions.length > 0 ? availableVersions[0] : "v1");
+  const hasVersions = availableVersions.length > 0;
+  const displayVersion = hasVersions
+    ? version || availableVersions[0]
+    : "Sin versión";
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="outline" size="sm" className="gap-2 rounded-full font-mono text-xs font-bold border-amber-600/30 bg-amber-500/5 text-amber-800 dark:text-amber-300 hover:bg-amber-500/10">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!hasVersions}
+            className={`gap-2 rounded-full font-mono text-xs font-bold border-amber-600/30 bg-amber-500/5 text-amber-800 dark:text-amber-300 ${
+              hasVersions ? "hover:bg-amber-500/10" : "opacity-60 cursor-default"
+            }`}
+          >
             <Layers className="size-3.5 text-amber-600 dark:text-amber-500" />
             <span>{displayVersion}</span>
           </Button>
         }
       />
-      {availableVersions.length > 0 && (
+      {hasVersions && (
+
         <DropdownMenuContent align="end" className="w-36">
           {availableVersions.map((v) => (
             <DropdownMenuItem

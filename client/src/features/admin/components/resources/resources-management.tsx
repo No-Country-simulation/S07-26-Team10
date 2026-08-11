@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,14 +11,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import {
   DownloadCloud,
   CheckCircle2,
-  HardDrive,
-  Plus,
   Pencil,
   Trash2,
   Info,
-  Check,
   X,
-  FileText,
   Copy,
 } from "lucide-react";
 import {
@@ -35,20 +31,32 @@ import { getSectionsAction } from "../../actions/sections-actions";
 import type { ResourceItem } from "../../schemas/resource-schema";
 import type { SectionItem } from "../../schemas/section-schema";
 
+import { useVersion } from "@/context/version-context";
+
 export function ResourcesManagement() {
   const t = useTranslations("AdminPage.resources");
+  const { activeReportId, activeVersionId } = useVersion();
+  const targetVersionId = activeVersionId || activeReportId;
   const [resources, setResources] = useState<ResourceItem[]>([]);
   const [sections, setSections] = useState<SectionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [resourceToDelete, setResourceToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
+      if (!targetVersionId) {
+        setResources([]);
+        setSections([]);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
       try {
         const [resData, secData] = await Promise.all([
-          getResourcesAction(),
-          getSectionsAction(),
+          getResourcesAction(targetVersionId),
+          getSectionsAction(targetVersionId),
         ]);
         setResources(resData);
         setSections(secData);
@@ -59,30 +67,35 @@ export function ResourcesManagement() {
       }
     }
     loadData();
-  }, []);
+  }, [targetVersionId]);
+
 
   const confirmDelete = async () => {
     if (!resourceToDelete) return;
     setIsDeleting(true);
+    setDeleteError(null);
     try {
-      await deleteResourceAction(resourceToDelete);
-      setResources((prev) => prev.filter((r) => r.id !== resourceToDelete));
-      setResourceToDelete(null);
+      const targetRes = resources.find((r) => r.id === resourceToDelete);
+      const res = await deleteResourceAction(
+        resourceToDelete,
+        targetRes?.section_id,
+        targetRes?.cloudinary_public_id
+      );
+      if (res.success) {
+        setResources((prev) => prev.filter((r) => r.id !== resourceToDelete));
+        setResourceToDelete(null);
+      } else {
+        setDeleteError(res.message || "Error al eliminar el recurso.");
+      }
     } catch (err) {
       console.error("Error deleting resource:", err);
+      setDeleteError("Error de conexión al eliminar el recurso.");
     } finally {
       setIsDeleting(false);
     }
   };
 
-  const getSectionTitle = (secId: string, index: number) => {
-    const found = sections.find((s) => s.id === secId);
-    if (found) return found.title;
-    // Fallback labels matching mockup
-    if (secId === "sec-001-intro") return "Introducción";
-    if (secId === "sec-002-tax") return "Taxonomía";
-    return `Sección ${index + 1}`;
-  };
+
 
   // Group resources by section_id
   const groupedResources = sections.map((sec, idx) => ({
@@ -272,7 +285,7 @@ export function ResourcesManagement() {
       </Card>
 
       {/* Modal de confirmación para eliminar recurso */}
-      <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => { if (!open) setResourceToDelete(null); }}>
+      <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => { if (!open) { setResourceToDelete(null); setDeleteError(null); } }}>
         <AlertDialogContent className="rounded-3xl p-6">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-bold text-foreground">
@@ -282,6 +295,11 @@ export function ResourcesManagement() {
               {t("deleteModalDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {deleteError && (
+            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium my-2">
+              {deleteError}
+            </div>
+          )}
           <AlertDialogFooter className="pt-4 flex items-center justify-end gap-2">
             <AlertDialogCancel className="rounded-xl border-border/60 text-xs font-semibold">
               {t("cancel")}

@@ -5,6 +5,7 @@ import { AdminHeader } from "@/features/admin/components/admin-header";
 import { AdminSidebar } from "@/features/admin/components/admin-sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { VersionProvider } from "@/context/version-context";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
 function AdminLayoutSkeleton() {
   return (
@@ -31,18 +32,16 @@ export default async function AdminLayout({
 
   return (
     <VersionProvider>
-      <div className="min-h-screen flex flex-col bg-background text-foreground">
+      <SidebarProvider className="admin-theme min-h-screen flex flex-col bg-background text-foreground">
         <AdminHeader userRole={user.role} userName={user.name || user.email} />
 
-        <div className="flex-1 flex flex-col md:flex-row w-full">
+        <div className="flex-1 flex flex-col md:flex-row w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 md:pt-3 pb-6 gap-4">
           <AdminSidebar />
-          <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full">
-            <Suspense fallback={<AdminLayoutSkeleton />}>
-              {children}
-            </Suspense>
-          </main>
+          <SidebarInset>
+            <Suspense fallback={<AdminLayoutSkeleton />}>{children}</Suspense>
+          </SidebarInset>
         </div>
-      </div>
+      </SidebarProvider>
     </VersionProvider>
   );
 }
