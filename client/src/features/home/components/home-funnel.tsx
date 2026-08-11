@@ -135,7 +135,7 @@ function FunnelFigure({
         <span className="fnum">{t("figureNum")}</span>
         <span className="ftt">{t("figureTitle")}</span>
         <span className="chip">
-          <i style={{ color: "var(--phi-gold)" }} />
+          <i style={{ color: "var(--gold)" }} />
           {t("illustrative")}
         </span>
         {!expanded && onExpand && (
@@ -234,6 +234,7 @@ export function HomeFunnel() {
       id="s03"
       data-n="03"
       data-t="theCapacityFunnel"
+      suppressHydrationWarning
     >
       <div className="wrap in">
         <div className="shead rv">
@@ -257,7 +258,7 @@ export function HomeFunnel() {
               <FunnelRing />
               <p>{t("gc1Body")}</p>
               <span className="chip sm">
-                <i style={{ color: "var(--phi-gold)" }} />
+<i style={{ color: "var(--gold)" }} />
                 {t("illustrativeModel")}
               </span>
             </div>
