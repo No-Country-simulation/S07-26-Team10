@@ -4,56 +4,42 @@ export interface Reference {
   year: number;
   source: string;
   citationUrl: string;
+  usage?: string;
 }
 
 const FALLBACK_REFERENCES: Reference[] = [
   {
-    authors: "Physa Energy Analytics",
-    title: "Stranded Capacity Report 2026: The Silent Bottleneck of AI Infrastructure",
-    year: 2026,
-    source: "PhysaFlow Research",
-    citationUrl: "https://physaflow.com/report",
-  },
-  {
-    authors: "Lawrence Berkeley National Laboratory",
-    title: "Data Center Facility and IT Infrastructure Best Practices",
-    year: 2023,
-    source: "Center of Expertise for Energy Efficiency in Data Centers",
-    citationUrl: "https://datacenters.lbl.gov",
-  },
-  {
-    authors: "Uptime Institute",
-    title: "Annual Data Center Survey: Capacity and Cooling Trends",
+    authors: "International Energy Agency",
+    title: "Energy and AI",
     year: 2025,
-    source: "Uptime Institute Intelligence",
-    citationUrl: "https://uptimeinstitute.com",
+    source: "International Energy Agency",
+    citationUrl: "https://www.iea.org/reports/energy-and-ai",
+    usage: "ioUsage",
   },
   {
-    authors: "U.S. Department of Energy",
-    title: "Power Usage Effectiveness (PUE) Measurement Guidelines",
-    year: 2022,
-    source: "DOE Federal Energy Management Program",
-    citationUrl: "https://energy.gov",
-  },
-  {
-    authors: "Kandula, S. & Menache, I.",
-    title: "Calendaring Queues and Scheduling for Data Center Workloads",
-    year: 2021,
-    source: "ACM SIGCOMM",
-    citationUrl: "https://dl.acm.org",
+    authors: "Stanford Institute for Human-Centered AI",
+    title: "AI Index Report — Technical Performance",
+    year: 2026,
+    source: "Stanford Institute for Human-Centered AI",
+    citationUrl:
+      "https://hai.stanford.edu/ai-index/2026-ai-index-report/technical-performance",
+    usage: "stanfordUsage",
   },
 ];
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
 const REPORT_SLUG = "stranded-capacity-ai-infrastructure";
 
-function mapApiReference(raw: {
+export interface ApiReference {
   authors?: string | null;
   title?: string | null;
   year?: number | null;
   source?: string | null;
   citation_url?: string | null;
-}): Reference {
+  display_order?: number | null;
+}
+
+function mapApiReference(raw: ApiReference): Reference {
   return {
     authors: raw.authors || "PhysaFlow",
     title: raw.title || "Stranded Capacity Report",
@@ -63,17 +49,35 @@ function mapApiReference(raw: {
   };
 }
 
+async function resolvePublishedVersionId(reportId: string): Promise<string | null> {
+  try {
+    const res = await fetch(`${API_BASE}/reports/${reportId}/versions/published`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return null;
+    const data: { id: string }[] = await res.json();
+    if (!Array.isArray(data) || data.length === 0) return null;
+    return data[0].id;
+  } catch {
+    return null;
+  }
+}
+
 export async function getReferences(): Promise<Reference[]> {
   try {
-    const reportRes = await fetch(`${API_BASE}/reports/${REPORT_SLUG}`, {
+    const reportRes = await fetch(`${API_BASE}/reports/by-slug/${REPORT_SLUG}`, {
       next: { revalidate: 3600 },
     });
     if (!reportRes.ok) return FALLBACK_REFERENCES;
-    const report = await reportRes.json();
+    const report: { id: string } = await reportRes.json();
 
-    const res = await fetch(`${API_BASE}/references/report/${report.id}`, {
-      next: { revalidate: 3600 },
-    });
+    const versionId = await resolvePublishedVersionId(report.id);
+    if (!versionId) return FALLBACK_REFERENCES;
+
+    const res = await fetch(
+      `${API_BASE}/report-versions/${versionId}/references`,
+      { next: { revalidate: 3600 } },
+    );
     if (!res.ok) return FALLBACK_REFERENCES;
 
     const data = await res.json();
