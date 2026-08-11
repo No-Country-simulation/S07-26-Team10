@@ -8,8 +8,7 @@ from app.core.constants import (
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
 )
-from app.core.dependencies import get_current_user, get_db
-from app.modules.categories.repository import CategoryRepository
+from app.core.dependencies import get_current_user, get_category_service
 from app.modules.categories.schema import (
     CategoryCreate,
     CategoryPublicRead,
@@ -17,28 +16,15 @@ from app.modules.categories.schema import (
     CategoryUpdate,
 )
 from app.modules.categories.service import CategoryService
-from app.modules.report_versions.repository import ReportVersionRepository
 from app.modules.users.model import User
 from app.shared.enums.publication_status import PublicationStatus
-from sqlalchemy.orm import Session
 
 router = APIRouter(
     prefix="/report-versions/{report_version_id}/categories", tags=["Categories"]
 )
 
 
-def get_category_service(
-    db: Session = Depends(get_db),
-) -> CategoryService:
-    """
-    Dependencia para obtener el servicio de categorías.
-    """
-    repository = CategoryRepository(db)
-    report_version_repository = ReportVersionRepository(db)
-    return CategoryService(repository, report_version_repository)
-
-
-# ==================== ENDPOINTS PÚBLICOS (sin autenticación) ====================
+# ==================== ENDPOINTS fijas ====================
 
 
 @router.get(
@@ -57,28 +43,6 @@ def get_published_categories(
     Acceso público - No requiere autenticación.
     """
     return service.get_published_categories(report_version_id)
-
-
-@router.get(
-    "/{category_id}",
-    response_model=CategoryPublicRead,
-    status_code=HTTP_200_OK,
-    summary="Obtener categoría por ID (público)",
-    description="Obtiene una categoría específica por su ID. (Acceso público)",
-)
-def get_public_category(
-    report_version_id: uuid.UUID,
-    category_id: uuid.UUID,
-    service: CategoryService = Depends(get_category_service),
-):
-    """
-    Obtiene una categoría específica por su ID.
-    Acceso público - No requiere autenticación.
-    """
-    return service.get_category(category_id)
-
-
-# ==================== ENDPOINTS PRIVADOS (requieren autenticación) ====================
 
 
 @router.get(
@@ -105,22 +69,43 @@ def get_all_categories(
 
 
 @router.get(
+    "/{category_id}",
+    response_model=CategoryPublicRead,
+    status_code=HTTP_200_OK,
+    summary="Obtener categoría por ID (público)",
+    description="Obtiene una categoría específica por su ID. (Acceso público)",
+)
+def get_public_category(
+    report_version_id: uuid.UUID,
+    category_id: uuid.UUID,
+    service: CategoryService = Depends(get_category_service),
+):
+    """
+    Obtiene una categoría específica por su ID.
+    Acceso público - No requiere autenticación.
+    """
+    return service.get_category(report_version_id, category_id)
+
+@router.get(
     "/admin/{category_id}",
     response_model=CategoryRead,
     status_code=HTTP_200_OK,
     summary="Obtener categoría por ID (admin)",
     description="Obtiene una categoría específica por su ID con todos los detalles. (Requiere autenticación)",
 )
-def get_category(
+def get_category_admin(
+    report_version_id: uuid.UUID,
     category_id: uuid.UUID,
     service: CategoryService = Depends(get_category_service),
     current_user: User = Depends(get_current_user),
 ):
     """
     Obtiene una categoría específica por su ID con todos los detalles.
+    Incluye categorías DRAFT y PUBLISHED.
     Requiere autenticación.
     """
-    return service.get_category(category_id)
+    return service.get_category(report_version_id, category_id)
+# ==================== ENDPOINTS dinamicas ====================
 
 
 @router.post(
@@ -156,6 +141,7 @@ def create_category(
     description="Actualiza parcialmente una categoría. (Requiere autenticación)",
 )
 def update_category(
+    report_version_id: uuid.UUID,
     category_id: uuid.UUID,
     data: CategoryUpdate,
     service: CategoryService = Depends(get_category_service),
@@ -171,7 +157,7 @@ def update_category(
     - status
     - Requiere autenticación.
     """
-    return service.update_category(category_id, data)
+    return service.update_category(report_version_id, category_id, data)
 
 
 @router.delete(
@@ -181,6 +167,7 @@ def update_category(
     description="Elimina una categoría y TODOS sus conceptos en cascada. (Requiere autenticación)",
 )
 def delete_category(
+    report_version_id: uuid.UUID,
     category_id: uuid.UUID,
     service: CategoryService = Depends(get_category_service),
     current_user: User = Depends(get_current_user),
@@ -192,4 +179,4 @@ def delete_category(
     - Elimina la categoría y TODOS sus conceptos en cascada.
     - Requiere autenticación.
     """
-    service.delete_category(category_id)
+    service.delete_category(report_version_id, category_id)

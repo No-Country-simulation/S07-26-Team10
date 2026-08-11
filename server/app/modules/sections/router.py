@@ -48,68 +48,6 @@ def get_public_sections(
 
 
 @router.get(
-    "/{section_id}",
-    response_model=SectionPublicRead,
-    status_code=HTTP_200_OK,
-    summary="Obtener sección pública",
-    description="Obtiene una sección específica por su ID. (Acceso público)",
-)
-def get_public_section(
-    section_id: uuid.UUID,
-    service: SectionService = Depends(get_section_service),
-):
-    """
-    Obtiene una sección específica por su ID.
-    SOLO si está PUBLICADA.
-    Acceso público - No requiere autenticación.
-    """
-    return service.get_public_section(section_id)
-
-
-@router.get(
-    "/by-slug/{slug}",
-    response_model=SectionPublicRead,
-    status_code=HTTP_200_OK,
-    summary="Obtener sección por slug",
-    description="Obtiene una sección específica por su slug. (Acceso público)",
-)
-def get_section_by_slug(
-    report_version_id: uuid.UUID,
-    slug: str,
-    service: SectionService = Depends(get_section_service),
-):
-    """
-    Obtiene una sección específica por su slug.
-    SOLO si está PUBLICADA.
-    Acceso público - No requiere autenticación.
-    """
-    return service.get_section_by_slug(report_version_id, slug)
-
-
-@router.get(
-    "/{section_id}/navigation",
-    response_model=SectionNavigationRead,
-    status_code=HTTP_200_OK,
-    summary="Obtener sección con navegación",
-    description="Obtiene una sección con navegación anterior/siguiente. (Acceso público)",
-)
-def get_section_with_navigation(
-    report_version_id: uuid.UUID,
-    section_id: uuid.UUID,
-    service: SectionService = Depends(get_section_service),
-):
-    """
-    Obtiene una sección con navegación anterior/siguiente.
-    SOLO si está PUBLICADA.
-    Acceso público - No requiere autenticación.
-    """
-    return service.get_section_with_navigation(report_version_id, section_id)
-
-
-# ==================== ENDPOINTS PRIVADOS (requieren autenticación) ====================
-
-
-@router.get(
     "/admin",
     response_model=list[SectionRead],
     status_code=HTTP_200_OK,
@@ -133,22 +71,87 @@ def get_all_sections(
 
 
 @router.get(
+    "/by-slug/{slug}",
+    response_model=SectionPublicRead,
+    status_code=HTTP_200_OK,
+    summary="Obtener sección por slug",
+    description="Obtiene una sección específica por su slug. (Acceso público)",
+)
+def get_section_by_slug(
+    report_version_id: uuid.UUID,
+    slug: str,
+    service: SectionService = Depends(get_section_service),
+):
+    """
+    Obtiene una sección específica por su slug.
+    SOLO si está PUBLICADA.
+    Acceso público - No requiere autenticación.
+    """
+    return service.get_section_by_slug(report_version_id, slug)
+
+
+@router.get(
+    "/{section_id}",
+    response_model=SectionPublicRead,
+    status_code=HTTP_200_OK,
+    summary="Obtener sección pública",
+    description="Obtiene una sección específica por su ID. (Acceso público)",
+)
+def get_public_section(
+    report_version_id: uuid.UUID,
+    section_id: uuid.UUID,
+    service: SectionService = Depends(get_section_service),
+):
+    """
+    Obtiene una sección específica por su ID.
+    SOLO si está PUBLICADA.
+    Acceso público - No requiere autenticación.
+    """
+    return service.get_public_section(report_version_id, section_id)
+
+
+@router.get(
     "/admin/{section_id}",
     response_model=SectionRead,
     status_code=HTTP_200_OK,
     summary="Obtener sección por ID (admin)",
     description="Obtiene una sección específica por su ID con todos los detalles. (Requiere autenticación)",
 )
-def get_section(
+def get_section_admin(
+    report_version_id: uuid.UUID,
     section_id: uuid.UUID,
     service: SectionService = Depends(get_section_service),
     current_user: User = Depends(get_current_user),
 ):
     """
     Obtiene una sección específica por su ID con todos los detalles.
+    Incluye secciones DRAFT y PUBLISHED.
     Requiere autenticación.
     """
-    return service.get_section(section_id)
+    return service.get_section_admin(report_version_id, section_id)
+
+
+@router.get(
+    "/{section_id}/navigation",
+    response_model=SectionNavigationRead,
+    status_code=HTTP_200_OK,
+    summary="Obtener sección con navegación",
+    description="Obtiene una sección con navegación anterior/siguiente. (Acceso público)",
+)
+def get_section_with_navigation(
+    report_version_id: uuid.UUID,
+    section_id: uuid.UUID,
+    service: SectionService = Depends(get_section_service),
+):
+    """
+    Obtiene una sección con navegación anterior/siguiente.
+    SOLO si está PUBLICADA.
+    Acceso público - No requiere autenticación.
+    """
+    return service.get_section_with_navigation(report_version_id, section_id)
+
+
+# ==================== ENDPOINTS PRIVADOS (requieren autenticación) ====================
 
 
 @router.post(
@@ -185,6 +188,7 @@ def create_section(
     description="Actualiza parcialmente una sección. (Requiere autenticación)",
 )
 def update_section(
+    report_version_id: uuid.UUID,
     section_id: uuid.UUID,
     data: SectionUpdate,
     service: SectionService = Depends(get_section_service),
@@ -200,7 +204,7 @@ def update_section(
     - status
     - Requiere autenticación.
     """
-    return service.update_section(section_id, data)
+    return service.update_section(report_version_id, section_id, data)
 
 
 @router.delete(
@@ -210,6 +214,7 @@ def update_section(
     description="Elimina una sección. (Requiere autenticación)",
 )
 def delete_section(
+    report_version_id: uuid.UUID,
     section_id: uuid.UUID,
     service: SectionService = Depends(get_section_service),
     current_user: User = Depends(get_current_user),
@@ -218,4 +223,4 @@ def delete_section(
     Elimina una sección.
     Requiere autenticación.
     """
-    service.delete_section(section_id)
+    service.delete_section(report_version_id, section_id)

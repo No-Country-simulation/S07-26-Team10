@@ -30,7 +30,7 @@ class ReportVersionService:
         self.report_repository = report_repository
 
     def get_version(
-        self, version_id: uuid.UUID, load_relations: bool = False
+        self, report_id: uuid.UUID, version_id: uuid.UUID, load_relations: bool = False
     ) -> ReportVersionRead | ReportVersionDetailRead:
         """
         Obtiene una versión por su ID.
@@ -45,6 +45,9 @@ class ReportVersionService:
             raise NotFoundException(
                 message="Versión no encontrada.",
             )
+
+        if version.report_id != report_id:
+            raise NotFoundException("Versión no encontrada para este reporte.")
 
         if load_relations:
             return ReportVersionDetailRead.model_validate(version)
@@ -195,6 +198,7 @@ class ReportVersionService:
 
     def update_version(
         self,
+        report_id: uuid.UUID,
         version_id: uuid.UUID,
         data: ReportVersionUpdate,
     ) -> ReportVersionRead:
@@ -212,6 +216,9 @@ class ReportVersionService:
                 message="Versión no encontrada.",
             )
 
+        if version.report_id != report_id:
+            raise NotFoundException("Versión no encontrada para este reporte.")
+
         update_data = data.model_dump(
             exclude_unset=True,
         )
@@ -223,7 +230,7 @@ class ReportVersionService:
 
         return ReportVersionRead.model_validate(updated_version)
 
-    def delete_version(self, version_id: uuid.UUID) -> None:
+    def delete_version(self, report_id: uuid.UUID, version_id: uuid.UUID) -> None:
         """
         Elimina una versión de reporte.
 
@@ -236,5 +243,8 @@ class ReportVersionService:
             raise NotFoundException(
                 message="Versión no encontrada.",
             )
+
+        if version.report_id != report_id:
+            raise NotFoundException("Versión no encontrada para este reporte.")
 
         self.repository.delete(version)

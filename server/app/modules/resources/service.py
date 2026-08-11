@@ -11,7 +11,7 @@ from app.modules.resources.schema import (
     ResourceUpdate,
 )
 from app.modules.sections.repository import SectionRepository
-from app.modules.uploads.schema import UploadResponse
+from app.shared.enums.publication_status import PublicationStatus
 
 
 class ResourceService:
@@ -31,6 +31,7 @@ class ResourceService:
 
     def get_resource(
         self,
+        section_id: uuid.UUID,
         resource_id: uuid.UUID,
     ) -> ResourceRead:
         """
@@ -43,10 +44,13 @@ class ResourceService:
                 message="Recurso no encontrado.",
             )
 
+        self._validate_section_exists(section_id)
+
         return ResourceRead.model_validate(resource)
 
     def get_public_resource(
         self,
+        section_id: uuid.UUID,
         resource_id: uuid.UUID,
     ) -> ResourcePublicRead:
         """
@@ -59,6 +63,15 @@ class ResourceService:
                 message="Recurso no encontrado.",
             )
 
+        self._validate_section_exists(section_id)
+
+        # Verificar que la sección esté publicada
+        section = self.section_repository.get_by_id(resource.section_id)
+        if not section or section.status != PublicationStatus.PUBLISHED:
+            raise NotFoundException(
+                message="Recurso no disponible.",
+            )
+
         return ResourcePublicRead.model_validate(resource)
 
     def get_resources_by_section(
@@ -67,15 +80,23 @@ class ResourceService:
     ) -> list[ResourcePublicRead]:
         """
         Obtiene todos los resources de una sección (acceso público).
+        SOLO si la sección está PUBLICADA.
         """
-        self._validate_section_exists(section_id)
+        section = self.section_repository.get_by_id(section_id)
+
+        if not section:
+            raise NotFoundException(
+                message="Sección no encontrada.",
+            )
+
+        if section.status != PublicationStatus.PUBLISHED:
+            raise NotFoundException(
+                message="Sección no disponible.",
+            )
 
         resources = self.repository.get_by_section_id(section_id)
 
-        return [
-            ResourcePublicRead.model_validate(resource)
-            for resource in resources
-        ]
+        return [ResourcePublicRead.model_validate(resource) for resource in resources]
 
     def get_all_resources(
         self,
@@ -88,13 +109,11 @@ class ResourceService:
 
         resources = self.repository.get_by_section_id(section_id)
 
-        return [
-            ResourceRead.model_validate(resource)
-            for resource in resources
-        ]
+        return [ResourceRead.model_validate(resource) for resource in resources]
 
     def get_downloadable_resource(
         self,
+        section_id: uuid.UUID,
         resource_id: uuid.UUID,
     ) -> ResourcePublicRead:
         """
@@ -107,27 +126,35 @@ class ResourceService:
                 message="Recurso descargable no encontrado.",
             )
 
+        self._validate_section_exists(section_id)
+
+        # Verificar que la sección esté publicada
+        section = self.section_repository.get_by_id(resource.section_id)
+        if not section or section.status != PublicationStatus.PUBLISHED:
+            raise NotFoundException(
+                message="Recurso no disponible.",
+            )
+
         return ResourcePublicRead.model_validate(resource)
 
     def create_resource(
         self,
         section_id: uuid.UUID,
         data: ResourceCreate,
-        upload_data: UploadResponse,
     ) -> ResourceRead:
         """
         Crea un nuevo resource.
 
         Reglas:
         - La sección debe existir.
-        - file_url y cloudinary_public_id vienen del servicio de uploads.
+        - file_url y cloudinary_public_id vienen del schema (desde el cliente).
         """
         self._validate_section_exists(section_id)
 
         # Verificar que el public_id no exista ya en la BD
-        if self.repository.exists_by_public_id(upload_data.public_id):
+        if self.repository.exists_by_public_id(data.cloudinary_public_id):
             raise ConflictException(
-                message=f"El archivo con public_id '{upload_data.public_id}' ya está registrado.",
+                message=f"El archivo con public_id '{data.cloudinary_public_id}' ya está registrado.",
             )
 
         resource = Resource(
@@ -135,8 +162,8 @@ class ResourceService:
             type=data.type,
             title=data.title,
             description=data.description,
-            file_url=upload_data.url,
-            cloudinary_public_id=upload_data.public_id,
+            file_url=data.file_url,
+            cloudinary_public_id=data.cloudinary_public_id,
             alt_text=data.alt_text,
             downloadable=data.downloadable,
         )
@@ -147,6 +174,7 @@ class ResourceService:
 
     def update_resource(
         self,
+        section_id: uuid.UUID,
         resource_id: uuid.UUID,
         data: ResourceUpdate,
     ) -> ResourceRead:
@@ -164,6 +192,8 @@ class ResourceService:
                 message="Recurso no encontrado.",
             )
 
+        self._validate_section_exists(section_id)
+
         update_data = data.model_dump(
             exclude_unset=True,
         )
@@ -177,6 +207,7 @@ class ResourceService:
 
     def delete_resource(
         self,
+        section_id: uuid.UUID,
         resource_id: uuid.UUID,
     ) -> ResourceRead:
         """
@@ -189,6 +220,8 @@ class ResourceService:
             raise NotFoundException(
                 message="Recurso no encontrado.",
             )
+
+        self._validate_section_exists(section_id)
 
         # Guardar datos antes de eliminar para devolverlos
         resource_data = ResourceRead.model_validate(resource)

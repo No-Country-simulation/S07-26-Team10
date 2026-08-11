@@ -39,48 +39,10 @@ def get_resources_by_section(
 ):
     """
     Obtiene todos los recursos de una sección.
+    SOLO si la sección está PUBLICADA.
     Acceso público - No requiere autenticación.
     """
     return service.get_resources_by_section(section_id)
-
-
-@router.get(
-    "/{resource_id}",
-    response_model=ResourcePublicRead,
-    status_code=HTTP_200_OK,
-    summary="Obtener recurso público",
-    description="Obtiene un recurso específico por su ID. (Acceso público)",
-)
-def get_public_resource(
-    resource_id: uuid.UUID,
-    service: ResourceService = Depends(get_resource_service),
-):
-    """
-    Obtiene un recurso específico por su ID.
-    Acceso público - No requiere autenticación.
-    """
-    return service.get_public_resource(resource_id)
-
-
-@router.get(
-    "/{resource_id}/download",
-    response_model=ResourcePublicRead,
-    status_code=HTTP_200_OK,
-    summary="Obtener recurso descargable",
-    description="Obtiene un recurso específico solo si es descargable. (Acceso público)",
-)
-def get_downloadable_resource(
-    resource_id: uuid.UUID,
-    service: ResourceService = Depends(get_resource_service),
-):
-    """
-    Obtiene un recurso específico solo si es descargable.
-    Acceso público - No requiere autenticación.
-    """
-    return service.get_downloadable_resource(resource_id)
-
-
-# ==================== ENDPOINTS PRIVADOS (requieren autenticación) ====================
 
 
 @router.get(
@@ -97,6 +59,7 @@ def get_all_resources(
 ):
     """
     Obtiene todos los recursos de una sección con todos los detalles.
+    Incluye recursos de secciones DRAFT y PUBLISHED.
     Requiere autenticación.
     """
     return service.get_all_resources(section_id)
@@ -110,15 +73,60 @@ def get_all_resources(
     description="Obtiene un recurso específico por su ID con todos los detalles. (Requiere autenticación)",
 )
 def get_resource(
+    section_id: uuid.UUID,
     resource_id: uuid.UUID,
     service: ResourceService = Depends(get_resource_service),
     current_user: User = Depends(get_current_user),
 ):
     """
     Obtiene un recurso específico por su ID con todos los detalles.
+    Incluye recursos de secciones DRAFT y PUBLISHED.
     Requiere autenticación.
     """
-    return service.get_resource(resource_id)
+    return service.get_resource(section_id, resource_id)
+
+
+@router.get(
+    "/{resource_id}",
+    response_model=ResourcePublicRead,
+    status_code=HTTP_200_OK,
+    summary="Obtener recurso público",
+    description="Obtiene un recurso específico por su ID. (Acceso público)",
+)
+def get_public_resource(
+    section_id: uuid.UUID,
+    resource_id: uuid.UUID,
+    service: ResourceService = Depends(get_resource_service),
+):
+    """
+    Obtiene un recurso específico por su ID.
+    SOLO si su sección está PUBLICADA.
+    Acceso público - No requiere autenticación.
+    """
+    return service.get_public_resource(section_id, resource_id)
+
+
+@router.get(
+    "/{resource_id}/download",
+    response_model=ResourcePublicRead,
+    status_code=HTTP_200_OK,
+    summary="Obtener recurso descargable",
+    description="Obtiene un recurso específico solo si es descargable. (Acceso público)",
+)
+def get_downloadable_resource(
+    section_id: uuid.UUID,
+    resource_id: uuid.UUID,
+    service: ResourceService = Depends(get_resource_service),
+):
+    """
+    Obtiene un recurso específico solo si es descargable.
+    SOLO si su sección está PUBLICADA.
+    Acceso público - No requiere autenticación.
+    """
+    return service.get_downloadable_resource(section_id, resource_id)
+
+
+# ==================== ENDPOINTS PRIVADOS (requieren autenticación) ====================
 
 
 @router.post(
@@ -139,12 +147,10 @@ def create_resource(
 
     Reglas:
     - La sección debe existir.
-    - file_url y cloudinary_public_id vienen del servicio de uploads.
+    - file_url y cloudinary_public_id vienen del schema (desde el cliente).
+    - El cliente primero debe subir el archivo a /uploads y obtener la URL y public_id.
     - Requiere autenticación.
     """
-    # NOTA: upload_data debe venir de un endpoint de upload previo
-    # Este endpoint espera que el cliente primero suba el archivo
-    # y luego pase los datos del resource
     return service.create_resource(section_id, data)
 
 
@@ -156,6 +162,7 @@ def create_resource(
     description="Actualiza parcialmente un recurso. (Requiere autenticación)",
 )
 def update_resource(
+    section_id: uuid.UUID,
     resource_id: uuid.UUID,
     data: ResourceUpdate,
     service: ResourceService = Depends(get_resource_service),
@@ -172,7 +179,7 @@ def update_resource(
     - downloadable
     - Requiere autenticación.
     """
-    return service.update_resource(resource_id, data)
+    return service.update_resource(section_id, resource_id, data)
 
 
 @router.delete(
@@ -182,14 +189,15 @@ def update_resource(
     description="Elimina un recurso de la BD. (Requiere autenticación)",
 )
 def delete_resource(
+    section_id: uuid.UUID,
     resource_id: uuid.UUID,
     service: ResourceService = Depends(get_resource_service),
     current_user: User = Depends(get_current_user),
 ):
     """
     Elimina un recurso de la BD.
-    NOTA: El archivo en Cloudinary debe eliminarse por separado.
+    NOTA: El archivo en Cloudinary debe eliminarse por separado con DELETE /uploads/{public_id}.
     Requiere autenticación.
     """
-    service.delete_resource(resource_id)
+    service.delete_resource(section_id, resource_id)
     return None

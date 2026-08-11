@@ -92,3 +92,17 @@ class ConceptRepository:
             stmt = stmt.where(Concept.id != exclude_id)
 
         return self.db.execute(stmt).scalars().first() is not None
+
+    def exists_by_display_order(
+        self,
+        category_id: uuid.UUID,
+        display_order: int,
+        exclude_id: uuid.UUID | None = None,
+    ) -> bool:
+        stmt = select(Concept).where(
+            Concept.category_id == category_id,
+            Concept.display_order == display_order,
+        )
+        if exclude_id:
+            stmt = stmt.where(Concept.id != exclude_id)
+        return self.db.execute(stmt).scalars().first() is not None
