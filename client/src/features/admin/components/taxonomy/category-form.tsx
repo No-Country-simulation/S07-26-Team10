@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ChevronLeft, Save, Layers } from "lucide-react";
+import { Save, Layers } from "lucide-react";
 import type { CategoryItem } from "../../schemas/taxonomy-schema";
 import { createCategoryAction, updateCategoryAction } from "../../actions/taxonomy-actions";
 import { useVersion } from "@/context/version-context";
@@ -23,12 +23,13 @@ interface CategoryFormProps {
 export function CategoryForm({ initialData, isEditMode = false }: CategoryFormProps) {
   const t = useTranslations("AdminPage.taxonomy.categoryForm");
   const router = useRouter();
-  const { activeReportId } = useVersion();
+  const { activeReportId, activeVersionId, activeReportVersion } = useVersion();
 
   const [name, setName] = useState(initialData?.name || "");
   const [description, setDescription] = useState(initialData?.description || "");
-  const [displayOrder, setDisplayOrder] = useState(initialData?.display_order || 1);
-  const [active, setActive] = useState<boolean>(initialData?.active ?? initialData?.published ?? true);
+  const [displayOrder, setDisplayOrder] = useState(initialData?.display_order || 0);
+  const [autoOrder, setAutoOrder] = useState<boolean>(!initialData?.display_order);
+  const [active, setActive] = useState<boolean>(initialData?.status === "PUBLISHED" || initialData?.active || initialData?.published || false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -38,13 +39,22 @@ export function CategoryForm({ initialData, isEditMode = false }: CategoryFormPr
     setErrorMessage(null);
 
     try {
+      const statusVal = active ? "PUBLISHED" : "DRAFT";
+      const targetVersionId = initialData?.report_version_id || initialData?.report_id || activeReportVersion?.id || activeVersionId || activeReportId;
+      const orderToSend = autoOrder ? undefined : displayOrder;
+
       if (isEditMode && initialData?.id) {
-        const res = await updateCategoryAction(initialData.id, {
-          name,
-          description,
-          display_order: displayOrder,
-          published: active,
-        });
+        const res = await updateCategoryAction(
+          initialData.id,
+          {
+            name,
+            description,
+            display_order: orderToSend,
+            status: statusVal,
+            published: active,
+          },
+          targetVersionId || undefined
+        );
 
         if (res.success) {
           router.push("/admin/taxonomy");
@@ -53,12 +63,12 @@ export function CategoryForm({ initialData, isEditMode = false }: CategoryFormPr
           setErrorMessage(res.message || t("errorUpdate"));
         }
       } else {
-        const targetReportId = initialData?.report_id || activeReportId || undefined;
         const res = await createCategoryAction({
-          report_id: targetReportId,
+          report_id: targetVersionId || undefined,
           name,
           description,
-          display_order: displayOrder,
+          display_order: orderToSend,
+          status: statusVal,
           published: active,
         });
 
@@ -76,6 +86,7 @@ export function CategoryForm({ initialData, isEditMode = false }: CategoryFormPr
       setIsSubmitting(false);
     }
   };
+
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full max-w-4xl mx-auto py-2">
@@ -149,17 +160,42 @@ export function CategoryForm({ initialData, isEditMode = false }: CategoryFormPr
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cat-order" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("orderLabel")}
-              </Label>
-              <Input
-                id="cat-order"
-                type="number"
-                min={1}
-                value={displayOrder}
-                onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 1)}
-                className="rounded-xl bg-background text-sm font-mono font-semibold"
-              />
+              <div className="flex items-center justify-between">
+                <Label htmlFor="cat-order" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("orderLabel")}
+                </Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-medium text-foreground">
+                    {t("autoOrderLabel")}
+                  </span>
+                  <Switch
+                    checked={autoOrder}
+                    onCheckedChange={(checked) => {
+                      setAutoOrder(checked);
+                      if (checked) {
+                        setDisplayOrder(0);
+                      } else {
+                        setDisplayOrder(initialData?.display_order || 1);
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+
+              {autoOrder ? (
+                <div className="p-3 rounded-xl border border-dashed border-amber-500/30 bg-amber-500/10 text-[11px] text-amber-800 dark:text-amber-300 font-medium leading-relaxed">
+                  {t("autoOrderNotice")}
+                </div>
+              ) : (
+                <Input
+                  id="cat-order"
+                  type="number"
+                  min={1}
+                  value={displayOrder || 1}
+                  onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 1)}
+                  className="rounded-xl bg-background text-sm font-mono font-semibold"
+                />
+              )}
             </div>
           </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -8,11 +8,11 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Save, BookOpen, AlertCircle, CheckCircle2, Link2 } from "lucide-react";
 import type { ReferenceItem } from "../../schemas/reference-schema";
 import { createReferenceAction, updateReferenceAction } from "../../actions/references-actions";
-import { getReportsAction } from "../../actions/reports-actions";
 import { useVersion } from "@/context/version-context";
 
 interface ReferenceFormProps {
@@ -24,10 +24,10 @@ interface ReferenceFormProps {
 export function ReferenceForm({ initialData, isEditMode = false, preselectedReportId }: ReferenceFormProps) {
   const t = useTranslations("AdminPage.references.referenceForm");
   const router = useRouter();
-  const { activeReportId } = useVersion();
+  const { activeReportId, reportVersions } = useVersion();
 
   const [reportId, setReportId] = useState(
-    initialData?.report_id || preselectedReportId || activeReportId || ""
+    () => initialData?.report_id || preselectedReportId || activeReportId || reportVersions?.[0]?.id || ""
   );
   const [authors, setAuthors] = useState(initialData?.authors || "");
   const [title, setTitle] = useState(initialData?.title || "");
@@ -38,23 +38,15 @@ export function ReferenceForm({ initialData, isEditMode = false, preselectedRepo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
-  const [reportOptions, setReportOptions] = useState<{ id: string; title: string }[]>([]);
-
-  useEffect(() => {
-    async function loadReports() {
-      try {
-        const reports = await getReportsAction();
-        const validReports = reports.filter((r): r is typeof r & { id: string } => Boolean(r.id));
-        setReportOptions(validReports.map((r) => ({ id: r.id, title: r.title })));
-        if (!initialData?.report_id && !preselectedReportId && !activeReportId && validReports.length > 0) {
-          setReportId(validReports[0].id);
-        }
-      } catch (err) {
-        console.error("Failed to load reports for reference form", err);
-      }
+  const reportOptions = React.useMemo(() => {
+    if (reportVersions && reportVersions.length > 0) {
+      return reportVersions.map((v) => ({ id: v.id, title: `${v.title} (${v.version})` }));
     }
-    loadReports();
-  }, [initialData, preselectedReportId, activeReportId]);
+    return [];
+  }, [reportVersions]);
+
+
+  const [autoOrder, setAutoOrder] = useState<boolean>(!isEditMode && initialData?.display_order === undefined);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,14 +55,18 @@ export function ReferenceForm({ initialData, isEditMode = false, preselectedRepo
 
     try {
       if (isEditMode && initialData?.id) {
-        const res = await updateReferenceAction(initialData.id, {
-          authors,
-          title,
-          year: Number(year),
-          source,
-          citation_url: citationUrl,
-          display_order: Number(displayOrder),
-        });
+        const res = await updateReferenceAction(
+          initialData.id,
+          {
+            authors,
+            title,
+            year: Number(year),
+            source,
+            citation_url: citationUrl,
+            ...(autoOrder ? {} : { display_order: Number(displayOrder) }),
+          },
+          reportId
+        );
 
         if (res.success) {
           setFeedback({
@@ -97,12 +93,14 @@ export function ReferenceForm({ initialData, isEditMode = false, preselectedRepo
         }
 
         const res = await createReferenceAction({
+          report_version_id: reportId,
           report_id: reportId,
           authors,
           title,
           year: Number(year),
           source,
           citation_url: citationUrl,
+          ...(autoOrder ? {} : { display_order: Number(displayOrder) }),
         });
 
         if (res.success) {
@@ -224,17 +222,35 @@ export function ReferenceForm({ initialData, isEditMode = false, preselectedRepo
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="ref-order" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Orden de Visualización (display_order)
-              </Label>
-              <Input
-                id="ref-order"
-                type="number"
-                min={1}
-                value={displayOrder}
-                onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 1)}
-                className="rounded-xl bg-background text-sm font-mono font-semibold"
-              />
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="ref-order" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Orden de Visualización
+                </Label>
+                <div className="flex items-center gap-1.5">
+                  <Switch
+                    id="auto-order-switch"
+                    checked={autoOrder}
+                    onCheckedChange={(checked) => setAutoOrder(checked)}
+                  />
+                  <Label htmlFor="auto-order-switch" className="text-xs cursor-pointer text-muted-foreground font-medium">
+                    Asignar al final
+                  </Label>
+                </div>
+              </div>
+              {autoOrder ? (
+                <div className="h-10 px-3 flex items-center rounded-xl bg-muted/40 border border-dashed border-border text-xs text-muted-foreground italic">
+                  Se asignará automáticamente al final de las referencias.
+                </div>
+              ) : (
+                <Input
+                  id="ref-order"
+                  type="number"
+                  min={1}
+                  value={displayOrder}
+                  onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 1)}
+                  className="rounded-xl bg-background text-sm font-mono font-semibold"
+                />
+              )}
             </div>
           </div>
 

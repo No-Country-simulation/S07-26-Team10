@@ -100,8 +100,10 @@ export function ResourceForm({ initialData, isEditMode = false, preselectedSecti
 
         finalFileUrl = uploadRes.data.file_url;
         finalCloudinaryId = uploadRes.data.cloudinary_public_id || "";
+        setCloudinaryPublicId(finalCloudinaryId);
       } else if (sourceMode === "url") {
         finalCloudinaryId = ""; // External URL does not have a Cloudinary Public ID
+        setCloudinaryPublicId("");
       }
 
       if (!finalFileUrl) {
@@ -115,15 +117,20 @@ export function ResourceForm({ initialData, isEditMode = false, preselectedSecti
 
       // 2. Submit Create or Update Resource
       if (isEditMode && initialData?.id) {
-        const res = await updateResourceAction(initialData.id, {
-          type,
-          title,
-          description,
-          file_url: finalFileUrl,
-          cloudinary_public_id: finalCloudinaryId,
-          alt_text: altText,
-          downloadable,
-        });
+        const res = await updateResourceAction(
+          initialData.id,
+          {
+            type,
+            title,
+            description,
+            file_url: finalFileUrl,
+            cloudinary_public_id: finalCloudinaryId,
+            old_cloudinary_public_id: initialData.cloudinary_public_id,
+            alt_text: altText,
+            downloadable,
+          },
+          sectionId
+        );
 
         if (res.success) {
           setFeedback({ type: "success", message: res.message || t("successUpdated") });
@@ -310,7 +317,7 @@ export function ResourceForm({ initialData, isEditMode = false, preselectedSecti
               <Label htmlFor="res-type" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {t("typeLabel")} <span className="text-destructive">*</span>
               </Label>
-              <Select value={type} onValueChange={(val) => { if (val) setType(val as any); }}>
+              <Select value={type} onValueChange={(val) => { if (val) setType(val as "IMAGE" | "GRAPH" | "DIAGRAM" | "FILE"); }}>
                 <SelectTrigger id="res-type" className="rounded-xl bg-background text-sm font-medium">
                   <SelectValue placeholder={t("typePlaceholder")}>
                     {type === "IMAGE" && t("typeImage")}

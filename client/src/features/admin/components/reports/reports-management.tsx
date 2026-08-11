@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/card";
@@ -9,15 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  FileText,
   Plus,
   Pencil,
   Trash2,
-  Info,
   CalendarDays,
-  BookMarked,
   Search,
+  AlertCircle,
 } from "lucide-react";
+
 import { Input } from "@/components/ui/input";
 import {
   AlertDialog,
@@ -28,112 +27,162 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useLanguage } from "@/context/language-context";
-import { useVersion, parseReportSlug } from "@/context/version-context";
-import { getReportsAction, deleteReportAction } from "../../actions/reports-actions";
-import type { ReportItem } from "../../schemas/report-schema";
-
-function getLatestVersion(reports: ReportItem[]): string {
-  if (!reports || reports.length === 0) return "-";
-
-  const parsed = reports
-    .map((r) => {
-      const p = parseReportSlug(r.slug || r.title || "");
-      if (p) return { title: r.title || r.slug, versionStr: p.version.replace(/^v/i, "") };
-      const match = (r.title || r.slug || "").match(/^(?:v)?([0-9.-]+)/i);
-      return match ? { title: r.title || r.slug, versionStr: match[1] } : null;
-    })
-    .filter(Boolean) as { title: string; versionStr: string }[];
-
-  if (parsed.length === 0) {
-    const first = reports[0];
-    return first.title || first.slug || "-";
-  }
-
-  parsed.sort((a, b) => {
-    const partsA = a.versionStr.split(/[\.-]/).map(Number);
-    const partsB = b.versionStr.split(/[\.-]/).map(Number);
-    const maxLen = Math.max(partsA.length, partsB.length);
-    for (let i = 0; i < maxLen; i++) {
-      const numA = isNaN(partsA[i]) ? 0 : partsA[i];
-      const numB = isNaN(partsB[i]) ? 0 : partsB[i];
-      if (numA !== numB) return numB - numA;
-    }
-    return 0;
-  });
-
-  return `v${parsed[0].versionStr}`;
-}
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { useVersion } from "@/context/version-context";
+import {
+  getReportsAction,
+  getReportVersionsAction,
+  deleteReportAction,
+  deleteReportVersionAction,
+  createReportAction,
+  updateReportVersionAction,
+} from "../../actions/reports-actions";
+import type { BaseReport, ReportVersion } from "../../schemas/report-schema";
 
 export function ReportsManagement() {
   const t = useTranslations("AdminPage.reports");
   const { refreshReports } = useVersion();
-  const [reports, setReports] = useState<ReportItem[]>([]);
+  const [baseReports, setBaseReports] = useState<BaseReport[]>([]);
+  const [versions, setVersions] = useState<ReportVersion[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [deleteReportId, setDeleteReportId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    type: "report" | "version";
+    reportId: string;
+    versionId?: string;
+  } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isCreatingBase, setIsCreatingBase] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  const [reportFilterLang, setReportFilterLang] = useState<"all" | "es" | "en">("all");
+  const [reportFilterLang, setReportFilterLang] = useState<"all" | "ES" | "EN">("all");
+  const [selectedBaseReportFilter, setSelectedBaseReportFilter] = useState<string>("all");
+
+  const loadData = useCallback(async () => {
+    setActionError(null);
+    try {
+      const bases = await getReportsAction();
+      setBaseReports(bases);
+
+      const allVersions: ReportVersion[] = [];
+      for (const b of bases) {
+        const vers = await getReportVersionsAction(b.id);
+        allVersions.push(...vers);
+      }
+      setVersions(allVersions);
+      await refreshReports();
+    } catch (err) {
+      console.error("Failed to load reports data", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [refreshReports]);
 
   useEffect(() => {
-    async function loadData() {
+    let isMounted = true;
+    async function init() {
       try {
-        const data = await getReportsAction();
-        setReports(data);
+        const bases = await getReportsAction();
+        if (!isMounted) return;
+        setBaseReports(bases);
+
+        const allVersions: ReportVersion[] = [];
+        for (const b of bases) {
+          const vers = await getReportVersionsAction(b.id);
+          allVersions.push(...vers);
+        }
+        if (!isMounted) return;
+        setVersions(allVersions);
         await refreshReports();
       } catch (err) {
         console.error("Failed to load reports data", err);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     }
-    loadData();
+    init();
+    return () => {
+      isMounted = false;
+    };
   }, [refreshReports]);
 
-  const confirmDelete = async () => {
-    if (!deleteReportId) return;
-    setIsDeleting(true);
+  const handleCreateBaseReport = async () => {
+    setActionError(null);
+    setIsCreatingBase(true);
     try {
-      await deleteReportAction(deleteReportId);
-      setReports((prev) => prev.filter((r) => r.id !== deleteReportId));
-      await refreshReports();
+      const res = await createReportAction();
+      if (res.success) {
+        await loadData();
+      } else {
+        setActionError(res.message || "Error al crear el reporte base.");
+      }
     } catch (err) {
-      console.error("Failed to delete report", err);
+      console.error("Failed to create base report", err);
+      setActionError("Error de conexión al crear el reporte base.");
     } finally {
-      setIsDeleting(false);
-      setDeleteReportId(null);
+      setIsCreatingBase(false);
     }
   };
 
-  const languageFilteredReports = reports.filter((item) => {
-    if (reportFilterLang === "all") return true;
 
-    const slugStr = item.slug || item.title || "";
-    const parsed = parseReportSlug(slugStr);
-    if (parsed) {
-      return parsed.lang === reportFilterLang;
+  const handleToggleStatus = async (ver: ReportVersion) => {
+    const newStatus = ver.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
+    try {
+      const res = await updateReportVersionAction(ver.report_id, ver.id, {
+        status: newStatus,
+      });
+      if (res.success) {
+        setVersions((prev) =>
+          prev.map((v) => (v.id === ver.id ? { ...v, status: newStatus } : v))
+        );
+        await refreshReports();
+      }
+    } catch (err) {
+      console.error("Failed to toggle status", err);
     }
-    const titleLower = (item.title || "").toLowerCase();
-    const slugLower = (item.slug || "").toLowerCase();
-    if (titleLower.includes("-es") || titleLower.includes("-en") || slugLower.includes("-es") || slugLower.includes("-en")) {
-      return titleLower.endsWith(`-${reportFilterLang}`) || slugLower.endsWith(`-${reportFilterLang}`) || titleLower.includes(`-${reportFilterLang}`);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      if (deleteTarget.type === "report") {
+        await deleteReportAction(deleteTarget.reportId);
+      } else if (deleteTarget.type === "version" && deleteTarget.versionId) {
+        await deleteReportVersionAction(deleteTarget.reportId, deleteTarget.versionId);
+      }
+      await loadData();
+    } catch (err) {
+      console.error("Failed to delete target", err);
+    } finally {
+      setIsDeleting(false);
+      setDeleteTarget(null);
     }
-    return true;
+  };
+
+  const baseFilteredVersions = versions.filter((ver) => {
+    if (selectedBaseReportFilter === "all") return true;
+    return ver.report_id === selectedBaseReportFilter;
   });
 
-  const filteredReports = languageFilteredReports.filter((item) => {
+  const languageFilteredVersions = baseFilteredVersions.filter((ver) => {
+    if (reportFilterLang === "all") return true;
+    return (ver.language || "ES").toUpperCase() === reportFilterLang;
+  });
+
+  const filteredVersions = languageFilteredVersions.filter((ver) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase().trim();
     return (
-      item.title?.toLowerCase().includes(q) ||
-      item.slug?.toLowerCase().includes(q) ||
-      item.citation_text?.toLowerCase().includes(q) ||
-      item.summary?.toLowerCase().includes(q)
+      ver.title?.toLowerCase().includes(q) ||
+      ver.version?.toLowerCase().includes(q) ||
+      ver.citation_text?.toLowerCase().includes(q) ||
+      ver.summary?.toLowerCase().includes(q)
     );
   });
 
-  const totalLanguageReports = languageFilteredReports.length;
+  const publishedCount = versions.filter((v) => v.status === "PUBLISHED").length;
+
 
   return (
     <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-2">
@@ -150,47 +199,71 @@ export function ReportsManagement() {
           <p className="text-sm text-muted-foreground max-w-3xl leading-relaxed">
             {t("subtitle")}
           </p>
-          <Link href="/admin/reports/new">
-            <Button className="rounded-xl px-4 gap-2 shadow-xs bg-emerald-950 text-emerald-100 hover:bg-emerald-900 text-xs font-bold">
-              <Plus className="size-4" />
-              <span>{t("newReportBtn")}</span>
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            {baseReports.length === 0 && (
+              <Button
+                onClick={handleCreateBaseReport}
+                disabled={isCreatingBase}
+                variant="outline"
+                className="rounded-xl px-4 text-xs font-bold border-amber-600/30 text-amber-800 dark:text-amber-300"
+              >
+                {isCreatingBase ? "Creando..." : "Crear Reporte Base"}
+              </Button>
+            )}
+            <Link href="/admin/reports/new">
+              <Button className="rounded-xl px-4 gap-2 shadow-xs bg-emerald-950 text-emerald-100 hover:bg-emerald-900 text-xs font-bold">
+                <Plus className="size-4" />
+                <span>Nueva Versión</span>
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
+
+      {actionError && (
+        <div className="p-4 rounded-xl text-sm font-medium flex items-center gap-3 border bg-destructive/10 border-destructive/30 text-destructive">
+          <AlertCircle className="size-5 shrink-0" />
+          <span>{actionError}</span>
+        </div>
+      )}
+
       {/* KPI Stats Cards */}
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-4 flex flex-col justify-between">
-          <span className="text-xs text-muted-foreground font-medium">{t("statTotal")}</span>
+          <span className="text-xs text-muted-foreground font-medium">Total Versiones</span>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-3xl font-extrabold text-foreground">{loading ? "-" : totalLanguageReports}</span>
-            <span className="text-[10px] font-mono text-muted-foreground">{t("statTotalSub")}</span>
+            <span className="text-3xl font-extrabold text-foreground">{loading ? "-" : versions.length}</span>
+            <span className="text-[10px] font-mono text-muted-foreground">de {baseReports.length} reporte(s)</span>
           </div>
         </Card>
 
         <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-4 flex flex-col justify-between">
-          <span className="text-xs text-muted-foreground font-medium">{t("statPublished")}</span>
+          <span className="text-xs text-muted-foreground font-medium">Publicadas</span>
           <div className="flex items-center gap-3 mt-2">
-            <span className="text-3xl font-extrabold text-foreground">{loading ? "-" : totalLanguageReports}</span>
+            <span className="text-3xl font-extrabold text-foreground">{loading ? "-" : publishedCount}</span>
             <div className="w-16 h-2 rounded-full bg-emerald-500/20 overflow-hidden">
-              <div className="h-full bg-emerald-700 w-full rounded-full" />
+              <div
+                className="h-full bg-emerald-700 rounded-full"
+                style={{ width: `${versions.length > 0 ? (publishedCount / versions.length) * 100 : 0}%` }}
+              />
             </div>
           </div>
         </Card>
 
         <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-4 flex flex-col justify-between">
-          <span className="text-xs text-muted-foreground font-medium">{t("statLastUpdate")}</span>
+          <span className="text-xs text-muted-foreground font-medium">Reportes Base</span>
           <div className="flex items-center gap-2 mt-2">
             <CalendarDays className="size-4 text-muted-foreground/60" />
             <span className="text-sm font-bold font-mono text-foreground">
-              {loading ? "-" : getLatestVersion(languageFilteredReports)}
+              {loading ? "-" : `${baseReports.length} activo(s)`}
             </span>
           </div>
         </Card>
       </div>
 
-      {/* Reports Table */}
+      {/* Versions Table */}
       {loading ? (
         <div className="space-y-4">
           <Skeleton className="h-64 w-full rounded-2xl" />
@@ -203,12 +276,29 @@ export function ReportsManagement() {
                 {t("tableTitle")}
               </h2>
               <span className="text-xs font-mono font-semibold text-muted-foreground/80 uppercase tracking-widest">
-                {String(filteredReports.length).padStart(2, "0")} / {t("tableCountLabel")}
+                {String(filteredVersions.length).padStart(2, "0")} / VERSIONES
               </span>
             </div>
 
-            {/* Language Filter & Client-side Search Input */}
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            {/* Base Report Filter, Language Filter & Client-side Search Input */}
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              {baseReports.length > 0 && (
+                <NativeSelect
+                  value={selectedBaseReportFilter}
+                  onChange={(e) => setSelectedBaseReportFilter(e.target.value)}
+                  className="h-9 px-3 text-xs font-mono rounded-xl bg-card border-border/60 shadow-2xs focus-visible:ring-emerald-500/20"
+                >
+                  <NativeSelectOption value="all">
+                    Todos los Reportes Base ({baseReports.length})
+                  </NativeSelectOption>
+                  {baseReports.map((b) => (
+                    <NativeSelectOption key={b.id} value={b.id}>
+                      Reporte: {b.slug}
+                    </NativeSelectOption>
+                  ))}
+                </NativeSelect>
+              )}
+
               <div className="flex items-center p-0.5 rounded-xl bg-muted/40 border border-border/60 text-xs font-semibold shrink-0">
                 <button
                   type="button"
@@ -219,13 +309,13 @@ export function ReportsManagement() {
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {t("filterAll")}
+                  Todos
                 </button>
                 <button
                   type="button"
-                  onClick={() => setReportFilterLang("es")}
+                  onClick={() => setReportFilterLang("ES")}
                   className={`px-2.5 py-1 rounded-lg transition-all ${
-                    reportFilterLang === "es"
+                    reportFilterLang === "ES"
                       ? "bg-card text-foreground shadow-2xs font-bold"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
@@ -234,9 +324,9 @@ export function ReportsManagement() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setReportFilterLang("en")}
+                  onClick={() => setReportFilterLang("EN")}
                   className={`px-2.5 py-1 rounded-lg transition-all ${
-                    reportFilterLang === "en"
+                    reportFilterLang === "EN"
                       ? "bg-card text-foreground shadow-2xs font-bold"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
@@ -262,34 +352,55 @@ export function ReportsManagement() {
             <Table>
               <TableHeader className="bg-muted/30">
                 <TableRow className="border-b border-border/50">
-                  <TableHead className="font-bold text-xs text-foreground/80 py-3">{t("colTitle")}</TableHead>
+                  <TableHead className="font-bold text-xs text-foreground/80 py-3">Versión / Título</TableHead>
+                  <TableHead className="font-bold text-xs text-foreground/80 py-3 text-center w-28">Estado</TableHead>
                   <TableHead className="font-bold text-xs text-foreground/80 py-3 text-right w-28">{t("colActions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredReports.length === 0 ? (
+                {filteredVersions.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={2} className="text-center py-8 text-xs text-muted-foreground italic">
+                    <TableCell colSpan={3} className="text-center py-8 text-xs text-muted-foreground italic">
                       {searchQuery ? t("noSearchMatch") : t("noReports")}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredReports.map((item) => (
+                  filteredVersions.map((item) => (
                     <TableRow key={item.id} className="border-b border-border/40 hover:bg-muted/20">
                       <TableCell className="py-3.5">
                         <div className="space-y-1">
-                          <div className="flex items-center gap-2.5 flex-wrap">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-sm font-bold text-foreground">{item.title}</span>
-                            {item.slug && (
-                              <Badge variant="outline" className="bg-muted/40 font-mono text-[10px] text-muted-foreground font-semibold px-2 py-0.5 rounded-md border-border/60">
-                                {item.slug}
-                              </Badge>
-                            )}
+                            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 font-mono text-[10px] font-bold px-2 py-0.5 rounded-md border-emerald-500/30">
+                              {item.version}
+                            </Badge>
+                            <Badge variant="outline" className="bg-muted/40 font-mono text-[10px] text-muted-foreground font-semibold px-2 py-0.5 rounded-md border-border/60">
+                              {item.language}
+                            </Badge>
                           </div>
                           <div className="text-[11px] text-muted-foreground italic font-serif leading-relaxed">
                             {item.citation_text}
                           </div>
                         </div>
+                      </TableCell>
+
+                      <TableCell className="text-center py-3.5">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleStatus(item)}
+                          className="cursor-pointer outline-none"
+                          title="Haga clic para cambiar estado"
+                        >
+                          <Badge
+                            className={
+                              item.status === "PUBLISHED"
+                                ? "bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] rounded-full"
+                                : "bg-amber-600/20 text-amber-800 dark:text-amber-300 hover:bg-amber-600/30 font-bold text-[10px] rounded-full border border-amber-600/30"
+                            }
+                          >
+                            {item.status === "PUBLISHED" ? "Publicado" : "Borrador"}
+                          </Badge>
+                        </button>
                       </TableCell>
 
                       <TableCell className="text-right py-3.5">
@@ -302,7 +413,13 @@ export function ReportsManagement() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => setDeleteReportId(item.id!)}
+                            onClick={() =>
+                              setDeleteTarget({
+                                type: "version",
+                                reportId: item.report_id,
+                                versionId: item.id,
+                              })
+                            }
                             className="size-8 text-muted-foreground hover:text-destructive"
                           >
                             <Trash2 className="size-3.5" />
@@ -318,6 +435,61 @@ export function ReportsManagement() {
         </div>
       )}
 
+      {/* Base Reports Section */}
+      {baseReports.length > 0 && (
+        <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+              Reportes Base ({baseReports.length})
+            </h3>
+            <Button
+              onClick={handleCreateBaseReport}
+              variant="outline"
+              size="sm"
+              className="rounded-xl text-xs font-bold border-amber-600/30 text-amber-800 dark:text-amber-300"
+            >
+              + Nuevo Reporte Base
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {baseReports.map((b) => (
+              <div
+                key={b.id}
+                className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-muted/20"
+              >
+                <div>
+                  <div className="text-xs font-mono font-bold text-foreground">{b.slug}</div>
+                  <div className="text-[10px] text-muted-foreground font-mono">ID: {b.id}</div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Link href={`/admin/reports/new?reportId=${b.id}`}>
+                    <Button variant="ghost" size="sm" className="h-8 px-2.5 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 gap-1">
+                      <Plus className="size-3" />
+                      <span>Versión</span>
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() =>
+                      setDeleteTarget({
+                        type: "report",
+                        reportId: b.id,
+                      })
+                    }
+                    className="size-8 text-muted-foreground hover:text-destructive"
+                    title="Eliminar reporte base y todas sus versiones en cascada"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+
       {/* Quote Footer Card at Bottom */}
       <Card className="border-l-4 border-amber-600/80 bg-muted/20 border-y border-r border-border/60 shadow-2xs rounded-2xl p-6">
         <p className="text-xs text-muted-foreground leading-relaxed italic font-serif">
@@ -329,14 +501,16 @@ export function ReportsManagement() {
       </Card>
 
       {/* Delete Confirmation Modal (Shadcn AlertDialog) */}
-      <AlertDialog open={!!deleteReportId} onOpenChange={(open) => !open && setDeleteReportId(null)}>
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent className="rounded-3xl p-6">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-bold text-foreground">
-              {t("deleteTitle")}
+              {deleteTarget?.type === "report" ? "¿Eliminar reporte base?" : "¿Eliminar esta versión?"}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed pt-1">
-              {t("deleteDesc")}
+              {deleteTarget?.type === "report"
+                ? "Esta acción no se puede deshacer. Se eliminará permanentemente el reporte base y TODAS sus versiones en cascada."
+                : "Esta acción no se puede deshacer. Se eliminará permanentemente la versión seleccionada."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="pt-4 flex items-center justify-end gap-2">
@@ -375,3 +549,4 @@ export function ReportsManagementSkeleton() {
     </div>
   );
 }
+

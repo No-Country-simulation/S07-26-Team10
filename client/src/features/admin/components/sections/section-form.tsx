@@ -65,7 +65,8 @@ export function SectionForm({
 }: SectionFormProps) {
   const t = useTranslations("AdminPage.sectionForm");
   const router = useRouter();
-  const { activeReportId, activeReport, version } = useVersion();
+  const { activeReportId, activeReport, activeReportVersion, version, contentLanguage } = useVersion();
+
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -112,6 +113,7 @@ export function SectionForm({
 
   // Tab state for content (Markdown editor vs Preview)
   const [contentTab, setContentTab] = useState<"editor" | "preview">("editor");
+  const [autoOrder, setAutoOrder] = useState<boolean>(!initialData?.display_order);
 
   // Form setup using appropriate schema for create vs edit mode
   const {
@@ -122,14 +124,12 @@ export function SectionForm({
     formState: { errors },
   } = useForm<CreateSectionInput>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(
-      isEditMode ? (updateSectionSchema as any) : createSectionSchema,
-    ),
+    resolver: zodResolver(isEditMode ? updateSectionSchema : createSectionSchema) as any,
     defaultValues: {
       report_id: initialData?.report_id || activeReportId || "",
       title: initialData?.title || "",
       content: initialData?.content || "",
-      display_order: initialData?.display_order ?? 1,
+      display_order: initialData?.display_order ?? undefined,
       published: initialData?.published ?? true,
     },
   });
@@ -151,14 +151,20 @@ export function SectionForm({
     setFeedback(null);
 
     try {
+      const isPublished = values.published ?? (values.status === "PUBLISHED");
+      const statusVal = isPublished ? "PUBLISHED" : "DRAFT";
+
       if (isEditMode && initialData?.id) {
+        const targetReportId = initialData.report_id || activeReportId || "";
         const updateInput: UpdateSectionInput = {
           title: values.title,
           content: values.content,
-          display_order: values.display_order ?? 1,
-          published: values.published ?? true,
+          display_order: autoOrder ? undefined : values.display_order,
+          status: statusVal,
+          published: isPublished,
         };
-        const res = await updateSectionAction(initialData.id, updateInput);
+        const res = await updateSectionAction(initialData.id, updateInput, targetReportId);
+
         if (res.success) {
           setFeedback({
             type: "success",
@@ -187,9 +193,11 @@ export function SectionForm({
           report_id: targetReportId,
           title: values.title,
           content: values.content,
-          display_order: values.display_order ?? 1,
-          published: values.published ?? false,
+          display_order: autoOrder ? undefined : values.display_order,
+          status: statusVal,
+          published: isPublished,
         };
+
 
         const res = await createSectionAction(createInput);
         if (res.success) {
@@ -210,6 +218,7 @@ export function SectionForm({
     } catch {
       setFeedback({
         type: "error",
+
         message: t("genericError"),
       });
     } finally {
@@ -217,7 +226,7 @@ export function SectionForm({
     }
   };
 
-  const onError = (formErrors: Record<string, any>) => {
+  const onError = (formErrors: Record<string, { message?: string } | undefined>) => {
     console.warn("Form validation errors:", formErrors);
     if (formErrors.report_id) {
       setFeedback({
@@ -228,13 +237,13 @@ export function SectionForm({
     } else if (formErrors.title) {
       setFeedback({
         type: "error",
-        message: formErrors.title.message || "El título es obligatorio.",
+        message: formErrors.title.message ?? "El título es obligatorio.",
       });
     } else if (formErrors.content) {
       setFeedback({
         type: "error",
         message:
-          formErrors.content.message ||
+          formErrors.content.message ??
           "El contenido en markdown es obligatorio.",
       });
     } else {
@@ -250,7 +259,9 @@ export function SectionForm({
 
     setIsDeleting(true);
     try {
-      const res = await deleteSectionAction(initialData.id);
+      const targetReportId = initialData.report_id || activeReportId || "";
+      const res = await deleteSectionAction(initialData.id, targetReportId);
+
       if (res.success) {
         setShowDeleteDialog(false);
         router.push("/admin/sections");
@@ -300,10 +311,17 @@ export function SectionForm({
                   : t("createTitle")}
               </h1>
               <p className="text-xs text-muted-foreground mt-1">
-                {activeReport
-                  ? t("activeReportLabel", { title: activeReport.title, version })
-                  : t("currentVersionLabel", { version: version || "N/A" })}
+                {activeReportVersion || activeReport
+                  ? t("activeReportLabel", {
+                      title: activeReportVersion?.title || activeReport?.slug || "",
+                      version: `${version || "v1"} (${(activeReportVersion?.language || contentLanguage || "ES").toUpperCase()})`,
+                    })
+                  : t("currentVersionLabel", {
+                      version: `${version || "N/A"} (${(contentLanguage || "ES").toUpperCase()})`,
+                    })}
               </p>
+
+
             </div>
 
             {/* Action Buttons */}
@@ -676,34 +694,64 @@ export function SectionForm({
 
               <CardContent className="p-0 space-y-5 text-xs">
                 {/* Orden de visualización */}
-                <div className="space-y-1.5">
-                  <Label
-                    htmlFor="order"
-                    className="text-xs text-muted-foreground font-medium"
-                  >
-                    {t("orderLabel")}
-                  </Label>
-                  <div className="flex items-center gap-3">
-                    <Input
-                      id="order"
-                      type="number"
-                      min={1}
-                      value={watchDisplayOrder ?? 1}
-                      onChange={(e) =>
-                        setValue(
-                          "display_order",
-                          parseInt(e.target.value) || 1,
-                          {
-                            shouldValidate: true,
-                          },
-                        )
-                      }
-                      className="w-20 rounded-xl bg-background font-mono font-semibold text-center h-9 text-xs"
-                    />
-                    <span className="text-[11px] text-muted-foreground">
-                      {t("orderHelper")}
-                    </span>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="auto-order-switch" className="text-xs text-muted-foreground font-medium">
+                      {t("autoOrderLabel")}
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-medium text-foreground">
+                        {autoOrder ? t("autoOrderToggle") : t("customOrderToggle")}
+                      </span>
+                      <Switch
+                        id="auto-order-switch"
+                        checked={autoOrder}
+                        onCheckedChange={(checked) => {
+                          setAutoOrder(checked);
+                          if (checked) {
+                            setValue("display_order", undefined, { shouldValidate: true });
+                          } else {
+                            setValue("display_order", initialData?.display_order || 1, { shouldValidate: true });
+                          }
+                        }}
+                      />
+                    </div>
                   </div>
+
+                  {autoOrder ? (
+                    <div className="p-3 rounded-xl border border-dashed border-amber-500/30 bg-amber-500/10 text-[11px] text-amber-800 dark:text-amber-300 font-medium leading-relaxed">
+                      {t("autoOrderNotice")}
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5 pt-1">
+                      <Label
+                        htmlFor="order"
+                        className="text-xs text-muted-foreground font-medium"
+                      >
+                        {t("orderLabel")}
+                      </Label>
+                      <div className="flex items-center gap-3">
+                        <Input
+                          id="order"
+                          type="number"
+                          min={1}
+                          value={watchDisplayOrder ?? 1}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            setValue(
+                              "display_order",
+                              isNaN(val) ? undefined : val,
+                              { shouldValidate: true },
+                            );
+                          }}
+                          className="w-20 rounded-xl bg-background font-mono font-semibold text-center h-9 text-xs"
+                        />
+                        <span className="text-[11px] text-muted-foreground">
+                          {t("orderHelper")}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="h-px bg-border/40" />

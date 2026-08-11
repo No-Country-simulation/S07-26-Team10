@@ -1,0 +1,90 @@
+/* ============================================================
+   Admin Theme Scoped Tokens — shadcn UX/UI
+   ============================================================ */
+
+.admin-theme {
+  --surface: var(--color-paper-000, #fcf9f5);
+  --surface-low: var(--color-paper-100, #f6f3ef);
+  --on-surface: var(--color-ink-900, #1c1c1a);
+
+  --background: var(--surface);
+  --foreground: var(--on-surface);
+
+  --card: #ffffff;
+  --card-foreground: var(--on-surface);
+
+  --popover: #ffffff;
+  --popover-foreground: var(--on-surface);
+
+  --primary: #012d1d;
+  --primary-foreground: #fcf9f5;
+
+  --secondary: #765a15;
+  --secondary-foreground: #fcf9f5;
+
+  --muted: #f6f3ef;
+  --muted-foreground: #6f6f6f;
+
+  --accent: #fed887;
+  --accent-foreground: #012d1d;
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: #ffffff;
+
+  --border: #ebebeb;
+  --input: #ebebeb;
+  --ring: #e6c273;
+
+  --sidebar: #f6f3ef;
+  --sidebar-foreground: var(--on-surface);
+  --sidebar-primary: #012d1d;
+  --sidebar-primary-foreground: #fcf9f5;
+  --sidebar-accent: #fed887;
+  --sidebar-accent-foreground: #012d1d;
+  --sidebar-border: #ebebeb;
+  --sidebar-ring: #e6c273;
+}
+
+.admin-theme.dark,
+.admin-theme .dark {
+  --surface: #012d1d;
+  --surface-low: #0c3828;
+  --on-surface: #fcf9f5;
+
+  --background: var(--surface);
+  --foreground: var(--on-surface);
+
+  --card: #0c3828;
+  --card-foreground: var(--on-surface);
+
+  --popover: #0c3828;
+  --popover-foreground: var(--on-surface);
+
+  --primary: #86af99;
+  --primary-foreground: #012d1d;
+
+  --secondary: #e6c273;
+  --secondary-foreground: #1c1c1a;
+
+  --muted: rgba(252, 249, 245, 0.08);
+  --muted-foreground: rgba(252, 249, 245, 0.65);
+
+  --accent: rgba(230, 194, 115, 0.18);
+  --accent-foreground: #fed887;
+
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: #ffffff;
+
+  --border: rgba(252, 249, 245, 0.14);
+  --input: rgba(252, 249, 245, 0.18);
+  --ring: #e6c273;
+
+  --sidebar: #0c3828;
+  --sidebar-foreground: var(--on-surface);
+  --sidebar-primary: #86af99;
+  --sidebar-primary-foreground: #012d1d;
+  --sidebar-accent: rgba(230, 194, 115, 0.18);
+  --sidebar-accent-foreground: #fed887;
+  --sidebar-border: rgba(252, 249, 245, 0.12);
+  --sidebar-ring: #e6c273;
+}

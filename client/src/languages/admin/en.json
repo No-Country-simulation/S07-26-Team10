@@ -68,7 +68,14 @@
     "reportsTitle": "Reports Management",
     "reportsDesc": "Manage the system's technical reports."
   },
+  "sections": {
+    "headerTag": "STRUCTURE MANAGEMENT",
+    "title": "Sections Management",
+    "subtitle": "Manage and organize the content and structured sections of the active report.",
+    "newSectionBtn": "New Section"
+  },
   "references": {
+
     "headerTag": "CITATION MODULE",
     "title": "Manage references",
     "subtitle": "Manage bibliographic references of the report. Ensures academic integrity and traceability of presented technical data.",
@@ -214,6 +221,8 @@
       "descLabel": "Description",
       "descPlaceholder": "e.g. Energy and cooling",
       "orderLabel": "Display Order",
+      "autoOrderLabel": "Auto-assign order at the end",
+      "autoOrderNotice": "The system will automatically place the category at the end if no number is entered.",
       "statusLabel": "Active Status",
       "statusDesc": "Determines whether the category is available and visible in the system.",
       "statusActive": "ACTIVE",
@@ -285,6 +294,10 @@
     "configTitle": "Configuration Attributes",
     "orderLabel": "Display Order",
     "orderHelper": "Index priority",
+    "autoOrderLabel": "Order assignment",
+    "autoOrderToggle": "Auto-assign at end",
+    "customOrderToggle": "Specify custom order",
+    "autoOrderNotice": "The system will automatically place the section at the end of the report if no order number is specified.",
     "statusLabel": "Section Status",
     "statusActive": "Active in report",
     "statusInactive": "Inactive (Draft)",

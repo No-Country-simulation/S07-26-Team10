@@ -25,7 +25,7 @@ async function getAuthHeaders(): Promise<HeadersInit> {
 }
 
 /**
- * GET /api/v1/resources/section/{section_id}/admin
+ * GET /api/v1/sections/{section_id}/resources/admin
  * Listar todos los recursos de una sección (visión admin con información completa)
  */
 export async function getResourcesBySectionAction(sectionId: string): Promise<ResourceItem[]> {
@@ -33,16 +33,23 @@ export async function getResourcesBySectionAction(sectionId: string): Promise<Re
 
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(getApiUrl(`/resources/section/${sectionId}/admin`), {
-      headers,
-      cache: "no-store",
-    });
+    const urlsToTry = [
+      `/sections/${sectionId}/resources/admin`,
+      `/sections/${sectionId}/resources`,
+      `/resources/section/${sectionId}/admin`,
+    ];
 
-    if (res.ok) {
-      const data = (await res.json()) as ResourceItem[];
-      return data;
+    for (const url of urlsToTry) {
+      const res = await fetch(getApiUrl(url), {
+        headers,
+        cache: "no-store",
+      });
+
+      if (res.ok) {
+        const data = (await res.json()) as ResourceItem[];
+        return data;
+      }
     }
-    console.warn("getResourcesBySectionAction: API returned status", res.status);
   } catch (error) {
     console.error("Error fetching section resources from API:", error);
   }
@@ -50,28 +57,60 @@ export async function getResourcesBySectionAction(sectionId: string): Promise<Re
   return [];
 }
 
-/**
- * GET /api/v1/resources/{resource_id}
- * Obtener un recurso por su ID
- */
-export async function getResourceByIdAction(resourceId: string): Promise<ResourceItem | undefined> {
+export async function getResourceByIdAction(resourceId: string, sectionId?: string): Promise<ResourceItem | undefined> {
   if (!resourceId) return undefined;
 
   try {
     const headers = await getAuthHeaders();
+
+    if (sectionId) {
+      const urlsToTry = [
+        `/sections/${sectionId}/resources/admin/${resourceId}`,
+        `/sections/${sectionId}/resources/${resourceId}`,
+        `/resources/${resourceId}`,
+      ];
+
+      for (const url of urlsToTry) {
+        const res = await fetch(getApiUrl(url), {
+          headers,
+          cache: "no-store",
+        });
+
+        if (res.ok) {
+          const data = (await res.json()) as ResourceItem;
+          return data;
+        }
+      }
+    }
+
+    const sections = await getSectionsAction();
+    for (const sec of sections) {
+      const urlsToTry = [
+        `/sections/${sec.id}/resources/admin/${resourceId}`,
+        `/sections/${sec.id}/resources/${resourceId}`,
+      ];
+
+      for (const url of urlsToTry) {
+        const res = await fetch(getApiUrl(url), {
+          headers,
+          cache: "no-store",
+        });
+
+        if (res.ok) {
+          const data = (await res.json()) as ResourceItem;
+          return data;
+        }
+      }
+    }
+
     const res = await fetch(getApiUrl(`/resources/${resourceId}`), {
       headers,
       cache: "no-store",
     });
-
     if (res.ok) {
       const data = (await res.json()) as ResourceItem;
       return data;
     }
-    if (res.status === 404) {
-      return undefined;
-    }
-    console.warn("getResourceByIdAction: API returned status", res.status);
   } catch (error) {
     console.error("Error fetching resource by ID from API:", error);
   }
@@ -79,9 +118,6 @@ export async function getResourceByIdAction(resourceId: string): Promise<Resourc
   return undefined;
 }
 
-/**
- * Obtener todos los recursos de un reporte o de todas las secciones
- */
 export async function getResourcesAction(reportId?: string): Promise<ResourceItem[]> {
   try {
     const sections = await getSectionsAction(reportId);
@@ -98,10 +134,6 @@ export async function getResourcesAction(reportId?: string): Promise<ResourceIte
   }
 }
 
-/**
- * POST /api/v1/resources/
- * Crear un nuevo recurso asociado a una sección
- */
 export async function createResourceAction(input: CreateResourceInput): Promise<{
   success: boolean;
   data?: ResourceItem;
@@ -120,47 +152,57 @@ export async function createResourceAction(input: CreateResourceInput): Promise<
 
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(getApiUrl("/resources/"), {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        section_id: result.data.section_id,
-        type: result.data.type,
-        title: result.data.title,
-        description: result.data.description || "",
-        file_url: result.data.file_url || "",
-        cloudinary_public_id: result.data.cloudinary_public_id || "",
-        alt_text: result.data.alt_text || "",
-        downloadable: result.data.downloadable ?? true,
-      }),
-    });
+    const sectionId = result.data.section_id;
+    const urlsToTry = [
+      `/sections/${sectionId}/resources`,
+      `/resources/`,
+    ];
 
-    if (res.status === 201 || res.ok) {
-      const data = (await res.json()) as ResourceItem;
-      revalidatePath("/admin/resources");
-      revalidatePath(`/admin/sections/${result.data.section_id}`);
-      return {
-        success: true,
-        data,
-        message: "Recurso creado exitosamente.",
-      };
+    let lastRes: Response | null = null;
+    for (const url of urlsToTry) {
+      const res = await fetch(getApiUrl(url), {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          section_id: result.data.section_id,
+          type: result.data.type,
+          title: result.data.title,
+          description: result.data.description || "",
+          file_url: result.data.file_url || "",
+          cloudinary_public_id: result.data.cloudinary_public_id || "",
+          alt_text: result.data.alt_text || "",
+          downloadable: result.data.downloadable ?? true,
+        }),
+      });
+
+      if (res.status === 201 || res.ok) {
+        const data = (await res.json()) as ResourceItem;
+        revalidatePath("/admin/resources");
+        revalidatePath(`/admin/sections/${result.data.section_id}`);
+        return {
+          success: true,
+          data,
+          message: "Recurso creado exitosamente.",
+        };
+      }
+      lastRes = res;
     }
 
-    if (res.status === 401) {
+    if (lastRes?.status === 401) {
       return {
         success: false,
         message: "Sesión expirada o token inválido.",
       };
     }
 
-    if (res.status === 404) {
+    if (lastRes?.status === 404) {
       return {
         success: false,
         message: "Sección no encontrada.",
       };
     }
 
-    const errorBody = await res.json().catch(() => ({}));
+    const errorBody = lastRes ? await lastRes.json().catch(() => ({})) : {};
     return {
       success: false,
       message: errorBody.detail?.[0]?.msg || errorBody.detail || "Error al crear el recurso.",
@@ -174,20 +216,14 @@ export async function createResourceAction(input: CreateResourceInput): Promise<
   }
 }
 
-/**
- * Alias de compatibilidad para addResourceAction
- */
 export async function addResourceAction(resource: Omit<ResourceItem, "id">): Promise<{ success: boolean; data?: ResourceItem; message?: string }> {
   return createResourceAction(resource as CreateResourceInput);
 }
 
-/**
- * PATCH /api/v1/resources/{resource_id}
- * Actualizar parcialmente un recurso existente
- */
 export async function updateResourceAction(
   resourceId: string,
-  input: UpdateResourceInput
+  input: UpdateResourceInput & { old_cloudinary_public_id?: string },
+  sectionId?: string
 ): Promise<{
   success: boolean;
   data?: ResourceItem;
@@ -206,34 +242,74 @@ export async function updateResourceAction(
 
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(getApiUrl(`/resources/${resourceId}`), {
-      method: "PATCH",
-      headers,
-      body: JSON.stringify(result.data),
-    });
+    let targetSectionId = sectionId || (input as Record<string, unknown>).section_id as string | undefined;
 
-    if (res.ok) {
-      const data = (await res.json()) as ResourceItem;
-      revalidatePath("/admin/resources");
-      if (data.section_id) {
-        revalidatePath(`/admin/sections/${data.section_id}`);
-      }
-      return {
-        success: true,
-        data,
-        message: "Recurso actualizado exitosamente.",
-      };
+    if (!targetSectionId) {
+      const currentResource = await getResourceByIdAction(resourceId, sectionId);
+      targetSectionId = currentResource?.section_id;
     }
 
-    if (res.status === 404) {
+    const urlsToTry = targetSectionId
+      ? [
+          `/sections/${targetSectionId}/resources/${resourceId}`,
+          `/resources/${resourceId}`,
+        ]
+      : [`/resources/${resourceId}`];
+
+    const payload: Record<string, unknown> = {};
+    if (result.data.type !== undefined) payload.type = result.data.type;
+    if (result.data.title !== undefined) payload.title = result.data.title;
+    if (result.data.description !== undefined) payload.description = result.data.description;
+    if (result.data.file_url !== undefined) payload.file_url = result.data.file_url;
+    if (result.data.cloudinary_public_id !== undefined) payload.cloudinary_public_id = result.data.cloudinary_public_id;
+    if (result.data.alt_text !== undefined) payload.alt_text = result.data.alt_text;
+    if (result.data.downloadable !== undefined) payload.downloadable = result.data.downloadable;
+
+    let lastRes: Response | null = null;
+    for (const url of urlsToTry) {
+      const res = await fetch(getApiUrl(url), {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        const data = (await res.json()) as ResourceItem;
+        revalidatePath("/admin/resources");
+        if (data.section_id) {
+          revalidatePath(`/admin/sections/${data.section_id}`);
+        }
+
+        // Automatic Cloudinary file cleanup if file was replaced
+        if (
+          input.old_cloudinary_public_id &&
+          result.data.cloudinary_public_id &&
+          input.old_cloudinary_public_id !== result.data.cloudinary_public_id
+        ) {
+          const resType = (result.data.type || data.type) === "IMAGE" ? "image" : "raw";
+          await deleteUploadAction(input.old_cloudinary_public_id, resType).catch((err) => {
+            console.warn("Could not delete old Cloudinary file on update:", err);
+          });
+        }
+
+        return {
+          success: true,
+          data,
+          message: "Recurso actualizado exitosamente.",
+        };
+      }
+      lastRes = res;
+    }
+
+    if (lastRes?.status === 404) {
       return { success: false, message: "Recurso no encontrado." };
     }
 
-    if (res.status === 401) {
+    if (lastRes?.status === 401) {
       return { success: false, message: "Sesión expirada o token inválido." };
     }
 
-    const errorBody = await res.json().catch(() => ({}));
+    const errorBody = lastRes ? await lastRes.json().catch(() => ({})) : {};
     return {
       success: false,
       message: errorBody.detail?.[0]?.msg || errorBody.detail || "Error al actualizar el recurso.",
@@ -247,35 +323,89 @@ export async function updateResourceAction(
   }
 }
 
-/**
- * DELETE /api/v1/resources/{resource_id}
- * Eliminar un recurso por ID
- */
-export async function deleteResourceAction(resourceId: string): Promise<{ success: boolean; message?: string }> {
+export async function deleteResourceAction(
+  resourceId: string,
+  sectionId?: string,
+  _cloudinaryPublicId?: string
+): Promise<{ success: boolean; message?: string }> {
   if (!resourceId) return { success: false, message: "ID de recurso no válido." };
 
   try {
-    const headers = await getAuthHeaders();
-    const res = await fetch(getApiUrl(`/resources/${resourceId}`), {
-      method: "DELETE",
-      headers,
-    });
+    let targetSectionId = sectionId;
 
-    if (res.ok || res.status === 204) {
-      revalidatePath("/admin/resources");
-      return { success: true, message: "Recurso eliminado exitosamente." };
+    // Retrieve resource details if sectionId was not provided
+    if (!targetSectionId) {
+      const resource = await getResourceByIdAction(resourceId, sectionId);
+      if (resource?.section_id) {
+        targetSectionId = resource.section_id;
+      }
     }
 
-    const errorBody = await res.json().catch(() => ({}));
+    const headers = await getAuthHeaders();
+    const urlsToTry: string[] = [];
+
+    if (targetSectionId) {
+      urlsToTry.push(`/sections/${targetSectionId}/resources/${resourceId}`);
+    } else {
+      const sections = await getSectionsAction();
+      for (const sec of sections) {
+        if (sec.id) {
+          urlsToTry.push(`/sections/${sec.id}/resources/${resourceId}`);
+        }
+      }
+    }
+    urlsToTry.push(`/resources/${resourceId}`);
+
+    let deletedFromDb = false;
+    let lastRes: Response | null = null;
+    let lastErrorMsg = "";
+
+    for (const url of urlsToTry) {
+      try {
+        const res = await fetch(getApiUrl(url), {
+          method: "DELETE",
+          headers,
+        });
+
+        if (res.ok || res.status === 204) {
+          deletedFromDb = true;
+          break;
+        }
+        lastRes = res;
+        const errJson = await res.json().catch(() => ({}));
+        lastErrorMsg = errJson.detail?.[0]?.msg || errJson.detail || errJson.message || "";
+      } catch (err) {
+        console.warn(`Fetch delete failed for ${url}:`, err);
+      }
+    }
+
+    if (deletedFromDb || lastRes?.status === 404) {
+      revalidatePath("/admin/resources");
+      if (targetSectionId) {
+        revalidatePath(`/admin/sections/${targetSectionId}`);
+      }
+
+      return {
+        success: true,
+        message: deletedFromDb
+          ? "Recurso eliminado exitosamente."
+          : "El recurso ya no existía en el servidor y ha sido removido.",
+      };
+    }
+
+    if (lastRes?.status === 401) {
+      return { success: false, message: "Sesión expirada o token inválido." };
+    }
+
     return {
       success: false,
-      message: errorBody.detail?.[0]?.msg || errorBody.detail || "Error al eliminar el recurso.",
+      message: lastErrorMsg || (lastRes ? `Error ${lastRes.status}: No se pudo eliminar el recurso.` : "Error al eliminar el recurso."),
     };
   } catch (error) {
     console.error("Error deleting resource via API:", error);
     return {
       success: false,
-      message: "No se pudo conectar con el servidor de la API.",
+      message: error instanceof Error ? error.message : "No se pudo conectar con el servidor de la API.",
     };
   }
 }
@@ -292,7 +422,7 @@ export async function uploadFileAction(
   data?: {
     file_url: string;
     cloudinary_public_id?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   message?: string;
 }> {
@@ -304,33 +434,42 @@ export async function uploadFileAction(
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const res = await fetch(getApiUrl(`/uploads/?resource_type=${resourceType}`), {
-      method: "POST",
-      headers,
-      body: formData,
-    });
+    const urlsToTry = [
+      `/uploads?resource_type=${resourceType}`,
+      `/uploads/?resource_type=${resourceType}`,
+    ];
 
-    if (res.ok || res.status === 201) {
-      const data = await res.json();
-      const file_url = data.file_url || data.secure_url || data.url || "";
-      const cloudinary_public_id = data.cloudinary_public_id || data.public_id || "";
+    let lastRes: Response | null = null;
+    for (const url of urlsToTry) {
+      const res = await fetch(getApiUrl(url), {
+        method: "POST",
+        headers,
+        body: formData,
+      });
 
-      return {
-        success: true,
-        data: {
-          ...data,
-          file_url,
-          cloudinary_public_id,
-        },
-        message: "Archivo subido correctamente a Cloudinary.",
-      };
+      if (res.ok || res.status === 201) {
+        const data = await res.json();
+        const file_url = data.url || data.file_url || data.secure_url || "";
+        const cloudinary_public_id = data.public_id || data.cloudinary_public_id || "";
+
+        return {
+          success: true,
+          data: {
+            ...data,
+            file_url,
+            cloudinary_public_id,
+          },
+          message: "Archivo subido correctamente a Cloudinary.",
+        };
+      }
+      lastRes = res;
     }
 
-    if (res.status === 401) {
+    if (lastRes?.status === 401) {
       return { success: false, message: "Sesión expirada o token inválido." };
     }
 
-    const errorBody = await res.json().catch(() => ({}));
+    const errorBody = lastRes ? await lastRes.json().catch(() => ({})) : {};
     return {
       success: false,
       message: errorBody.detail?.[0]?.msg || errorBody.detail || "Error al subir el archivo.",
@@ -343,4 +482,51 @@ export async function uploadFileAction(
     };
   }
 }
+
+/**
+ * DELETE /api/v1/uploads/{public_id}?resource_type={image|raw}
+ * Elimina un archivo de Cloudinary
+ */
+export async function deleteUploadAction(
+  publicId: string,
+  resourceType: "image" | "raw" = "image"
+): Promise<{ success: boolean; message?: string }> {
+  if (!publicId) return { success: false, message: "ID público de Cloudinary no proporcionado." };
+
+  try {
+    const headers = await getAuthHeaders();
+    const encodedPublicId = encodeURIComponent(publicId);
+
+    const urlsToTry = [
+      `/uploads/${encodedPublicId}?resource_type=${resourceType}`,
+      `/uploads/${publicId}?resource_type=${resourceType}`,
+    ];
+
+    for (const url of urlsToTry) {
+      const res = await fetch(getApiUrl(url), {
+        method: "DELETE",
+        headers,
+      });
+
+      if (res.ok || res.status === 200 || res.status === 204) {
+        return {
+          success: true,
+          message: "Archivo eliminado exitosamente de Cloudinary.",
+        };
+      }
+    }
+
+    return {
+      success: false,
+      message: "Error al eliminar el archivo de Cloudinary.",
+    };
+  } catch (error) {
+    console.error("Error deleting upload from Cloudinary via API:", error);
+    return {
+      success: false,
+      message: "No se pudo conectar con el servidor para eliminar el archivo.",
+    };
+  }
+}
+
 

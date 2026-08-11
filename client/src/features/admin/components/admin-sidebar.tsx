@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -15,6 +15,19 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarHeader,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { AdminReportToggle } from "./ui/toggles/admin-report-toggle";
+import { AdminVersionToggle } from "./ui/toggles/admin-version-toggle";
 
 interface NavItem {
   href: string;
@@ -53,78 +66,93 @@ const navItems: NavItem[] = [
 export function AdminSidebar() {
   const pathname = usePathname();
   const t = useTranslations("AdminPage");
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const { openMobile, setOpenMobile, toggleSidebar, isMobile } = useSidebar();
+  const isReportsPage = pathname?.startsWith("/admin/reports");
 
-  // Close mobile sidebar on route change
+  // Auto-close mobile drawer when user navigates to a new route
   useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+    setOpenMobile(false);
+  }, [pathname, setOpenMobile]);
 
   return (
     <>
-      {/* Mobile Bar / Toggle Button */}
-      <div className="md:hidden flex items-center justify-between p-3 border-b border-border/40 bg-card/60 backdrop-blur-md sticky top-[53px] z-30">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground">
-            ADMIN
-          </span>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="rounded-xl border-border/60 text-xs font-semibold gap-1.5 px-3 py-1.5"
-        >
-          {mobileOpen ? <X className="size-4" /> : <Menu className="size-4" />}
-          <span>{mobileOpen ? "Cerrar" : "Menú"}</span>
-        </Button>
-      </div>
+      {/* Secondary Mobile Navigation Bar */}
+      {isMobile && (
+        <div className="md:hidden flex flex-col gap-2.5 p-3 border-b border-sidebar-border/80 bg-sidebar/95 backdrop-blur-xs sticky top-[49px] z-30 w-full shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground">
+              {t("cmsTitle") || "ADMINISTRACIÓN"}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleSidebar}
+              className="rounded-xl border-border/60 text-xs font-semibold gap-1.5 px-3 py-1.5"
+            >
+              {openMobile ? (
+                <X className="size-4" />
+              ) : (
+                <Menu className="size-4" />
+              )}
+              <span>{openMobile ? "Cerrar" : "Menú"}</span>
+            </Button>
+          </div>
 
-      {/* Backdrop overlay for mobile drawer */}
-      {mobileOpen && (
-        <div
-          onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 bg-black/40 backdrop-blur-xs z-35 md:hidden"
-        />
+          {/* Secondary Mobile Nav Controls (Report & Version Toggles) */}
+          {!isReportsPage && (
+            <div className="flex items-center gap-2 pt-2 border-t border-sidebar-border/40 overflow-x-auto">
+              <AdminReportToggle />
+              <AdminVersionToggle />
+            </div>
+          )}
+        </div>
       )}
 
-      {/* Sidebar Container */}
-      <aside
-        className={cn(
-          "w-full md:w-60 shrink-0 border-r border-border/40 bg-card/50 backdrop-blur-xs p-3 sm:p-4 transition-all duration-200",
-          // Desktop sticky behavior fixed to viewport height below header
-          "md:sticky md:top-[53px] md:h-[calc(100vh-53px)] md:overflow-y-auto",
-          // Mobile drawer vs collapsed state
-          mobileOpen
-            ? "fixed top-[106px] inset-x-0 bottom-0 z-40 bg-card border-b flex flex-col overflow-y-auto"
-            : "hidden md:flex flex-col",
-        )}
-      >
-        <nav className="flex flex-col gap-1.5 flex-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive =
-              pathname === item.href ||
-              (pathname.startsWith(item.href) && item.href !== "/admin");
+      <Sidebar className="border-r border-sidebar-border/60 bg-sidebar w-64 shrink-0 pt-2 md:pt-3">
+        <SidebarHeader className="px-3 pt-1 pb-2 border-b border-sidebar-border/40 mb-1.5">
+          <div className="flex items-center gap-2">
+            <span className="font-extrabold text-sm tracking-tight text-foreground">
+              PhysaFlow
+            </span>
+            <span className="text-[10px] font-mono tracking-wider uppercase text-muted-foreground">
+              {t("cmsTitle") || "CMS ADMIN"}
+            </span>
+          </div>
+        </SidebarHeader>
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all",
-                  isActive
-                    ? "bg-primary/15 text-primary font-semibold shadow-2xs"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-                )}
-              >
-                <Icon className="size-4 shrink-0" />
-                <span>{t(item.labelKey as any)}</span>
-              </Link>
-            );
-          })}
-        </nav>
-      </aside>
+        <SidebarContent className="px-2 pt-1">
+          <SidebarGroup className="p-0">
+            <SidebarGroupContent>
+              <SidebarMenu className="gap-1">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive =
+                    pathname === item.href ||
+                    (pathname.startsWith(item.href) && item.href !== "/admin");
+
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        isActive={isActive}
+                        render={<Link href={item.href} />}
+                        className={cn(
+                          "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all",
+                          isActive
+                            ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-xs"
+                            : "text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
+                        )}
+                      >
+                        <Icon className="size-4 shrink-0" />
+                        <span>{t(item.labelKey as Parameters<typeof t>[0])}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+      </Sidebar>
     </>
   );
 }

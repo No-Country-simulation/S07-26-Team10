@@ -8,8 +8,14 @@ import React, {
   useCallback,
 } from "react";
 import { type Language } from "@/context/language-context";
-import { getReportsAction } from "@/features/admin/actions/reports-actions";
-import type { ReportItem } from "@/features/admin/schemas/report-schema";
+import {
+  getReportsAction,
+  getReportVersionsAction,
+} from "@/features/admin/actions/reports-actions";
+import type {
+  BaseReport,
+  ReportVersion,
+} from "@/features/admin/schemas/report-schema";
 
 export function parseReportSlug(
   input: string,
@@ -33,11 +39,18 @@ type VersionContextType = {
   setContentLanguage: (lang: Language) => void;
   availableContentLanguages: Language[];
   isContentLanguageLocked: boolean;
-  reportsList: ReportItem[];
+  baseReports: BaseReport[];
+  reportVersions: ReportVersion[];
+  reportsList: ReportVersion[]; // para compatibilidad retroactiva
   refreshReports: () => Promise<void>;
-  activeReport: ReportItem | null;
-  activeReportId: string | null;
+  activeReport: BaseReport | null;
+  activeReportVersion: ReportVersion | null;
+  activeReportId: string | null; // Retorna activeVersionId para que secciones, referencias y taxonomías usen version_id
+  activeVersionId: string | null;
+  selectedBaseReportId: string | null;
+  setActiveBaseReportId: (id: string) => void;
 };
+
 
 const VersionContext = createContext<VersionContextType | undefined>(undefined);
 
@@ -58,18 +71,41 @@ function compareVersionsDescending(a: string, b: string): number {
 export function VersionProvider({ children }: { children: React.ReactNode }) {
   const [version, setVersionState] = useState<string>("");
   const [contentLanguage, setContentLanguageState] = useState<Language>("es");
-  const [availableVersions, setAvailableVersions] = useState<string[]>([]);
+  const [allAvailableVersions, setAllAvailableVersions] = useState<string[]>([]);
+
   const [versionLangsMap, setVersionLangsMap] = useState<
     Record<string, Language[]>
   >({});
-  const [reportsList, setReportsList] = useState<ReportItem[]>([]);
+  const [baseReports, setBaseReports] = useState<BaseReport[]>([]);
+  const [reportVersions, setReportVersions] = useState<ReportVersion[]>([]);
+  const [selectedBaseReportId, setSelectedBaseReportIdState] = useState<string | null>(null);
 
   useEffect(() => {
     const savedContentLang = localStorage.getItem("app_content_lang") as Language;
     if (savedContentLang === "es" || savedContentLang === "en") {
       setContentLanguageState(savedContentLang);
     }
+    const savedBaseId = localStorage.getItem("app_base_report_id");
+    if (savedBaseId) {
+      setSelectedBaseReportIdState(savedBaseId);
+    }
   }, []);
+
+  const setActiveBaseReportId = (id: string) => {
+    setSelectedBaseReportIdState(id);
+    localStorage.setItem("app_base_report_id", id);
+    const targetVers = reportVersions.filter((rv) => rv.report_id === id);
+    if (targetVers.length > 0) {
+      const firstVer = targetVers[0].version.toLowerCase().startsWith("v")
+        ? targetVers[0].version.toLowerCase()
+        : `v${targetVers[0].version.toLowerCase()}`;
+      setVersionState(firstVer);
+      localStorage.setItem("app_version", firstVer);
+    } else {
+      setVersionState("");
+    }
+  };
+
 
   const setContentLanguage = (lang: Language) => {
     setContentLanguageState(lang);
@@ -78,19 +114,25 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
 
   const loadReportsAndSync = useCallback(async () => {
     try {
-      const reports = await getReportsAction();
-      setReportsList(reports);
+      const bases = await getReportsAction();
+      setBaseReports(bases);
+
+      const allVersions: ReportVersion[] = [];
+      for (const b of bases) {
+        const vers = await getReportVersionsAction(b.id);
+        allVersions.push(...vers);
+      }
+      setReportVersions(allVersions);
 
       const vMap: Record<string, Set<Language>> = {};
 
-      reports.forEach((r) => {
-        const parsed = parseReportSlug(r.slug || r.title || "");
-        if (parsed) {
-          if (!vMap[parsed.version]) {
-            vMap[parsed.version] = new Set();
-          }
-          vMap[parsed.version].add(parsed.lang);
+      allVersions.forEach((rv) => {
+        const verStr = rv.version.toLowerCase().startsWith("v") ? rv.version.toLowerCase() : `v${rv.version.toLowerCase()}`;
+        const langStr = (rv.language || "ES").toLowerCase() as Language;
+        if (!vMap[verStr]) {
+          vMap[verStr] = new Set();
         }
+        vMap[verStr].add(langStr);
       });
 
       const uniqueVersions = Object.keys(vMap).sort(compareVersionsDescending);
@@ -100,7 +142,8 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
       });
 
       setVersionLangsMap(langsMap);
-      setAvailableVersions(uniqueVersions);
+      setAllAvailableVersions(uniqueVersions);
+
 
       // Default to the most recent version if no saved choice or if invalid
       const savedVer = localStorage.getItem("app_version");
@@ -135,27 +178,51 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const currentBaseReportId = selectedBaseReportId || baseReports[0]?.id || null;
+
+  const currentReportVersions = currentBaseReportId
+    ? reportVersions.filter((rv) => rv.report_id === currentBaseReportId)
+    : reportVersions;
+
+  // Recalculate versions and language map strictly for currentBaseReportVersions
+  const vMap: Record<string, Set<Language>> = {};
+  currentReportVersions.forEach((rv) => {
+    const verStr = rv.version.toLowerCase().startsWith("v") ? rv.version.toLowerCase() : `v${rv.version.toLowerCase()}`;
+    const langStr = (rv.language || "ES").toLowerCase() as Language;
+    if (!vMap[verStr]) {
+      vMap[verStr] = new Set();
+    }
+    vMap[verStr].add(langStr);
+  });
+
+  const availableVersions = Object.keys(vMap).sort(compareVersionsDescending);
+  const langsMap: Record<string, Language[]> = {};
+  Object.entries(vMap).forEach(([ver, langSet]) => {
+    langsMap[ver] = Array.from(langSet);
+  });
+
   const defaultLangs: Language[] = ["es", "en"];
   const availableContentLanguages: Language[] = version
-    ? versionLangsMap[version] || defaultLangs
+    ? langsMap[version] || defaultLangs
     : defaultLangs;
   const isContentLanguageLocked = availableContentLanguages.length === 1;
 
-  // Automatically find active report based on active version and content language
-  const activeReport =
-    reportsList.find((r) => {
-      const p = parseReportSlug(r.slug || r.title || "");
-      if (p) {
-        return p.version === version && p.lang === contentLanguage;
-      }
-      const slugStr = (r.slug || r.title || "").toLowerCase();
-      return (
-        slugStr.includes(version.toLowerCase()) &&
-        slugStr.includes(`-${contentLanguage}`)
-      );
-    }) || null;
+  // Active report version based on active version and content language
+  const activeReportVersion =
+    currentReportVersions.find((rv) => {
+      const verStr = rv.version.toLowerCase().startsWith("v") ? rv.version.toLowerCase() : `v${rv.version.toLowerCase()}`;
+      const langStr = (rv.language || "ES").toLowerCase();
+      return verStr === version.toLowerCase() && langStr === contentLanguage.toLowerCase();
+    }) || currentReportVersions[0] || null;
 
-  const activeReportId = activeReport?.id || null;
+  const activeReport = currentBaseReportId
+    ? baseReports.find((b) => b.id === currentBaseReportId) || baseReports[0] || null
+    : baseReports[0] || null;
+
+  const activeVersionId = activeReportVersion?.id || null;
+  // Sub-resources expect version_id, so activeReportId returns activeVersionId
+  const activeReportId = activeVersionId;
+
 
   return (
     <VersionContext.Provider
@@ -167,10 +234,16 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
         setContentLanguage,
         availableContentLanguages,
         isContentLanguageLocked,
-        reportsList,
+        baseReports,
+        reportVersions,
+        reportsList: reportVersions,
         refreshReports: loadReportsAndSync,
         activeReport,
+        activeReportVersion,
         activeReportId,
+        activeVersionId,
+        selectedBaseReportId,
+        setActiveBaseReportId,
       }}
     >
       {children}
@@ -189,11 +262,19 @@ export function useVersion() {
       setContentLanguage: () => {},
       availableContentLanguages: ["es" as Language],
       isContentLanguageLocked: false,
+      baseReports: [],
+      reportVersions: [],
       reportsList: [],
       refreshReports: async () => {},
       activeReport: null,
+      activeReportVersion: null,
       activeReportId: null,
+      activeVersionId: null,
+      selectedBaseReportId: null,
+      setActiveBaseReportId: () => {},
     };
   }
   return context;
 }
+
+

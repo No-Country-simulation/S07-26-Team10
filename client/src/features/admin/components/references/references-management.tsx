@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -63,7 +63,9 @@ export function ReferencesManagement() {
     if (!referenceToDelete) return;
     setIsDeleting(true);
     try {
-      const res = await deleteReferenceAction(referenceToDelete);
+      const targetRef = references.find((r) => r.id === referenceToDelete);
+      const targetVersionId = targetRef?.report_version_id || targetRef?.report_id || activeReportId || undefined;
+      const res = await deleteReferenceAction(referenceToDelete, targetVersionId);
       if (res.success) {
         setReferences((prev) => prev.filter((r) => r.id !== referenceToDelete));
         setReferenceToDelete(null);

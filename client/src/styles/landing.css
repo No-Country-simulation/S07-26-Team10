@@ -43,17 +43,12 @@
   --phi-max-wide: 1720px;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0
-}
-
+/* Scoped resets for landing pages without breaking admin layout */
 html {
   scroll-behavior: smooth
 }
 
-body {
+body:not(:has(.admin-theme)) {
   background: var(--light);
   color: var(--dark);
   font-family: var(--f);
