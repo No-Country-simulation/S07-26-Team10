@@ -13,6 +13,7 @@ from app.modules.sections.schema import (
     SectionRead,
     SectionSummary,
     SectionUpdate,
+    SectionWithResourcesRead,
 )
 from app.shared.enums.publication_status import PublicationStatus
 from app.shared.utils.slug import generate_slug
@@ -365,3 +366,25 @@ class SectionService:
         )
 
         self.repository.delete(section)
+
+    def get_all_sections_with_resources(
+        self,
+        report_version_id: uuid.UUID,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> list[SectionWithResourcesRead]:
+        """
+        Obtiene todas las secciones de una versión de reporte con sus recursos cargados (admin).
+        No filtra por status - ve DRAFT y PUBLISHED.
+        """
+        validate_report_version_exists(
+            report_version_id, self.report_version_repository
+        )
+
+        sections = self.repository.get_all_with_resources(
+            report_version_id, skip, limit
+        )
+
+        return [
+            SectionWithResourcesRead.model_validate(section) for section in sections
+        ]

@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.modules.categories.model import Category
 from app.shared.enums.publication_status import PublicationStatus
+from sqlalchemy.orm import Session, selectinload  # ← AGREGAR selectinload
 
 
 class CategoryRepository:
@@ -128,3 +129,22 @@ class CategoryRepository:
         if exclude_id:
             stmt = stmt.where(Category.id != exclude_id)
         return self.db.execute(stmt).scalars().first() is not None
+
+    def get_all_with_concepts(
+        self,
+        report_version_id: uuid.UUID,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> list[Category]:
+        """
+        Obtiene todas las categorías de una versión de reporte con sus conceptos cargados.
+        """
+        stmt = (
+            select(Category)
+            .where(Category.report_version_id == report_version_id)
+            .options(selectinload(Category.concepts))
+            .order_by(Category.display_order)
+            .offset(skip)
+            .limit(limit)
+        )
+        return list(self.db.execute(stmt).scalars().all())

@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.modules.sections.model import Section
 from app.shared.enums.publication_status import PublicationStatus
+from sqlalchemy.orm import Session, selectinload
 
 
 class SectionRepository:
@@ -140,3 +141,22 @@ class SectionRepository:
         if exclude_id:
             stmt = stmt.where(Section.id != exclude_id)
         return self.db.execute(stmt).scalars().first() is not None
+
+    def get_all_with_resources(
+        self,
+        report_version_id: uuid.UUID,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> list[Section]:
+        """
+        Obtiene todas las secciones de una versión de reporte con sus recursos cargados.
+        """
+        stmt = (
+            select(Section)
+            .where(Section.report_version_id == report_version_id)
+            .options(selectinload(Section.resources))
+            .order_by(Section.display_order)
+            .offset(skip)
+            .limit(limit)
+        )
+        return list(self.db.execute(stmt).scalars().all())

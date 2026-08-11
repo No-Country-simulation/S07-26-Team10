@@ -8,6 +8,7 @@ from app.modules.reports.schema import (
     ReportCreate,
     ReportRead,
     ReportUpdate,
+    ReportWithVersionsRead,
 )
 
 
@@ -104,3 +105,15 @@ class ReportService:
             slug = f"{slug}-{counter}"
 
         return slug
+
+    def get_all_reports_with_versions(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> list[ReportWithVersionsRead]:
+        """
+        Obtiene todos los reportes con todas sus versiones.
+        """
+        reports = self.repository.get_all_with_versions(skip, limit)
+
+        return [ReportWithVersionsRead.model_validate(report) for report in reports]

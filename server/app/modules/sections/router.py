@@ -19,6 +19,7 @@ from app.modules.sections.schema import (
 from app.modules.sections.service import SectionService
 from app.modules.users.model import User
 from app.shared.enums.publication_status import PublicationStatus
+from app.modules.sections.schema import SectionWithResourcesRead  # ← AGREGAR
 
 router = APIRouter(
     prefix="/report-versions/{report_version_id}/sections",
@@ -88,6 +89,28 @@ def get_section_by_slug(
     Acceso público - No requiere autenticación.
     """
     return service.get_section_by_slug(report_version_id, slug)
+
+
+@router.get(
+    "/admin/with-resources",
+    response_model=list[SectionWithResourcesRead],
+    status_code=HTTP_200_OK,
+    summary="Listar secciones con recursos (admin)",
+    description="Obtiene todas las secciones de una versión de reporte con sus recursos cargados. (Requiere autenticación)",
+)
+def get_all_sections_with_resources(
+    report_version_id: uuid.UUID,
+    skip: int = Query(default=0, ge=0, description="Número de registros a saltar"),
+    limit: int = Query(default=100, ge=1, le=100, description="Límite de registros"),
+    service: SectionService = Depends(get_section_service),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Obtiene todas las secciones de una versión de reporte con sus recursos cargados.
+    Incluye secciones DRAFT y PUBLISHED.
+    Requiere autenticación.
+    """
+    return service.get_all_sections_with_resources(report_version_id, skip, limit)
 
 
 @router.get(

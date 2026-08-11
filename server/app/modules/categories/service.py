@@ -9,6 +9,7 @@ from app.modules.categories.schema import (
     CategoryPublicRead,
     CategoryRead,
     CategoryUpdate,
+    CategoryWithConceptsRead,
 )
 from app.modules.report_versions.repository import ReportVersionRepository
 from app.shared.enums.publication_status import PublicationStatus
@@ -225,3 +226,25 @@ class CategoryService:
         )
 
         self.repository.delete(category)
+
+    def get_all_categories_with_concepts(
+        self,
+        report_version_id: uuid.UUID,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> list[CategoryWithConceptsRead]:
+        """
+        Obtiene todas las categorías de una versión de reporte con sus conceptos cargados (admin).
+        No filtra por status - ve DRAFT y PUBLISHED.
+        """
+        validate_report_version_exists(
+            report_version_id, self.report_version_repository
+        )
+
+        categories = self.repository.get_all_with_concepts(
+            report_version_id, skip, limit
+        )
+
+        return [
+            CategoryWithConceptsRead.model_validate(category) for category in categories
+        ]
