@@ -1,43 +1,45 @@
 from sqlalchemy.orm import Session
 
 from app.core.database import SessionLocal
-from app.core.security import hash_password
-from app.modules.users.model import User
-from app.modules.users.repository import UserRepository
+from app.db.seeds.seed_users import seed_users
+from app.db.seeds.seed_reports import seed_reports
+from app.db.seeds.seed_report_versions import seed_report_versions
+from app.db.seeds.seed_categories import seed_categories
+from app.db.seeds.seed_sections import seed_sections
+from app.db.seeds.seed_references import seed_references
+from app.db.seeds.seed_concepts import seed_concepts
+from app.db.seeds.seed_resources import seed_resources
+
+# Importar más seeds a medida que los creemos
 
 
-def seed_admin() -> None:
+def run_seeds() -> None:
     """
-    Crea el usuario administrador inicial si no existe.
+    Ejecuta todos los seeds en orden.
     """
-
     db: Session = SessionLocal()
 
     try:
-        repository = UserRepository(db)
+        print("🌱 Iniciando seeds...")
 
-        existing = repository.get_by_email(
-            "admin@physaflow.com",
-        )
+        seed_users(db)
+        seed_reports(db)
+        seed_report_versions(db)
+        seed_categories(db)
+        seed_sections(db)
+        seed_references(db)
+        seed_concepts(db)
+        seed_resources(db)
 
-        if existing:
-            print("✔ El usuario administrador ya existe.")
-            return
+        print("✅ Seeds completados.")
 
-        admin = User(
-            name="Administrador",
-            email="admin@physaflow.com",
-            password=hash_password("Admin123*"),
-            is_active=True,
-        )
-
-        repository.create(admin)
-
-        print("✔ Usuario administrador creado correctamente.")
+    except Exception as e:
+        print(f"❌ Error en seed: {e}")
+        raise
 
     finally:
         db.close()
 
 
 if __name__ == "__main__":
-    seed_admin()
+    run_seeds()
