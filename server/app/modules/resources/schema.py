@@ -39,6 +39,18 @@ class ResourceCreate(BaseModel):
         description="Indica si el recurso es descargable",
     )
 
+    file_url: str = Field(
+        ...,
+        description="URL del archivo en Cloudinary",
+        max_length=500,
+    )
+
+    cloudinary_public_id: str = Field(
+        ...,
+        description="ID público del archivo en Cloudinary",
+        max_length=255,
+    )
+
 
 class ResourceUpdate(BaseModel):
     """

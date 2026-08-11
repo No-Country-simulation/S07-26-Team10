@@ -16,6 +16,10 @@ from app.modules.sections.schema import (
 )
 from app.shared.enums.publication_status import PublicationStatus
 from app.shared.utils.slug import generate_slug
+from app.shared.utils.validators import (
+    validate_report_version_exists,
+    validate_report_version_published,
+)
 
 
 class SectionService:
@@ -66,7 +70,9 @@ class SectionService:
                 message="Sección no encontrada.",
             )
 
-        self._validate_report_version_exists(report_version_id)
+        validate_report_version_exists(
+            report_version_id, self.report_version_repository
+        )
 
         if section.report_version_id != report_version_id:
             raise NotFoundException(
@@ -85,7 +91,9 @@ class SectionService:
         """
         section = self.repository.get_by_id(section_id)
 
-        self._validate_report_version_exists(report_version_id)
+        validate_report_version_published(
+            report_version_id, self.report_version_repository
+        )
 
         if section.report_version_id != report_version_id:
             raise NotFoundException(
@@ -106,7 +114,9 @@ class SectionService:
         """
         Obtiene las secciones publicadas de una versión de reporte.
         """
-        self._validate_report_version_exists(report_version_id)
+        validate_report_version_exists(
+            report_version_id, self.report_version_repository
+        )
 
         sections = self.repository.get_published_by_report_version(report_version_id)
 
@@ -120,7 +130,9 @@ class SectionService:
         """
         Obtiene todas las secciones de una versión de reporte (admin).
         """
-        self._validate_report_version_exists(report_version_id)
+        validate_report_version_exists(
+            report_version_id, self.report_version_repository
+        )
 
         sections = self.repository.get_by_report_version_id(report_version_id, status)
 
@@ -134,7 +146,9 @@ class SectionService:
         """
         Obtiene una sección por su slug (acceso público).
         """
-        self._validate_report_version_exists(report_version_id)
+        validate_report_version_published(
+            report_version_id, self.report_version_repository
+        )
 
         section = self.repository.get_by_slug(report_version_id, slug)
 
@@ -158,7 +172,9 @@ class SectionService:
         """
         Obtiene una sección con navegación anterior/siguiente (acceso público).
         """
-        self._validate_report_version_exists(report_version_id)
+        validate_report_version_published(
+            report_version_id, self.report_version_repository
+        )
 
         section = self.repository.get_by_id(section_id)
 
@@ -229,7 +245,9 @@ class SectionService:
         - Si no se provee display_order, se asigna el siguiente.
         - El status por defecto es DRAFT.
         """
-        self._validate_report_version_exists(report_version_id)
+        validate_report_version_exists(
+            report_version_id, self.report_version_repository
+        )
 
         slug = generate_slug(data.title)
 
@@ -285,7 +303,9 @@ class SectionService:
                 message="Sección no encontrada.",
             )
 
-        self._validate_report_version_exists(report_version_id)
+        validate_report_version_exists(
+            report_version_id, self.report_version_repository
+        )
 
         update_data = data.model_dump(
             exclude_unset=True,
@@ -340,20 +360,8 @@ class SectionService:
                 message="Sección no encontrada.",
             )
 
-        self._validate_report_version_exists(report_version_id)
+        validate_report_version_exists(
+            report_version_id, self.report_version_repository
+        )
 
         self.repository.delete(section)
-
-    def _validate_report_version_exists(
-        self,
-        report_version_id: uuid.UUID,
-    ) -> None:
-        """
-        Verifica que la versión de reporte exista.
-        """
-        report_version = self.report_version_repository.get_by_id(report_version_id)
-
-        if not report_version:
-            raise NotFoundException(
-                message="Versión de reporte no encontrada.",
-            )

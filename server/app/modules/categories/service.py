@@ -12,6 +12,10 @@ from app.modules.categories.schema import (
 )
 from app.modules.report_versions.repository import ReportVersionRepository
 from app.shared.enums.publication_status import PublicationStatus
+from app.shared.utils.validators import (
+    validate_report_version_exists,
+    validate_report_version_published,
+)
 
 
 class CategoryService:
@@ -39,7 +43,9 @@ class CategoryService:
                 message="Categoría no encontrada.",
             )
 
-        self._validate_report_version_exists(report_version_id)
+        validate_report_version_published(
+            report_version_id, self.report_version_repository
+        )
 
         return CategoryRead.model_validate(category)
 
@@ -56,7 +62,9 @@ class CategoryService:
             status: Filtrar por estado de publicación (opcional)
         """
         # Validar que la versión del reporte existe
-        self._validate_report_version_exists(report_version_id)
+        validate_report_version_exists(
+            report_version_id, self.report_version_repository
+        )
 
         categories = self.repository.get_by_report_version_id(report_version_id, status)
 
@@ -73,7 +81,9 @@ class CategoryService:
             report_version_id: ID de la versión del reporte
         """
         # Validar que la versión del reporte existe
-        self._validate_report_version_exists(report_version_id)
+        validate_report_version_published(
+            report_version_id, self.report_version_repository
+        )
 
         categories = self.repository.get_published_by_report_version(report_version_id)
 
@@ -94,7 +104,9 @@ class CategoryService:
         - El status por defecto es DRAFT.
         """
         # Validar que la versión del reporte existe
-        self._validate_report_version_exists(report_version_id)
+        validate_report_version_exists(
+            report_version_id, self.report_version_repository
+        )
 
         # Validar que el nombre sea único
         if self.repository.exists_by_name(report_version_id, data.name):
@@ -155,7 +167,9 @@ class CategoryService:
                 message="Categoría no encontrada.",
             )
 
-        self._validate_report_version_exists(report_version_id)
+        validate_report_version_exists(
+            report_version_id, self.report_version_repository
+        )
 
         update_data = data.model_dump(
             exclude_unset=True,
@@ -206,22 +220,8 @@ class CategoryService:
                 message="Categoría no encontrada.",
             )
 
-        self._validate_report_version_exists(report_version_id)
+        validate_report_version_exists(
+            report_version_id, self.report_version_repository
+        )
 
         self.repository.delete(category)
-
-    # ---------------------------- Private Methods ----------------------------
-
-    def _validate_report_version_exists(
-        self,
-        report_version_id: uuid.UUID,
-    ) -> None:
-        """
-        Verifica que la versión de reporte exista.
-        """
-        report_version = self.report_version_repository.get_by_id(report_version_id)
-
-        if not report_version:
-            raise NotFoundException(
-                message="Versión de reporte no encontrada.",
-            )

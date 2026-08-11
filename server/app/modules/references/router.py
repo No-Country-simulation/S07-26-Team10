@@ -51,6 +51,7 @@ def get_references_by_report_version(
     description="Obtiene una referencia específica por su ID. (Acceso público)",
 )
 def get_reference(
+    report_version_id: uuid.UUID,
     reference_id: uuid.UUID,
     service: ReferenceService = Depends(get_reference_service),
 ):
@@ -58,7 +59,7 @@ def get_reference(
     Obtiene una referencia específica por su ID.
     Acceso público - No requiere autenticación.
     """
-    return service.get_reference(reference_id)
+    return service.get_reference(report_version_id, reference_id)
 
 
 # ==================== ENDPOINTS PRIVADOS (requieren autenticación) ====================
@@ -96,6 +97,7 @@ def create_reference(
     description="Actualiza parcialmente una referencia. (Requiere autenticación)",
 )
 def update_reference(
+    report_version_id: uuid.UUID,
     reference_id: uuid.UUID,
     data: ReferenceUpdate,
     service: ReferenceService = Depends(get_reference_service),
@@ -113,7 +115,7 @@ def update_reference(
     - display_order
     - Requiere autenticación.
     """
-    return service.update_reference(reference_id, data)
+    return service.update_reference(report_version_id, reference_id, data)
 
 
 @router.delete(
@@ -123,6 +125,7 @@ def update_reference(
     description="Elimina una referencia. (Requiere autenticación)",
 )
 def delete_reference(
+    report_version_id: uuid.UUID,
     reference_id: uuid.UUID,
     service: ReferenceService = Depends(get_reference_service),
     current_user: User = Depends(get_current_user),
@@ -131,5 +134,5 @@ def delete_reference(
     Elimina una referencia.
     Requiere autenticación.
     """
-    service.delete_reference(reference_id)
+    service.delete_reference(report_version_id, reference_id)
     return None

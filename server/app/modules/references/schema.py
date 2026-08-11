@@ -41,6 +41,12 @@ class ReferenceCreate(BaseModel):
         max_length=500,
     )
 
+    display_order: Optional[int] = Field(  # ← AGREGAR
+        default=None,
+        description="Orden de presentación",
+        ge=0,
+    )
+
 
 class ReferenceUpdate(BaseModel):
     """
