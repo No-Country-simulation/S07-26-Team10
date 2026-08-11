@@ -22,11 +22,15 @@ export function NavigationFooter() {
           <Link href="/" className="lock">
             <img
               className="iso"
-              style={{ height: 34, width: 34 }}
-              src="/images/physaflow-logo.jpg"
+              style={{ height: 56, width: "auto" }}
+              src="/physaflow-isotipo.png"
               alt="PhysaFlow"
             />
-            <p className="wmk">PhysaFlow</p>
+            <img
+              className="wmk"
+              src="/physaflow-wordmark-black.png"
+              alt="PhysaFlow"
+            />
           </Link>
           <p>{t("description")}</p>
           <a className="b line fdl-b" style={{ marginTop: 22 }} href="/report">
