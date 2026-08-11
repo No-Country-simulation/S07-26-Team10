@@ -9,7 +9,13 @@ export function HomeSectionChapters() {
   const tnav = useTranslations("Nav");
 
   return (
-    <section className="n" id="s02" data-n="02" data-t="chapters">
+    <section
+      className="n"
+      id="s02"
+      data-n="02"
+      data-t="chapters"
+      suppressHydrationWarning
+    >
       <div className="wrap in">
         <div className="shead rv">
           <div className="snum">02</div>
