@@ -14,7 +14,13 @@ export function HomeSectionProblem() {
   const t = useTranslations("HomePage");
 
   return (
-    <section className="n" id="s01" data-n="01" data-t="theProblem">
+    <section
+      className="n"
+      id="s01"
+      data-n="01"
+      data-t="theProblem"
+      suppressHydrationWarning
+    >
       <div className="img" />
       <div className="fade" />
       <div className="wrap in">
