@@ -1,77 +1,103 @@
-"use client";
+"use client"
 
-import { useTranslations } from "next-intl";
-import { BookOpen, Quote, Image as ImageIcon, Link2 } from "lucide-react";
-import { CiteBlock } from "@/features/report/components/cite-block";
+import Link from "next/link"
+import { useTranslations } from "next-intl"
+import { useReveal } from "@/hooks/use-reveal"
+import { ChapterMasthead } from "@/components/report/chapter/ChapterMasthead"
+import { CiteBlock } from "@/features/report/components/cite-block"
 
 export default function HowToCitePage() {
-  const t = useTranslations("HowToCite");
+  const t = useTranslations("HowToCite")
+
+  useReveal(".rv, .rvs")
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-8 sm:py-16 space-y-12 font-sans">
-      <header className="space-y-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-muted/60 text-muted-foreground font-mono text-xs uppercase tracking-widest rounded-full border border-border">
-          <BookOpen className="size-3.5" /> {t("badge")}
-        </div>
-        <h1 className="text-3xl sm:text-5xl font-serif font-bold tracking-tight text-foreground leading-tight">
-          {t("title")}
-        </h1>
-        <p className="text-lg text-muted-foreground leading-relaxed">
-          {t("lede")}
-        </p>
-      </header>
+    <>
+      <ChapterMasthead
+        mono={t("mono")}
+        title1={t("title1")}
+        title2={t("title2")}
+        accent={t("accent")}
+        lead={t("lead")}
+      />
 
-      <section className="space-y-3">
-        <h2 className="flex items-center gap-2 text-xl font-serif font-bold text-foreground">
-          <Quote className="size-4 text-primary" /> {t("reportSection")}
-        </h2>
-        <div className="space-y-3">
-          <CiteBlock label={t("academicLabel")} text={t("reportAcademic")} />
-          <CiteBlock
-            label={t("journalisticLabel")}
-            text={t("reportJournalistic")}
-          />
-        </div>
-      </section>
-
-      <section id="figure-01" className="space-y-3 scroll-mt-24">
-        <h2 className="flex items-center gap-2 text-xl font-serif font-bold text-foreground">
-          <ImageIcon className="size-4 text-primary" /> {t("figureSection")}
-        </h2>
-        <p className="text-muted-foreground leading-relaxed">
-          {t("figureLede")}
-        </p>
-        <div className="rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
-          <span className="font-semibold text-foreground">
-            {t("attribution")}:
-          </span>{" "}
-          <span className="text-muted-foreground">{t("attributionText")}</span>
-        </div>
-        <div className="space-y-3">
-          <CiteBlock
-            label={`${t("exampleFigure")} — ${t("academicLabel")}`}
-            text={t("figureAcademic")}
-          />
-          <CiteBlock
-            label={`${t("exampleFigure")} — ${t("journalisticLabel")}`}
-            text={t("figureJournalistic")}
-          />
+      <section className="dnot">
+        <div className="in">
+          <div className="shead rv">
+            <div className="snum">01</div>
+            <div>
+              <h2>{t("reportSection")}</h2>
+              <p className="lede">{t("reportLede")}</p>
+            </div>
+          </div>
+          <div className="ntable rv">
+            <CiteBlock label={t("academicLabel")} text={t("reportAcademic")} />
+            <CiteBlock
+              label={t("journalisticLabel")}
+              text={t("reportJournalistic")}
+            />
+          </div>
         </div>
       </section>
 
-      <section className="space-y-3">
-        <h2 className="flex items-center gap-2 text-xl font-serif font-bold text-foreground">
-          <Link2 className="size-4 text-primary" /> {t("chapterSection")}
-        </h2>
-        <p className="text-muted-foreground leading-relaxed">
-          {t("chapterLede")}
-        </p>
+      <section id="figure-01" className="dnot">
+        <div className="in">
+          <div className="shead rv">
+            <div className="snum">02</div>
+            <div>
+              <h2>{t("figureSection")}</h2>
+              <p className="lede">{t("figureLede")}</p>
+            </div>
+          </div>
+          <div className="ntable rv">
+            <CiteBlock
+              label={`${t("exampleFigure")} — ${t("academicLabel")}`}
+              text={t("figureAcademic")}
+            />
+            <CiteBlock
+              label={`${t("exampleFigure")} — ${t("journalisticLabel")}`}
+              text={t("figureJournalistic")}
+            />
+          </div>
+          <div className="dsrc" style={{ marginTop: 26 }}>
+            {t("attribution")}: {t("attributionText")}
+          </div>
+        </div>
       </section>
 
-      <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
-        <span className="font-semibold text-foreground">{t("note")}:</span>{" "}
-        {t("noteText")}
-      </div>
-    </div>
-  );
+      <section className="dwhy">
+        <div className="in">
+          <div className="shead rv">
+            <div className="snum">03</div>
+            <div>
+              <h2>{t("chapterSection")}</h2>
+              <p className="lede">{t("chapterLede")}</p>
+            </div>
+          </div>
+          <div className="wg rv">
+            <div className="wc">
+              <h3>{t("noteTitle")}</h3>
+              <p>{t("noteText")}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="chnav">
+        <div className="in">
+          <Link className="cnav" href="/report/references">
+            <span>{t("backLabel")}</span>
+            <b>{t("backTitle")}</b>
+          </Link>
+          <Link className="cnav next" href="/">
+            <svg viewBox="0 0 24 24">
+              <path d="M7 17L17 7M8 7h9v9" />
+            </svg>
+            <span>{t("nextLabel")}</span>
+            <b>{t("nextTitle")}</b>
+          </Link>
+        </div>
+      </section>
+    </>
+  )
 }
