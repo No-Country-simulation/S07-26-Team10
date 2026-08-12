@@ -236,7 +236,7 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
           <div className="space-y-3 p-4 rounded-2xl border border-border/60 bg-muted/20">
             <div className="flex items-center justify-between">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Configuración de Versión <span className="text-destructive">*</span>
+                {t("versionConfigTitle")} <span className="text-destructive">*</span>
               </Label>
               <Badge variant="outline" className="font-mono text-xs font-bold px-3 py-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 rounded-lg">
                 {formattedVersion} ({language})
@@ -248,7 +248,7 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
               {!isEditMode && (
                 <div className="space-y-1.5 sm:col-span-3">
                   <Label htmlFor="base-report-select" className="text-xs text-muted-foreground font-medium">
-                    Reporte Base Contenedor <span className="text-destructive">*</span>
+                    {t("baseReportLabel")} <span className="text-destructive">*</span>
                   </Label>
                   <NativeSelect
                     id="base-report-select"
@@ -257,7 +257,7 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
                     className="w-full bg-background rounded-xl text-xs font-mono"
                   >
                     <NativeSelectOption value="new">
-                      + Crear nuevo Reporte Base (generar slug automáticamente)
+                      {t("newBaseReportOption")}
                     </NativeSelectOption>
                     {availableBaseReports.map((b) => (
                       <NativeSelectOption key={b.id} value={b.id}>
@@ -267,8 +267,8 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
                   </NativeSelect>
                   <p className="text-[10px] text-muted-foreground">
                     {selectedReportId === "new"
-                      ? "Se creará automáticamente un nuevo contenedor de reporte base al guardar."
-                      : "La nueva versión se asociará al reporte base seleccionado."}
+                      ? t("newBaseReportNotice")
+                      : t("existingBaseReportNotice")}
                   </p>
                 </div>
               )}
@@ -276,7 +276,7 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
               {/* Título de la versión */}
               <div className="space-y-1.5 sm:col-span-3">
                 <Label htmlFor="version-title" className="text-xs text-muted-foreground font-medium">
-                  Título de la Versión
+                  {t("versionTitleLabel")}
                 </Label>
                 <Input
                   id="version-title"
@@ -310,7 +310,7 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
                     required
                   />
                 </div>
-                <p className="text-[10px] text-muted-foreground">Número entero (ej: 1, 2, 3)</p>
+                <p className="text-[10px] text-muted-foreground">{t("versionNumberHelper")}</p>
               </div>
 
 
@@ -334,7 +334,7 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
               {/* Selector de Estado */}
               <div className="space-y-1.5">
                 <Label htmlFor="status-select" className="text-xs text-muted-foreground font-medium">
-                  Estado de Publicación
+                  {t("statusLabel")}
                 </Label>
                 <NativeSelect
                   id="status-select"
@@ -342,8 +342,8 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
                   onChange={(e) => setStatus(e.target.value as "DRAFT" | "PUBLISHED")}
                   className="w-full bg-background rounded-xl"
                 >
-                  <NativeSelectOption value="DRAFT">Borrador (DRAFT)</NativeSelectOption>
-                  <NativeSelectOption value="PUBLISHED">Publicado (PUBLISHED)</NativeSelectOption>
+                  <NativeSelectOption value="DRAFT">{t("statusDraft")}</NativeSelectOption>
+                  <NativeSelectOption value="PUBLISHED">{t("statusPublished")}</NativeSelectOption>
                 </NativeSelect>
               </div>
             </div>
@@ -368,7 +368,7 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
                   }`}
                 >
                   <Wand2 className="size-3.5" />
-                  <span>Editor</span>
+                  <span>{t("tabEditor")}</span>
                 </button>
                 <button
                   type="button"
@@ -380,7 +380,7 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
                   }`}
                 >
                   <Eye className="size-3.5" />
-                  <span>Vista Previa</span>
+                  <span>{t("tabPreview")}</span>
                 </button>
               </div>
             </div>

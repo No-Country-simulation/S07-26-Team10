@@ -9,8 +9,7 @@ import React, {
 } from "react";
 import { type Language } from "@/context/language-context";
 import {
-  getReportsAction,
-  getReportVersionsAction,
+  getReportsWithVersionsAction,
 } from "@/features/admin/actions/reports-actions";
 import type {
   BaseReport,
@@ -70,26 +69,25 @@ function compareVersionsDescending(a: string, b: string): number {
 
 export function VersionProvider({ children }: { children: React.ReactNode }) {
   const [version, setVersionState] = useState<string>("");
-  const [contentLanguage, setContentLanguageState] = useState<Language>("es");
-  const [allAvailableVersions, setAllAvailableVersions] = useState<string[]>([]);
+  const [contentLanguage, setContentLanguageState] = useState<Language>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("app_content_lang") as Language;
+      if (saved === "es" || saved === "en") return saved;
+    }
+    return "es";
+  });
 
   const [versionLangsMap, setVersionLangsMap] = useState<
     Record<string, Language[]>
   >({});
   const [baseReports, setBaseReports] = useState<BaseReport[]>([]);
   const [reportVersions, setReportVersions] = useState<ReportVersion[]>([]);
-  const [selectedBaseReportId, setSelectedBaseReportIdState] = useState<string | null>(null);
-
-  useEffect(() => {
-    const savedContentLang = localStorage.getItem("app_content_lang") as Language;
-    if (savedContentLang === "es" || savedContentLang === "en") {
-      setContentLanguageState(savedContentLang);
+  const [selectedBaseReportId, setSelectedBaseReportIdState] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("app_base_report_id");
     }
-    const savedBaseId = localStorage.getItem("app_base_report_id");
-    if (savedBaseId) {
-      setSelectedBaseReportIdState(savedBaseId);
-    }
-  }, []);
+    return null;
+  });
 
   const setActiveBaseReportId = (id: string) => {
     setSelectedBaseReportIdState(id);
@@ -114,14 +112,17 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
 
   const loadReportsAndSync = useCallback(async () => {
     try {
-      const bases = await getReportsAction();
-      setBaseReports(bases);
+      // Una sola request: GET /api/v1/reports/admin/with-versions
+      const reportsWithVersions = await getReportsWithVersionsAction();
 
-      const allVersions: ReportVersion[] = [];
-      for (const b of bases) {
-        const vers = await getReportVersionsAction(b.id);
-        allVersions.push(...vers);
-      }
+      const bases: BaseReport[] = reportsWithVersions.map((r) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { report_versions, ...base } = r;
+        return base;
+      });
+      const allVersions: ReportVersion[] = reportsWithVersions.flatMap((r) => r.report_versions);
+
+      setBaseReports(bases);
       setReportVersions(allVersions);
 
       const vMap: Record<string, Set<Language>> = {};
@@ -142,8 +143,6 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
       });
 
       setVersionLangsMap(langsMap);
-      setAllAvailableVersions(uniqueVersions);
-
 
       // Default to the most recent version if no saved choice or if invalid
       const savedVer = localStorage.getItem("app_version");
@@ -165,7 +164,16 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    loadReportsAndSync();
+    let isMounted = true;
+    async function init() {
+      if (isMounted) {
+        await loadReportsAndSync();
+      }
+    }
+    void init();
+    return () => {
+      isMounted = false;
+    };
   }, [loadReportsAndSync]);
 
   const setVersion = (ver: string) => {

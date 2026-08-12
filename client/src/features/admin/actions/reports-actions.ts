@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import {
   type BaseReport,
   type ReportVersion,
+  type ReportWithVersions,
   type CreateReportVersionInput,
   type UpdateReportVersionInput,
   createReportVersionSchema,
@@ -86,6 +87,34 @@ export async function getReportsAction(skip: number = 0, limit: number = 100): P
     console.warn("getReportsAction: API returned status", res.status);
   } catch (error) {
     console.error("Error fetching reports from API:", error);
+  }
+
+  return [];
+}
+
+/**
+ * GET /api/v1/reports/admin/with-versions
+ * Obtiene todos los reportes con todas sus versiones en una sola request. (Requiere autenticación)
+ * Reemplaza el patrón N+1 de getReportsAction + getReportVersionsAction por cada reporte.
+ */
+export async function getReportsWithVersionsAction(
+  skip: number = 0,
+  limit: number = 100,
+): Promise<ReportWithVersions[]> {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(
+      getApiUrl(`/reports/admin/with-versions?skip=${skip}&limit=${limit}`),
+      { headers, cache: "no-store" },
+    );
+
+    if (res.ok) {
+      const data = (await res.json()) as ReportWithVersions[];
+      return data;
+    }
+    console.warn("getReportsWithVersionsAction: API returned status", res.status);
+  } catch (error) {
+    console.error("Error fetching reports with versions from API:", error);
   }
 
   return [];
@@ -544,23 +573,17 @@ export async function getReportVersionByVersionAction(
 
 // Helpers para compatibilidad con código existente
 export async function getReportByIdAction(id: string): Promise<ReportVersion | undefined> {
-  const reports = await getReportsAction();
+  const reports = await getReportsWithVersionsAction();
   for (const r of reports) {
-    const versions = await getReportVersionsAction(r.id);
-    const found = versions.find((v) => v.id === id);
+    const found = r.report_versions.find((v) => v.id === id);
     if (found) return found;
   }
   return undefined;
 }
 
 export async function getAllReportVersionsAction(): Promise<ReportVersion[]> {
-  const reports = await getReportsAction();
-  const allVersions: ReportVersion[] = [];
-  for (const r of reports) {
-    const versions = await getReportVersionsAction(r.id);
-    allVersions.push(...versions);
-  }
-  return allVersions;
+  const reports = await getReportsWithVersionsAction();
+  return reports.flatMap((r) => r.report_versions);
 }
 
 export async function updateReportAction(
@@ -572,10 +595,9 @@ export async function updateReportAction(
   errors?: Record<string, string[]>;
   message?: string;
 }> {
-  const reports = await getReportsAction();
+  const reports = await getReportsWithVersionsAction();
   for (const r of reports) {
-    const versions = await getReportVersionsAction(r.id);
-    const found = versions.find((v) => v.id === id);
+    const found = r.report_versions.find((v) => v.id === id);
     if (found) {
       return updateReportVersionAction(r.id, id, input);
     }

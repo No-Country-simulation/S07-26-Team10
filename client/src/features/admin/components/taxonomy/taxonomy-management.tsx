@@ -27,8 +27,8 @@ import {
 } from "lucide-react";
 import {
   getCategoriesAction,
+  getCategoriesWithConceptsAction,
   deleteCategoryAction,
-  getConceptsByCategoryAction,
   deleteConceptAction,
 } from "../../actions/taxonomy-actions";
 import type { CategoryItem } from "../../schemas/taxonomy-schema";
@@ -107,17 +107,15 @@ export function TaxonomyManagement() {
     async function loadData() {
       try {
         setLoading(true);
-        const data = await getCategoriesAction(targetVersionId || undefined);
-        const categoriesWithConcepts = await Promise.all(
-          data.map(async (cat) => {
-            if (cat.id) {
-              const concepts = await getConceptsByCategoryAction(cat.id);
-              return { ...cat, concepts: concepts.length > 0 ? concepts : cat.concepts };
-            }
-            return cat;
-          })
-        );
-        setCategories(categoriesWithConcepts);
+        if (targetVersionId) {
+          // Una sola request: GET /report-versions/{id}/categories/admin/with-concepts
+          const data = await getCategoriesWithConceptsAction(targetVersionId);
+          setCategories(data);
+        } else {
+          // Fallback sin version_id (conceptos ya vienen en cat.concepts si la API los incluye)
+          const data = await getCategoriesAction(undefined);
+          setCategories(data);
+        }
       } catch (err) {
         console.error("Failed to load taxonomy categories", err);
       } finally {

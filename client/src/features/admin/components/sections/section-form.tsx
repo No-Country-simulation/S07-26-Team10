@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import {
@@ -117,10 +117,10 @@ export function SectionForm({
 
   // Form setup using appropriate schema for create vs edit mode
   const {
+    control,
     register,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors },
   } = useForm<CreateSectionInput>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -134,10 +134,31 @@ export function SectionForm({
     },
   });
 
-  const watchTitle = watch("title");
-  const watchContent = watch("content");
-  const watchDisplayOrder = watch("display_order");
-  const watchPublished = watch("published");
+  const watchTitle = useWatch({
+    control,
+    name: "title",
+    defaultValue: initialData?.title || "",
+  });
+
+  const watchContent = useWatch({
+    control,
+    name: "content",
+    defaultValue: initialData?.content || "",
+  });
+
+  const watchDisplayOrder = useWatch({
+    control,
+    name: "display_order",
+    defaultValue: initialData?.display_order,
+  });
+
+  const watchPublished = useWatch({
+    control,
+    name: "published",
+    defaultValue: initialData?.published ?? true,
+  });
+
+
 
   // Keep report_id updated if activeReportId changes in creation mode
   React.useEffect(() => {

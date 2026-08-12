@@ -9,7 +9,15 @@ import {
   type UpdateSectionInput,
   type SectionItem,
 } from "../schemas/section-schema";
+import type { ResourceItem } from "../schemas/resource-schema";
 import { getApiUrl } from "@/lib/api-url";
+
+/**
+ * Sección con sus recursos embebidos (respuesta del endpoint with-resources).
+ */
+export interface SectionWithResources extends SectionItem {
+  resources: ResourceItem[];
+}
 
 async function getAuthHeaders(): Promise<HeadersInit> {
   const cookieStore = await cookies();
@@ -106,6 +114,44 @@ export async function getSectionsAction(reportId?: string, status?: string): Pro
     console.warn("getSectionsAction: None of the endpoints returned OK for ID:", reportId);
   } catch (error) {
     console.error("Error fetching sections from API:", error);
+  }
+
+  return [];
+}
+
+/**
+ * GET /api/v1/report-versions/{report_version_id}/sections/admin/with-resources
+ * Obtiene todas las secciones de una versión con sus recursos en una sola request.
+ * Reemplaza el patrón 2× de getSectionsAction + getResourcesAction en paralelo.
+ */
+export async function getSectionsWithResourcesAction(
+  reportVersionId: string,
+  skip: number = 0,
+  limit: number = 100,
+): Promise<SectionWithResources[]> {
+  if (!reportVersionId) return [];
+
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(
+      getApiUrl(
+        `/report-versions/${reportVersionId}/sections/admin/with-resources?skip=${skip}&limit=${limit}`,
+      ),
+      { headers, cache: "no-store" },
+    );
+
+    if (res.ok) {
+      const data = (await res.json()) as Record<string, unknown>[];
+      return data.map((sec) => ({
+        ...mapSectionResponse(sec),
+        resources: Array.isArray(sec.resources)
+          ? (sec.resources as ResourceItem[])
+          : [],
+      }));
+    }
+    console.warn("getSectionsWithResourcesAction: API returned status", res.status);
+  } catch (error) {
+    console.error("Error fetching sections with resources from API:", error);
   }
 
   return [];

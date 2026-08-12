@@ -75,7 +75,7 @@ export function SectionsManagement() {
         <div className="p-4 rounded-xl text-sm font-medium flex items-center gap-3 border bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300">
           <AlertCircle className="size-5 shrink-0" />
           <span>
-            No hay un reporte activo seleccionado para la versión actual ({version || "N/A"}). Seleccione un reporte en el selector superior de versión.
+            {t("sections.noActiveReportWarning", { version: version || "N/A" })}
           </span>
         </div>
       )}
@@ -118,10 +118,10 @@ export function SectionsManagement() {
                 <Table>
                   <TableHeader className="bg-muted/40">
                     <TableRow>
-                      <TableHead className="w-14">Orden</TableHead>
+                      <TableHead className="w-14">{t("sections.colOrder")}</TableHead>
                       <TableHead className="w-48 max-w-[190px]">{t("pages.tableTitle")}</TableHead>
                       <TableHead className="w-36 max-w-[140px]">{t("pages.tableSlug")}</TableHead>
-                      <TableHead className="w-24">Estado</TableHead>
+                      <TableHead className="w-24">{t("sections.colStatus")}</TableHead>
                       <TableHead className="text-right w-24">{t("pages.tableActions")}</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -154,11 +154,11 @@ export function SectionsManagement() {
                         <TableCell className="w-24">
                           {section.status === "PUBLISHED" || section.published ? (
                             <Badge className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 font-semibold text-[11px]">
-                              Publicada
+                              {t("sections.statusPublished")}
                             </Badge>
                           ) : (
                             <Badge variant="outline" className="text-muted-foreground font-medium text-[11px]">
-                              Borrador
+                              {t("sections.statusDraft")}
                             </Badge>
                           )}
                         </TableCell>

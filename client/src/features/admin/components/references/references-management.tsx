@@ -98,7 +98,7 @@ export function ReferencesManagement() {
           <Link href={`/admin/references/new${activeReportId ? `?reportId=${activeReportId}` : ""}`}>
             <Button className="rounded-xl px-5 gap-2 shadow-xs bg-emerald-950 text-emerald-100 hover:bg-emerald-900 dark:bg-emerald-700 dark:hover:bg-emerald-600">
               <PlusCircle className="size-4" />
-              <span>Nueva Referencia</span>
+              <span>{t("newReferenceBtn")}</span>
             </Button>
           </Link>
         </div>
@@ -108,7 +108,7 @@ export function ReferencesManagement() {
       {!activeReportId && (
         <div className="p-4 rounded-xl text-sm font-medium flex items-center gap-3 border bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300">
           <AlertCircle className="size-5 shrink-0" />
-          <span>No hay un reporte activo seleccionado en el contexto de versión. Por favor seleccione una versión con reporte en la barra superior.</span>
+          <span>{t("noActiveReportWarning")}</span>
         </div>
       )}
 
@@ -158,7 +158,7 @@ export function ReferencesManagement() {
                   {references.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-8 text-xs text-muted-foreground italic">
-                        No hay referencias registradas para este reporte.
+                        {t("noReferences")}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -242,22 +242,22 @@ export function ReferencesManagement() {
         <AlertDialogContent className="rounded-3xl p-6">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-bold text-foreground">
-              ¿Eliminar esta referencia?
+              {t("deleteModalTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed pt-1">
-              Esta acción eliminará permanentemente la referencia bibliográfica del reporte.
+              {t("deleteModalDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="pt-4 flex items-center justify-end gap-2">
             <AlertDialogCancel className="rounded-xl border-border/60 text-xs font-semibold">
-              Cancelar
+              {t("cancel")}
             </AlertDialogCancel>
             <Button
               variant="destructive"
               disabled={isDeleting}
               onClick={confirmDelete}
             >
-              {isDeleting ? "Eliminando..." : "Eliminar"}
+              {isDeleting ? t("deleting") : t("deleteConfirm")}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

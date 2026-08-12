@@ -106,6 +106,39 @@ export async function getCategoriesAction(
   return [];
 }
 
+/**
+ * GET /api/v1/report-versions/{report_version_id}/categories/admin/with-concepts
+ * Obtiene todas las categorías de una versión con sus conceptos en una sola request.
+ * Reemplaza el patrón N+1 de getCategoriesAction + getConceptsByCategoryAction × N.
+ */
+export async function getCategoriesWithConceptsAction(
+  reportVersionId: string,
+  skip: number = 0,
+  limit: number = 100,
+): Promise<CategoryItem[]> {
+  if (!reportVersionId) return [];
+
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(
+      getApiUrl(
+        `/report-versions/${reportVersionId}/categories/admin/with-concepts?skip=${skip}&limit=${limit}`,
+      ),
+      { headers, cache: "no-store" },
+    );
+
+    if (res.ok) {
+      const data = (await res.json()) as Record<string, unknown>[];
+      return data.map(mapCategoryResponse);
+    }
+    console.warn("getCategoriesWithConceptsAction: API returned status", res.status);
+  } catch (error) {
+    console.error("Error fetching categories with concepts from API:", error);
+  }
+
+  return [];
+}
+
 export async function getCategoryByIdAction(
   id: string,
   reportVersionId?: string,
