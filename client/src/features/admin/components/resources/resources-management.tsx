@@ -26,8 +26,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { getResourcesAction, deleteResourceAction } from "../../actions/resources-actions";
-import { getSectionsAction } from "../../actions/sections-actions";
+import { getSectionsWithResourcesAction } from "../../actions/sections-actions";
+import { deleteResourceAction } from "../../actions/resources-actions";
 import type { ResourceItem } from "../../schemas/resource-schema";
 import type { SectionItem } from "../../schemas/section-schema";
 
@@ -54,12 +54,10 @@ export function ResourcesManagement() {
       }
       setLoading(true);
       try {
-        const [resData, secData] = await Promise.all([
-          getResourcesAction(targetVersionId),
-          getSectionsAction(targetVersionId),
-        ]);
-        setResources(resData);
-        setSections(secData);
+        // Una sola request: GET /report-versions/{id}/sections/admin/with-resources
+        const sectionsWithResources = await getSectionsWithResourcesAction(targetVersionId);
+        setSections(sectionsWithResources);
+        setResources(sectionsWithResources.flatMap((s) => s.resources));
       } catch (err) {
         console.error("Failed to load resources data", err);
       } finally {

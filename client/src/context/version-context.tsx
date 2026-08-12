@@ -9,8 +9,7 @@ import React, {
 } from "react";
 import { type Language } from "@/context/language-context";
 import {
-  getReportsAction,
-  getReportVersionsAction,
+  getReportsWithVersionsAction,
 } from "@/features/admin/actions/reports-actions";
 import type {
   BaseReport,
@@ -114,14 +113,13 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
 
   const loadReportsAndSync = useCallback(async () => {
     try {
-      const bases = await getReportsAction();
-      setBaseReports(bases);
+      // Una sola request: GET /api/v1/reports/admin/with-versions
+      const reportsWithVersions = await getReportsWithVersionsAction();
 
-      const allVersions: ReportVersion[] = [];
-      for (const b of bases) {
-        const vers = await getReportVersionsAction(b.id);
-        allVersions.push(...vers);
-      }
+      const bases: BaseReport[] = reportsWithVersions.map(({ report_versions: _, ...base }) => base);
+      const allVersions: ReportVersion[] = reportsWithVersions.flatMap((r) => r.report_versions);
+
+      setBaseReports(bases);
       setReportVersions(allVersions);
 
       const vMap: Record<string, Set<Language>> = {};
@@ -143,7 +141,6 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
 
       setVersionLangsMap(langsMap);
       setAllAvailableVersions(uniqueVersions);
-
 
       // Default to the most recent version if no saved choice or if invalid
       const savedVer = localStorage.getItem("app_version");

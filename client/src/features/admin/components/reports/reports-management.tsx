@@ -7,7 +7,14 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Plus,
   Pencil,
@@ -27,11 +34,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
 import { useVersion } from "@/context/version-context";
 import {
-  getReportsAction,
-  getReportVersionsAction,
+  getReportsWithVersionsAction,
   deleteReportAction,
   deleteReportVersionAction,
   createReportAction,
@@ -55,20 +64,24 @@ export function ReportsManagement() {
   const [isCreatingBase, setIsCreatingBase] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const [reportFilterLang, setReportFilterLang] = useState<"all" | "ES" | "EN">("all");
-  const [selectedBaseReportFilter, setSelectedBaseReportFilter] = useState<string>("all");
+  const [reportFilterLang, setReportFilterLang] = useState<"all" | "ES" | "EN">(
+    "all",
+  );
+  const [selectedBaseReportFilter, setSelectedBaseReportFilter] =
+    useState<string>("all");
 
   const loadData = useCallback(async () => {
     setActionError(null);
     try {
-      const bases = await getReportsAction();
-      setBaseReports(bases);
+      const reportsWithVersions = await getReportsWithVersionsAction();
+      const bases: BaseReport[] = reportsWithVersions.map(
+        ({ report_versions: _, ...base }) => base,
+      );
+      const allVersions: ReportVersion[] = reportsWithVersions.flatMap(
+        (r) => r.report_versions,
+      );
 
-      const allVersions: ReportVersion[] = [];
-      for (const b of bases) {
-        const vers = await getReportVersionsAction(b.id);
-        allVersions.push(...vers);
-      }
+      setBaseReports(bases);
       setVersions(allVersions);
       await refreshReports();
     } catch (err) {
@@ -82,16 +95,17 @@ export function ReportsManagement() {
     let isMounted = true;
     async function init() {
       try {
-        const bases = await getReportsAction();
+        const reportsWithVersions = await getReportsWithVersionsAction();
         if (!isMounted) return;
-        setBaseReports(bases);
 
-        const allVersions: ReportVersion[] = [];
-        for (const b of bases) {
-          const vers = await getReportVersionsAction(b.id);
-          allVersions.push(...vers);
-        }
-        if (!isMounted) return;
+        const bases: BaseReport[] = reportsWithVersions.map(
+          ({ report_versions: _, ...base }) => base,
+        );
+        const allVersions: ReportVersion[] = reportsWithVersions.flatMap(
+          (r) => r.report_versions,
+        );
+
+        setBaseReports(bases);
         setVersions(allVersions);
         await refreshReports();
       } catch (err) {
@@ -124,7 +138,6 @@ export function ReportsManagement() {
     }
   };
 
-
   const handleToggleStatus = async (ver: ReportVersion) => {
     const newStatus = ver.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
     try {
@@ -133,7 +146,7 @@ export function ReportsManagement() {
       });
       if (res.success) {
         setVersions((prev) =>
-          prev.map((v) => (v.id === ver.id ? { ...v, status: newStatus } : v))
+          prev.map((v) => (v.id === ver.id ? { ...v, status: newStatus } : v)),
         );
         await refreshReports();
       }
@@ -149,7 +162,10 @@ export function ReportsManagement() {
       if (deleteTarget.type === "report") {
         await deleteReportAction(deleteTarget.reportId);
       } else if (deleteTarget.type === "version" && deleteTarget.versionId) {
-        await deleteReportVersionAction(deleteTarget.reportId, deleteTarget.versionId);
+        await deleteReportVersionAction(
+          deleteTarget.reportId,
+          deleteTarget.versionId,
+        );
       }
       await loadData();
     } catch (err) {
@@ -181,8 +197,9 @@ export function ReportsManagement() {
     );
   });
 
-  const publishedCount = versions.filter((v) => v.status === "PUBLISHED").length;
-
+  const publishedCount = versions.filter(
+    (v) => v.status === "PUBLISHED",
+  ).length;
 
   return (
     <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-2">
@@ -220,7 +237,6 @@ export function ReportsManagement() {
         </div>
       </div>
 
-
       {actionError && (
         <div className="p-4 rounded-xl text-sm font-medium flex items-center gap-3 border bg-destructive/10 border-destructive/30 text-destructive">
           <AlertCircle className="size-5 shrink-0" />
@@ -232,28 +248,42 @@ export function ReportsManagement() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-4 flex flex-col justify-between">
-          <span className="text-xs text-muted-foreground font-medium">Total Versiones</span>
+          <span className="text-xs text-muted-foreground font-medium">
+            Total Versiones
+          </span>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-3xl font-extrabold text-foreground">{loading ? "-" : versions.length}</span>
-            <span className="text-[10px] font-mono text-muted-foreground">de {baseReports.length} reporte(s)</span>
+            <span className="text-3xl font-extrabold text-foreground">
+              {loading ? "-" : versions.length}
+            </span>
+            <span className="text-[10px] font-mono text-muted-foreground">
+              de {baseReports.length} reporte(s)
+            </span>
           </div>
         </Card>
 
         <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-4 flex flex-col justify-between">
-          <span className="text-xs text-muted-foreground font-medium">Publicadas</span>
+          <span className="text-xs text-muted-foreground font-medium">
+            Publicadas
+          </span>
           <div className="flex items-center gap-3 mt-2">
-            <span className="text-3xl font-extrabold text-foreground">{loading ? "-" : publishedCount}</span>
+            <span className="text-3xl font-extrabold text-foreground">
+              {loading ? "-" : publishedCount}
+            </span>
             <div className="w-16 h-2 rounded-full bg-emerald-500/20 overflow-hidden">
               <div
                 className="h-full bg-emerald-700 rounded-full"
-                style={{ width: `${versions.length > 0 ? (publishedCount / versions.length) * 100 : 0}%` }}
+                style={{
+                  width: `${versions.length > 0 ? (publishedCount / versions.length) * 100 : 0}%`,
+                }}
               />
             </div>
           </div>
         </Card>
 
         <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-4 flex flex-col justify-between">
-          <span className="text-xs text-muted-foreground font-medium">Reportes Base</span>
+          <span className="text-xs text-muted-foreground font-medium">
+            Reportes Base
+          </span>
           <div className="flex items-center gap-2 mt-2">
             <CalendarDays className="size-4 text-muted-foreground/60" />
             <span className="text-sm font-bold font-mono text-foreground">
@@ -270,7 +300,8 @@ export function ReportsManagement() {
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-2">
+          {/* Row 1: Title + count + action */}
+          <div className="flex items-center justify-between gap-3 border-b border-border/40 pb-3">
             <div className="flex items-baseline gap-3">
               <h2 className="text-2xl font-extrabold text-foreground tracking-tight">
                 {t("tableTitle")}
@@ -279,72 +310,58 @@ export function ReportsManagement() {
                 {String(filteredVersions.length).padStart(2, "0")} / VERSIONES
               </span>
             </div>
+          </div>
 
-            {/* Base Report Filter, Language Filter & Client-side Search Input */}
-            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-              {baseReports.length > 0 && (
-                <NativeSelect
-                  value={selectedBaseReportFilter}
-                  onChange={(e) => setSelectedBaseReportFilter(e.target.value)}
-                  className="h-9 px-3 text-xs font-mono rounded-xl bg-card border-border/60 shadow-2xs focus-visible:ring-emerald-500/20"
-                >
-                  <NativeSelectOption value="all">
-                    Todos los Reportes Base ({baseReports.length})
+          {/* Row 2: Unified filter toolbar */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            {/* Base report selector */}
+            {baseReports.length > 0 && (
+              <NativeSelect
+                value={selectedBaseReportFilter}
+                onChange={(e) => setSelectedBaseReportFilter(e.target.value)}
+              >
+                <NativeSelectOption value="all">
+                  Todos los Reportes ({baseReports.length})
+                </NativeSelectOption>
+                {baseReports.map((b) => (
+                  <NativeSelectOption key={b.id} value={b.id}>
+                    {b.slug}
                   </NativeSelectOption>
-                  {baseReports.map((b) => (
-                    <NativeSelectOption key={b.id} value={b.id}>
-                      Reporte: {b.slug}
-                    </NativeSelectOption>
-                  ))}
-                </NativeSelect>
-              )}
+                ))}
+              </NativeSelect>
+            )}
 
-              <div className="flex items-center p-0.5 rounded-xl bg-muted/40 border border-border/60 text-xs font-semibold shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setReportFilterLang("all")}
-                  className={`px-2.5 py-1 rounded-lg transition-all ${
-                    reportFilterLang === "all"
-                      ? "bg-card text-foreground shadow-2xs font-bold"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Todos
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setReportFilterLang("ES")}
-                  className={`px-2.5 py-1 rounded-lg transition-all ${
-                    reportFilterLang === "ES"
-                      ? "bg-card text-foreground shadow-2xs font-bold"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  ES
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setReportFilterLang("EN")}
-                  className={`px-2.5 py-1 rounded-lg transition-all ${
-                    reportFilterLang === "EN"
-                      ? "bg-card text-foreground shadow-2xs font-bold"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  EN
-                </button>
-              </div>
+            {/* Divider */}
+            <span className="hidden sm:block h-5 w-px bg-border/60 shrink-0" />
 
-              <div className="relative w-full sm:w-56">
-                <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                <Input
-                  type="text"
-                  placeholder={t("searchPlaceholder")}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 pr-3 py-1.5 h-9 rounded-xl bg-card border-border/60 text-xs shadow-2xs focus-visible:ring-emerald-500/20"
-                />
-              </div>
+            {/* Language toggle */}
+            <div className="flex items-center p-0.5 rounded-xl bg-muted/40 border border-border/60 text-xs font-semibold shrink-0">
+              {(["all", "ES", "EN"] as const).map((lang) => (
+                <button
+                  key={lang}
+                  type="button"
+                  onClick={() => setReportFilterLang(lang)}
+                  className={`px-2.5 py-1 rounded-lg transition-all ${
+                    reportFilterLang === lang
+                      ? "bg-card text-foreground shadow-2xs font-bold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {lang === "all" ? "Todos" : lang}
+                </button>
+              ))}
+            </div>
+
+            {/* Search — grows to fill remaining space */}
+            <div className="relative flex-1 min-w-0">
+              <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <Input
+                type="text"
+                placeholder={t("searchPlaceholder")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-3 py-1.5 h-9 w-full rounded-xl bg-card border-border/60 text-xs shadow-2xs focus-visible:ring-emerald-500/20"
+              />
             </div>
           </div>
 
@@ -352,29 +369,49 @@ export function ReportsManagement() {
             <Table>
               <TableHeader className="bg-muted/30">
                 <TableRow className="border-b border-border/50">
-                  <TableHead className="font-bold text-xs text-foreground/80 py-3">Versión / Título</TableHead>
-                  <TableHead className="font-bold text-xs text-foreground/80 py-3 text-center w-28">Estado</TableHead>
-                  <TableHead className="font-bold text-xs text-foreground/80 py-3 text-right w-28">{t("colActions")}</TableHead>
+                  <TableHead className="font-bold text-xs text-foreground/80 py-3">
+                    Versión / Título
+                  </TableHead>
+                  <TableHead className="font-bold text-xs text-foreground/80 py-3 text-center w-28">
+                    Estado
+                  </TableHead>
+                  <TableHead className="font-bold text-xs text-foreground/80 py-3 text-right w-28">
+                    {t("colActions")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredVersions.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center py-8 text-xs text-muted-foreground italic">
+                    <TableCell
+                      colSpan={3}
+                      className="text-center py-8 text-xs text-muted-foreground italic"
+                    >
                       {searchQuery ? t("noSearchMatch") : t("noReports")}
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredVersions.map((item) => (
-                    <TableRow key={item.id} className="border-b border-border/40 hover:bg-muted/20">
+                    <TableRow
+                      key={item.id}
+                      className="border-b border-border/40 hover:bg-muted/20"
+                    >
                       <TableCell className="py-3.5">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-bold text-foreground">{item.title}</span>
-                            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 font-mono text-[10px] font-bold px-2 py-0.5 rounded-md border-emerald-500/30">
+                            <span className="text-sm font-bold text-foreground">
+                              {item.title}
+                            </span>
+                            <Badge
+                              variant="outline"
+                              className="bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 font-mono text-[10px] font-bold px-2 py-0.5 rounded-md border-emerald-500/30"
+                            >
                               {item.version}
                             </Badge>
-                            <Badge variant="outline" className="bg-muted/40 font-mono text-[10px] text-muted-foreground font-semibold px-2 py-0.5 rounded-md border-border/60">
+                            <Badge
+                              variant="outline"
+                              className="bg-muted/40 font-mono text-[10px] text-muted-foreground font-semibold px-2 py-0.5 rounded-md border-border/60"
+                            >
                               {item.language}
                             </Badge>
                           </div>
@@ -398,7 +435,9 @@ export function ReportsManagement() {
                                 : "bg-amber-600/20 text-amber-800 dark:text-amber-300 hover:bg-amber-600/30 font-bold text-[10px] rounded-full border border-amber-600/30"
                             }
                           >
-                            {item.status === "PUBLISHED" ? "Publicado" : "Borrador"}
+                            {item.status === "PUBLISHED"
+                              ? "Publicado"
+                              : "Borrador"}
                           </Badge>
                         </button>
                       </TableCell>
@@ -406,7 +445,11 @@ export function ReportsManagement() {
                       <TableCell className="text-right py-3.5">
                         <div className="flex items-center justify-end gap-1">
                           <Link href={`/admin/reports/${item.id}`}>
-                            <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-foreground">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-8 text-muted-foreground hover:text-foreground"
+                            >
                               <Pencil className="size-3.5" />
                             </Button>
                           </Link>
@@ -458,12 +501,20 @@ export function ReportsManagement() {
                 className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-muted/20"
               >
                 <div>
-                  <div className="text-xs font-mono font-bold text-foreground">{b.slug}</div>
-                  <div className="text-[10px] text-muted-foreground font-mono">ID: {b.id}</div>
+                  <div className="text-xs font-mono font-bold text-foreground">
+                    {b.slug}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground font-mono">
+                    ID: {b.id}
+                  </div>
                 </div>
                 <div className="flex items-center gap-1">
                   <Link href={`/admin/reports/new?reportId=${b.id}`}>
-                    <Button variant="ghost" size="sm" className="h-8 px-2.5 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2.5 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 gap-1"
+                    >
                       <Plus className="size-3" />
                       <span>Versión</span>
                     </Button>
@@ -489,7 +540,6 @@ export function ReportsManagement() {
         </Card>
       )}
 
-
       {/* Quote Footer Card at Bottom */}
       <Card className="border-l-4 border-amber-600/80 bg-muted/20 border-y border-r border-border/60 shadow-2xs rounded-2xl p-6">
         <p className="text-xs text-muted-foreground leading-relaxed italic font-serif">
@@ -501,11 +551,16 @@ export function ReportsManagement() {
       </Card>
 
       {/* Delete Confirmation Modal (Shadcn AlertDialog) */}
-      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+      >
         <AlertDialogContent className="rounded-3xl p-6">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-bold text-foreground">
-              {deleteTarget?.type === "report" ? "¿Eliminar reporte base?" : "¿Eliminar esta versión?"}
+              {deleteTarget?.type === "report"
+                ? "¿Eliminar reporte base?"
+                : "¿Eliminar esta versión?"}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed pt-1">
               {deleteTarget?.type === "report"
@@ -549,4 +604,3 @@ export function ReportsManagementSkeleton() {
     </div>
   );
 }
-

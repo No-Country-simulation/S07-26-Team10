@@ -58,3 +58,10 @@ export type ReportItem = ReportVersion;
 export const createReportSchema = createReportVersionSchema;
 export type CreateReportInput = CreateReportVersionInput;
 
+/**
+ * Tipo para el endpoint GET /api/v1/reports/admin/with-versions
+ * Devuelve cada reporte base con su array de versiones embebido.
+ */
+export interface ReportWithVersions extends BaseReport {
+  report_versions: ReportVersion[];
+}
