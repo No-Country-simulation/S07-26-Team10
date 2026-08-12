@@ -184,13 +184,13 @@ export function ConceptForm({ initialData, isEditMode = false }: ConceptFormProp
                     onCheckedChange={(checked) => setAutoOrder(checked)}
                   />
                   <Label htmlFor="auto-order-concept-switch" className="text-xs cursor-pointer text-muted-foreground font-medium">
-                    Asignar al final
+                    {t("autoOrderLabel")}
                   </Label>
                 </div>
               </div>
               {autoOrder ? (
                 <div className="h-10 px-3 flex items-center rounded-xl bg-muted/40 border border-dashed border-border text-xs text-muted-foreground italic">
-                  Se asignará automáticamente al final de los conceptos.
+                  {t("autoOrderNotice")}
                 </div>
               ) : (
                 <Input
@@ -212,7 +212,7 @@ export function ConceptForm({ initialData, isEditMode = false }: ConceptFormProp
               </Label>
               {isEditMode && (
                 <span className="text-[11px] font-medium text-amber-700 dark:text-amber-500 italic">
-                  (La categoría no se puede modificar al editar)
+                  {t("readOnlyCategoryHint")}
                 </span>
               )}
             </div>

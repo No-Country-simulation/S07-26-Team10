@@ -191,7 +191,7 @@ export function ReferenceForm({ initialData, isEditMode = false, preselectedRepo
         <CardHeader className="p-0 mb-6 border-b border-border/40 pb-4">
           <div className="flex items-center gap-2.5">
             <BookOpen className="size-5 text-emerald-700 dark:text-emerald-400" />
-            <CardTitle className="text-base font-semibold">Parámetros de la Referencia Bibliográfica (APA 7)</CardTitle>
+            <CardTitle className="text-base font-semibold">{t("cardTitle")}</CardTitle>
           </div>
         </CardHeader>
 
@@ -199,7 +199,7 @@ export function ReferenceForm({ initialData, isEditMode = false, preselectedRepo
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="ref-report" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Reporte Asociado <span className="text-destructive">*</span>
+                {t("reportLabel")} <span className="text-destructive">*</span>
               </Label>
               <Select
                 value={reportId}
@@ -207,8 +207,8 @@ export function ReferenceForm({ initialData, isEditMode = false, preselectedRepo
                 onValueChange={(val) => { if (val) setReportId(val); }}
               >
                 <SelectTrigger id="ref-report" className="rounded-xl bg-background text-sm">
-                  <SelectValue placeholder="Seleccione un reporte...">
-                    {reportOptions.find((r) => r.id === reportId)?.title || "Seleccionar Reporte"}
+                  <SelectValue placeholder={t("reportPlaceholder")}>
+                    {reportOptions.find((r) => r.id === reportId)?.title || t("reportPlaceholder")}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
@@ -224,7 +224,7 @@ export function ReferenceForm({ initialData, isEditMode = false, preselectedRepo
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-2">
                 <Label htmlFor="ref-order" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Orden de Visualización
+                  {t("orderLabel")}
                 </Label>
                 <div className="flex items-center gap-1.5">
                   <Switch
@@ -233,13 +233,13 @@ export function ReferenceForm({ initialData, isEditMode = false, preselectedRepo
                     onCheckedChange={(checked) => setAutoOrder(checked)}
                   />
                   <Label htmlFor="auto-order-switch" className="text-xs cursor-pointer text-muted-foreground font-medium">
-                    Asignar al final
+                    {t("autoOrderLabel")}
                   </Label>
                 </div>
               </div>
               {autoOrder ? (
                 <div className="h-10 px-3 flex items-center rounded-xl bg-muted/40 border border-dashed border-border text-xs text-muted-foreground italic">
-                  Se asignará automáticamente al final de las referencias.
+                  {t("autoOrderNotice")}
                 </div>
               ) : (
                 <Input
@@ -320,7 +320,7 @@ export function ReferenceForm({ initialData, isEditMode = false, preselectedRepo
           <div className="space-y-2">
             <Label htmlFor="ref-url" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <Link2 className="size-3.5" />
-              <span>URL de Citación (citation_url)</span>
+              <span>{t("citationUrlLabel")}</span>
             </Label>
             <Input
               id="ref-url"
@@ -330,7 +330,7 @@ export function ReferenceForm({ initialData, isEditMode = false, preselectedRepo
               className="rounded-xl bg-background text-sm font-mono"
             />
             <p className="text-[11px] text-muted-foreground">
-              Enlace DOI o dirección URL de acceso a la fuente citada.
+              {t("citationUrlHelper")}
             </p>
           </div>
         </CardContent>

@@ -249,21 +249,21 @@ export function ReportsManagement() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-4 flex flex-col justify-between">
           <span className="text-xs text-muted-foreground font-medium">
-            Total Versiones
+            {t("statTotalVersions")}
           </span>
           <div className="flex items-baseline gap-2 mt-2">
             <span className="text-3xl font-extrabold text-foreground">
               {loading ? "-" : versions.length}
             </span>
             <span className="text-[10px] font-mono text-muted-foreground">
-              de {baseReports.length} reporte(s)
+              {t("statOfReports", { count: baseReports.length })}
             </span>
           </div>
         </Card>
 
         <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-4 flex flex-col justify-between">
           <span className="text-xs text-muted-foreground font-medium">
-            Publicadas
+            {t("statPublished")}
           </span>
           <div className="flex items-center gap-3 mt-2">
             <span className="text-3xl font-extrabold text-foreground">
@@ -282,12 +282,12 @@ export function ReportsManagement() {
 
         <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-4 flex flex-col justify-between">
           <span className="text-xs text-muted-foreground font-medium">
-            Reportes Base
+            {t("statBaseReports")}
           </span>
           <div className="flex items-center gap-2 mt-2">
             <CalendarDays className="size-4 text-muted-foreground/60" />
             <span className="text-sm font-bold font-mono text-foreground">
-              {loading ? "-" : `${baseReports.length} activo(s)`}
+              {loading ? "-" : t("statActiveCount", { count: baseReports.length })}
             </span>
           </div>
         </Card>
@@ -370,10 +370,10 @@ export function ReportsManagement() {
               <TableHeader className="bg-muted/30">
                 <TableRow className="border-b border-border/50">
                   <TableHead className="font-bold text-xs text-foreground/80 py-3">
-                    Versión / Título
+                    {t("colVersionTitle")}
                   </TableHead>
                   <TableHead className="font-bold text-xs text-foreground/80 py-3 text-center w-28">
-                    Estado
+                    {t("colStatus")}
                   </TableHead>
                   <TableHead className="font-bold text-xs text-foreground/80 py-3 text-right w-28">
                     {t("colActions")}
@@ -426,7 +426,6 @@ export function ReportsManagement() {
                           type="button"
                           onClick={() => handleToggleStatus(item)}
                           className="cursor-pointer outline-none"
-                          title="Haga clic para cambiar estado"
                         >
                           <Badge
                             className={
@@ -436,8 +435,8 @@ export function ReportsManagement() {
                             }
                           >
                             {item.status === "PUBLISHED"
-                              ? "Publicado"
-                              : "Borrador"}
+                              ? t("statusPublished")
+                              : t("statusDraft")}
                           </Badge>
                         </button>
                       </TableCell>
@@ -559,13 +558,13 @@ export function ReportsManagement() {
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-bold text-foreground">
               {deleteTarget?.type === "report"
-                ? "¿Eliminar reporte base?"
-                : "¿Eliminar esta versión?"}
+                ? t("deleteBaseModalTitle")
+                : t("deleteVersionModalTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed pt-1">
               {deleteTarget?.type === "report"
-                ? "Esta acción no se puede deshacer. Se eliminará permanentemente el reporte base y TODAS sus versiones en cascada."
-                : "Esta acción no se puede deshacer. Se eliminará permanentemente la versión seleccionada."}
+                ? t("deleteBaseModalDesc")
+                : t("deleteVersionModalDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="pt-4 flex items-center justify-end gap-2">
