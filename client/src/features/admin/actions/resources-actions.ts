@@ -326,6 +326,7 @@ export async function updateResourceAction(
 export async function deleteResourceAction(
   resourceId: string,
   sectionId?: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _cloudinaryPublicId?: string
 ): Promise<{ success: boolean; message?: string }> {
   if (!resourceId) return { success: false, message: "ID de recurso no válido." };

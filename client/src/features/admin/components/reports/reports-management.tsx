@@ -74,9 +74,11 @@ export function ReportsManagement() {
     setActionError(null);
     try {
       const reportsWithVersions = await getReportsWithVersionsAction();
-      const bases: BaseReport[] = reportsWithVersions.map(
-        ({ report_versions: _, ...base }) => base,
-      );
+      const bases: BaseReport[] = reportsWithVersions.map((r) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { report_versions, ...base } = r;
+        return base;
+      });
       const allVersions: ReportVersion[] = reportsWithVersions.flatMap(
         (r) => r.report_versions,
       );
@@ -98,9 +100,11 @@ export function ReportsManagement() {
         const reportsWithVersions = await getReportsWithVersionsAction();
         if (!isMounted) return;
 
-        const bases: BaseReport[] = reportsWithVersions.map(
-          ({ report_versions: _, ...base }) => base,
-        );
+        const bases: BaseReport[] = reportsWithVersions.map((r) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { report_versions, ...base } = r;
+          return base;
+        });
         const allVersions: ReportVersion[] = reportsWithVersions.flatMap(
           (r) => r.report_versions,
         );
