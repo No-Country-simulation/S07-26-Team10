@@ -25,7 +25,7 @@ async function getAuthHeaders(): Promise<HeadersInit> {
 }
 
 /**
- * GET /api/v1/references/report/{report_id}/admin
+ * GET /api/v1/report-versions/{report_version_id}/references/admin
  * Listar todas las referencias de un reporte (admin)
  */
 export async function getReferencesAction(reportVersionId?: string): Promise<ReferenceItem[]> {
@@ -34,6 +34,7 @@ export async function getReferencesAction(reportVersionId?: string): Promise<Ref
   try {
     const headers = await getAuthHeaders();
     const urlsToTry = [
+      `/report-versions/${reportVersionId}/references/admin`,
       `/report-versions/${reportVersionId}/references`,
       `/references/report/${reportVersionId}/admin`,
       `/references/`,
@@ -69,6 +70,7 @@ export async function getReferenceByIdAction(referenceId: string, reportVersionI
 
     if (reportVersionId) {
       const urlsToTry = [
+        `/report-versions/${reportVersionId}/references/admin/${referenceId}`,
         `/report-versions/${reportVersionId}/references/${referenceId}`,
         `/references/${referenceId}`,
       ];
@@ -88,14 +90,21 @@ export async function getReferenceByIdAction(referenceId: string, reportVersionI
 
     const reportVersions = await getAllReportVersionsAction();
     for (const rv of reportVersions) {
-      const res = await fetch(getApiUrl(`/report-versions/${rv.id}/references/${referenceId}`), {
-        headers,
-        cache: "no-store",
-      });
+      const urlsToTry = [
+        `/report-versions/${rv.id}/references/admin/${referenceId}`,
+        `/report-versions/${rv.id}/references/${referenceId}`,
+      ];
 
-      if (res.ok) {
-        const data = (await res.json()) as ReferenceItem;
-        return data;
+      for (const url of urlsToTry) {
+        const res = await fetch(getApiUrl(url), {
+          headers,
+          cache: "no-store",
+        });
+
+        if (res.ok) {
+          const data = (await res.json()) as ReferenceItem;
+          return data;
+        }
       }
     }
 
