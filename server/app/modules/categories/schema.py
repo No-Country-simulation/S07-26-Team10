@@ -30,6 +30,11 @@ class CategoryCreate(BaseModel):
         description="Orden de presentación de la categoría",
     )
 
+    status: Optional[PublicationStatus] = Field(  # ← AGREGAR
+        default=PublicationStatus.DRAFT,
+        description="Estado de publicación de la categoría (DRAFT, PUBLISHED)",
+    )
+
 
 class CategoryUpdate(BaseModel):
     """

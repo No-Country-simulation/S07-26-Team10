@@ -7,6 +7,7 @@ from app.core.dependencies import get_current_user, get_report_version_service
 from app.modules.report_versions.schema import (
     ReportVersionCreate,
     ReportVersionDetailRead,
+    ReportVersionFullRead,
     ReportVersionRead,
     ReportVersionUpdate,
 )
@@ -126,6 +127,23 @@ def get_version_by_number(
 
 
 # ==================== ENDPOINTS PRIVADOS (requieren autenticación) ====================
+@router.get(
+    "/full/{version}/{language}",
+    response_model=ReportVersionFullRead,
+    summary="Obtener reporte completo por versión e idioma",
+    description="Obtiene una versión específica del reporte con todas sus relaciones (secciones, recursos, categorías, conceptos, referencias). (Acceso público)",
+)
+def get_full_report_by_version_and_language(
+    report_id: uuid.UUID,
+    version: str,
+    language: LanguageCode,
+    service: ReportVersionService = Depends(get_report_version_service),
+):
+    """
+    Obtiene un reporte completo por versión e idioma.
+    Acceso público - No requiere autenticación.
+    """
+    return service.get_full_report_by_version_and_language(report_id, version, language)
 
 
 @router.post(

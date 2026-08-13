@@ -6,9 +6,14 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.shared.enums.language_code import LanguageCode
 from app.shared.enums.publication_status import PublicationStatus
-from app.modules.sections.schema import SectionRead
-from app.modules.references.schema import ReferenceRead
 from app.modules.categories.schema import CategoryRead
+from app.modules.sections.schema import (
+    SectionRead,
+    SectionWithResourcesRead,
+)  # ← AGREGAR
+from app.modules.categories.schema import CategoryWithConceptsRead  # ← AGREGAR
+from app.modules.references.schema import ReferenceRead
+from app.modules.reports.schema import ReportRead
 
 
 class ReportVersionCreate(BaseModel):
@@ -44,6 +49,11 @@ class ReportVersionCreate(BaseModel):
     citation_text: Optional[str] = Field(
         default=None,
         description="Texto de citación",
+    )
+
+    status: Optional[PublicationStatus] = Field(  # ← AGREGAR
+        default=PublicationStatus.DRAFT,
+        description="Estado de publicación (DRAFT, PUBLISHED)",
     )
 
 
@@ -119,3 +129,26 @@ class ReportVersionDetailRead(ReportVersionRead):
 
 # Para resolver referencias circulares (cuando existan los schemas)
 # ReportVersionDetailRead.model_rebuild()
+
+
+class ReportVersionFullRead(ReportVersionRead):
+    """
+    Schema de salida completo para una versión de reporte con todas sus relaciones.
+    """
+
+    report: ReportRead = Field(
+        ...,
+        description="Reporte padre",
+    )
+    sections: list[SectionWithResourcesRead] = Field(
+        default_factory=list,
+        description="Secciones con sus recursos",
+    )
+    categories: list[CategoryWithConceptsRead] = Field(
+        default_factory=list,
+        description="Categorías con sus conceptos",
+    )
+    references: list[ReferenceRead] = Field(
+        default_factory=list,
+        description="Referencias bibliográficas",
+    )

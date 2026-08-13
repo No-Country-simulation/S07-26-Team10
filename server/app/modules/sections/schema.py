@@ -29,6 +29,11 @@ class SectionCreate(BaseModel):
         description="Orden de presentación de la sección",
     )
 
+    status: Optional[PublicationStatus] = Field(  # ← AGREGAR
+        default=PublicationStatus.DRAFT,
+        description="Estado de publicación de la sección (DRAFT, PUBLISHED)",
+    )
+
 
 class SectionUpdate(BaseModel):
     """
