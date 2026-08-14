@@ -5,6 +5,7 @@
 @import "../styles/landing.css";
 @import "../styles/taxonomy.css";
 @import "../styles/report.css";
+@import "../styles/admin-theme.css";
 
 @custom-variant dark (&:is(.dark *));
 

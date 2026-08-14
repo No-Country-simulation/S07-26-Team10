@@ -204,7 +204,7 @@ export function AdminHeader({
             <span style={{ color: "#08090a" }}>{displayName}</span>
           </div>
 
-          {/* Sign out */}
+          {/* Sign out (.b.out.sm del prototipo) */}
           <form action={logoutAction}>
             <button
               type="submit"
@@ -212,15 +212,16 @@ export function AdminHeader({
               style={{
                 gap: 7,
                 height: 30,
-                padding: "0 12px",
+                padding: "0 10px",
                 borderRadius: 8,
-                border: "1px solid #ebebeb",
-                background: "#ffffff",
+                border: "1px solid transparent",
+                background: "transparent",
                 fontSize: 12.5,
-                color: "#706f6f",
+                color: "#6f6f6f",
                 cursor: "pointer",
                 fontFamily: "inherit",
                 letterSpacing: "-0.01em",
+                transition: "color .16s, background .16s",
               }}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLElement).style.color = "#b3261e";
@@ -228,19 +229,22 @@ export function AdminHeader({
                   "rgba(179,38,30,.07)";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.color = "#706f6f";
-                (e.currentTarget as HTMLElement).style.background = "#ffffff";
+                (e.currentTarget as HTMLElement).style.color = "#6f6f6f";
+                (e.currentTarget as HTMLElement).style.background = "transparent";
               }}
             >
-              <LogOut
+              <svg
+                viewBox="0 0 24 24"
                 style={{
                   width: 14,
                   height: 14,
                   stroke: "currentColor",
                   fill: "none",
-                  strokeWidth: 1.8,
+                  strokeWidth: 1.9,
                 }}
-              />
+              >
+                <path d="M15 12H4M9 7l-5 5 5 5M14 4h6v16h-6" />
+              </svg>
               <span className="hidden sm:inline">{t("actions.logout")}</span>
             </button>
           </form>

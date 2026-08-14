@@ -605,4 +605,17 @@ export async function updateReportAction(
   return { success: false, message: "Reporte o versión no encontrada." };
 }
 
+export async function checkBackendHealthAction(): Promise<{ online: boolean }> {
+  try {
+    const res = await fetch(getApiUrl("/health"), {
+      cache: "no-store",
+    });
+    return { online: res.ok };
+  } catch (err) {
+    console.error("Health check error:", err);
+    return { online: false };
+  }
+}
+
+
 

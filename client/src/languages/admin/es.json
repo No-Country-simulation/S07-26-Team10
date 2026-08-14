@@ -1,38 +1,53 @@
 {
   "title": "Panel de administración",
   "cmsTitle": "CMS ADMIN",
-  "moduleInit": "MÓDULO DE INICIO",
-  "moduleId": "ID: PF-ADM-00",
-  "titlePrefix": "Panel de ",
-  "titleSuffix": "administración",
-  "description": "Seleccione una opción del menú lateral para gestionar el contenido del ",
-  "descriptionBold": "Stranded Capacity Report",
-  "descriptionSuffix": ". Desde aquí podrá supervisar métricas energéticas, actualizar taxonomías y administrar recursos técnicos.",
+  "dashboard": {
+    "startModule": "START MODULE",
+    "title": "Panel de administración",
+    "descriptionPrefix": "Elegí una opción del menú para gestionar el contenido de ",
+    "descriptionHighlight": "Stranded Capacity Index",
+    "descriptionSuffix": ". Desde acá se actualizan secciones, taxonomía y recursos.",
+    "noVersionSelectedTitle": "Ninguna versión seleccionada",
+    "noVersionSelectedDesc": "Por favor, elija un reporte y versión en el menú superior para visualizar el estado y las métricas.",
+    "database": {
+      "title": "Base de datos",
+      "statusOnline": "Estado en vivo",
+      "statusOffline": "Sin conexión",
+      "description": "Sincronización activa con los nodos de capacidad.",
+      "synced": "{percent} % sincronizado"
+    },
+    "changes": {
+      "title": "Cambios recientes",
+      "subtitle": "Actividad",
+      "description": "Actualización de referencias técnicas completada hace 2 horas.",
+      "pendingTitle": "Pendiente de revisión",
+      "pendingDescSingle": "Hay 1 sección en borrador que no llegó al informe publicado.",
+      "pendingDescPlural": "Hay {count} secciones en borrador que no llegaron al informe publicado.",
+      "upToDateTitle": "Todo al día",
+      "upToDateDesc": "Todas las secciones de esta versión están publicadas.",
+      "reviewBtn": "Revisar"
+    },
+    "editorialNote": {
+      "tag": "NOTA EDITORIAL",
+      "quote": "La precisión técnica es la base de la autoridad editorial. Cada cambio hecho en este panel se refleja en la integridad estructural del informe."
+    },
+    "indexState": {
+      "title": "Estado del índice",
+      "versionLabel": "Versión",
+      "versionPublished": "publicada",
+      "versionDraft": "borrador",
+      "definedEntriesLabel": "Entradas definidas",
+      "measuredEntriesLabel": "Entradas medidas",
+      "publishedFiguresLabel": "Figuras publicadas",
+      "figuresTag": "ilustrativa"
+    }
+  },
   "nav": {
     "sections": "Secciones",
     "taxonomy": "Taxonomía",
     "resources": "Recursos",
     "references": "Referencias",
-    "reports": "Reportes"
-  },
-  "databaseCard": {
-    "liveStatus": "LIVE STATUS",
-    "title": "Base de Datos",
-    "description": "Sincronización activa con los nodos de capacidad regional.",
-    "synced": "84% Sincronizado",
-    "version": "v.1.0.4"
-  },
-  "changesCard": {
-    "recentActivity": "RECENT ACTIVITY",
-    "title": "Últimos Cambios",
-    "description": "Actualización de referencias técnicas completada hace 2 horas.",
-    "pendingReview": "Revisión Pendiente"
-  },
-  "editorialNote": {
-    "tag": "NOTA EDITORIAL",
-    "quote": "\"La precisión técnica es la base de la autoridad editorial. Cada cambio realizado en este panel se refleja en la integridad estructural del reporte global.\""
-  },
-  "userInfo": {
+    "reports": "Reportes",
     "currentUserLabel": "USUARIO ACTUAL",
     "currentUserValue": "Administrador Principal",
     "lastAccessLabel": "ÚLTIMO ACCESO",
@@ -43,10 +58,12 @@
     "systemTitle": "PhysaFlow — Sistema de administración",
     "version": "Versión 1.0",
     "sidebarBrand": "Versión 1.0 · PhysaFlow",
-    "versionSingular": "versión",
-    "versionPlural": "versiones",
-    "languageSingular": "idioma",
-    "languagePlural": "idiomas"
+    "statusPublished": "publicada",
+    "statusDraft": "borrador",
+    "entrySingular": "entrada",
+    "entryPlural": "entradas",
+    "measureSingular": "medida",
+    "measurePlural": "medidas"
   },
   "actions": {
     "logout": "Cerrar sesión"

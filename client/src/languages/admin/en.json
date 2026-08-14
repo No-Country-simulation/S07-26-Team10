@@ -1,52 +1,69 @@
 {
   "title": "Administration Panel",
   "cmsTitle": "CMS ADMIN",
-  "moduleInit": "START MODULE",
-  "moduleId": "ID: PF-ADM-00",
-  "titlePrefix": "Panel of ",
-  "titleSuffix": "administration",
-  "description": "Select an option from the sidebar menu to manage the content of ",
-  "descriptionBold": "Stranded Capacity Report",
-  "descriptionSuffix": ". From here you can monitor energy metrics, update taxonomies, and manage technical resources.",
+  "dashboard": {
+    "startModule": "START MODULE",
+    "title": "Administration Panel",
+    "descriptionPrefix": "Choose an option from the menu to manage the content of ",
+    "descriptionHighlight": "Stranded Capacity Index",
+    "descriptionSuffix": ". From here you can update sections, taxonomy, and resources.",
+    "noVersionSelectedTitle": "No version selected",
+    "noVersionSelectedDesc": "Please select a report and version in the top menu to view status and metrics.",
+    "database": {
+      "title": "Database",
+      "statusOnline": "Live status",
+      "statusOffline": "Offline",
+      "description": "Active synchronization with regional capacity nodes.",
+      "synced": "{percent} % synchronized"
+    },
+    "changes": {
+      "title": "Recent Changes",
+      "subtitle": "Activity",
+      "description": "Technical reference update completed 2 hours ago.",
+      "pendingTitle": "Pending Review",
+      "pendingDescSingle": "There is 1 draft section that did not make it to the published report.",
+      "pendingDescPlural": "There are {count} draft sections that did not make it to the published report.",
+      "upToDateTitle": "All up to date",
+      "upToDateDesc": "All sections in this version are published.",
+      "reviewBtn": "Review"
+    },
+    "editorialNote": {
+      "tag": "EDITORIAL NOTE",
+      "quote": "Technical precision is the foundation of editorial authority. Every change made in this panel is reflected in the structural integrity of the report."
+    },
+    "indexState": {
+      "title": "Index State",
+      "versionLabel": "Version",
+      "versionPublished": "published",
+      "versionDraft": "draft",
+      "definedEntriesLabel": "Defined entries",
+      "measuredEntriesLabel": "Measured entries",
+      "publishedFiguresLabel": "Published figures",
+      "figuresTag": "illustrative"
+    }
+  },
   "nav": {
+    "currentUserLabel": "CURRENT USER",
+    "currentUserValue": "Principal Administrator",
+    "lastAccessLabel": "LAST ACCESS",
+    "lastAccessValue": "12 Oct 2023 – 09:42",
+    "secureConnection": "Secure Connection (SSL)",
     "sections": "Sections",
     "taxonomy": "Taxonomy",
     "resources": "Resources",
     "references": "References",
     "reports": "Reports"
   },
-  "databaseCard": {
-    "liveStatus": "LIVE STATUS",
-    "title": "Database",
-    "description": "Active synchronization with regional capacity nodes.",
-    "synced": "84% Synchronized",
-    "version": "v.1.0.4"
-  },
-  "changesCard": {
-    "recentActivity": "RECENT ACTIVITY",
-    "title": "Recent Changes",
-    "description": "Technical reference update completed 2 hours ago.",
-    "pendingReview": "Pending Review"
-  },
-  "editorialNote": {
-    "tag": "EDITORIAL NOTE",
-    "quote": "\"Technical precision is the foundation of editorial authority. Every change made in this panel is reflected in the structural integrity of the global report.\""
-  },
-  "userInfo": {
-    "currentUserLabel": "CURRENT USER",
-    "currentUserValue": "Principal Administrator",
-    "lastAccessLabel": "LAST ACCESS",
-    "lastAccessValue": "12 Oct 2023 – 09:42",
-    "secureConnection": "Secure Connection (SSL)"
-  },
   "footer": {
     "systemTitle": "PhysaFlow — Administration System",
     "version": "Version 1.0",
     "sidebarBrand": "Version 1.0 · PhysaFlow",
-    "versionSingular": "version",
-    "versionPlural": "versions",
-    "languageSingular": "language",
-    "languagePlural": "languages"
+    "statusPublished": "published",
+    "statusDraft": "draft",
+    "entrySingular": "entry",
+    "entryPlural": "entries",
+    "measureSingular": "measure",
+    "measurePlural": "measures"
   },
   "actions": {
     "logout": "Sign out"

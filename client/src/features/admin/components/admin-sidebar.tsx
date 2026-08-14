@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -18,6 +18,7 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { useVersion } from "@/context/version-context";
+import { getSectionsWithResourcesAction } from "@/features/admin/actions/sections-actions";
 import NextImage from "next/image";
 
 interface NavItem {
@@ -60,34 +61,58 @@ const navItems: NavItem[] = [
 export function AdminSidebar() {
   const pathname = usePathname();
   const t = useTranslations("AdminPage");
-  const {
-    activeReport,
-    reportVersions,
-    baseReports,
-    selectedBaseReportId,
-  } = useVersion();
+  const { activeReportVersion, activeVersionId } = useVersion();
 
-  const currentReportId =
-    selectedBaseReportId || activeReport?.id || baseReports[0]?.id;
-  const isLoaded = Boolean(currentReportId && baseReports.length > 0);
+  const [draftCount, setDraftCount] = useState<number>(0);
+  const [publishedCount, setPublishedCount] = useState<number>(0);
+  const [isSectionsLoaded, setIsSectionsLoaded] = useState<boolean>(false);
 
-  const currentVersions = currentReportId
-    ? reportVersions.filter((rv) => rv.report_id === currentReportId)
-    : [];
+  useEffect(() => {
+    let isMounted = true;
+    async function loadMetrics() {
+      if (!activeVersionId) {
+        if (isMounted) setIsSectionsLoaded(false);
+        return;
+      }
+      try {
+        const sections = await getSectionsWithResourcesAction(activeVersionId);
+        if (isMounted) {
+          const drafts = sections.filter(
+            (s) => s.status?.toUpperCase() !== "PUBLISHED",
+          ).length;
+          const published = sections.filter(
+            (s) => s.status?.toUpperCase() === "PUBLISHED",
+          ).length;
+          setDraftCount(drafts);
+          setPublishedCount(published);
+          setIsSectionsLoaded(true);
+        }
+      } catch (err) {
+        console.error("Error loading sidebar footer stats:", err);
+      }
+    }
+    void loadMetrics();
+    return () => {
+      isMounted = false;
+    };
+  }, [activeVersionId]);
 
-  const uniqueVersions = new Set(
-    currentVersions.map((rv) =>
-      rv.version.toLowerCase().startsWith("v")
-        ? rv.version.toLowerCase()
-        : `v${rv.version.toLowerCase()}`
-    )
+  const versionRaw = activeReportVersion?.version || "";
+  const versionDisplay = versionRaw
+    ? versionRaw.toLowerCase().startsWith("v")
+      ? versionRaw.toLowerCase()
+      : `v${versionRaw.toLowerCase()}`
+    : "";
+
+  const isPublished =
+    activeReportVersion?.status?.toUpperCase() === "PUBLISHED";
+  const statusDisplay = isPublished
+    ? t("footer.statusPublished")
+    : t("footer.statusDraft");
+
+  const showFooter = Boolean(
+    activeVersionId && activeReportVersion && isSectionsLoaded,
   );
-  const versionsCount = uniqueVersions.size;
-
-  const uniqueLanguages = new Set(
-    currentVersions.map((rv) => (rv.language || "es").toLowerCase())
-  );
-  const languagesCount = uniqueLanguages.size;
 
   return (
     <>
@@ -107,13 +132,18 @@ export function AdminSidebar() {
       >
         {/* Brand (.sbrand del prototipo) */}
         <SidebarHeader
+          className="p-0"
           style={{
             display: "flex",
+            flexDirection: "row",
             alignItems: "center",
+            justifyContent: "flex-start",
+            textAlign: "left",
             gap: 11,
             padding: "16px 18px",
             borderBottom: "1px solid #ebebeb",
             background: "#fafafa",
+            width: "100%",
           }}
         >
           <Link
@@ -121,6 +151,8 @@ export function AdminSidebar() {
             style={{
               display: "flex",
               alignItems: "center",
+              justifyContent: "flex-start",
+              textAlign: "left",
               gap: 11,
               textDecoration: "none",
               color: "inherit",
@@ -140,7 +172,7 @@ export function AdminSidebar() {
               }}
               priority
             />
-            <div>
+            <div style={{ textAlign: "left" }}>
               <b
                 style={{
                   display: "block",
@@ -150,6 +182,7 @@ export function AdminSidebar() {
                   letterSpacing: "-0.02em",
                   color: "#08090a",
                   lineHeight: 1.1,
+                  textAlign: "left",
                 }}
               >
                 PhysaFlow
@@ -163,6 +196,7 @@ export function AdminSidebar() {
                   color: "#6f6f6f",
                   marginTop: 3,
                   display: "block",
+                  textAlign: "left",
                 }}
               >
                 {t("cmsTitle") || "CMS ADMIN"}
@@ -254,8 +288,8 @@ export function AdminSidebar() {
           </nav>
         </SidebarContent>
 
-        {/* Footer (.sfoot del prototipo dinámico según reporte) */}
-        {isLoaded ? (
+        {/* Footer (.sfoot del prototipo dinámico según versión y secciones) */}
+        {showFooter ? (
           <div
             style={{
               marginTop: "auto",
@@ -269,16 +303,18 @@ export function AdminSidebar() {
               background: "#fafafa",
             }}
           >
-            <div>{t("footer.sidebarBrand")}</div>
             <div>
-              {versionsCount}{" "}
-              {versionsCount === 1
-                ? t("footer.versionSingular")
-                : t("footer.versionPlural")}{" "}
-              · {languagesCount}{" "}
-              {languagesCount === 1
-                ? t("footer.languageSingular")
-                : t("footer.languagePlural")}
+              {versionDisplay} · {statusDisplay}
+            </div>
+            <div>
+              {draftCount}{" "}
+              {draftCount === 1
+                ? t("footer.entrySingular")
+                : t("footer.entryPlural")}{" "}
+              · {publishedCount}{" "}
+              {publishedCount === 1
+                ? t("footer.measureSingular")
+                : t("footer.measurePlural")}
             </div>
           </div>
         ) : null}

@@ -38,23 +38,26 @@ export default async function AdminLayout({
         .side = sidebar (izquierda, altura completa)
         .main = columna derecha: header arriba + contenido abajo
       */}
-      <SidebarProvider className="admin-theme min-h-screen flex bg-background text-foreground">
+      <SidebarProvider
+        className="admin-theme min-h-screen flex bg-[#FCFCFC] text-foreground"
+        style={{ "--sidebar-width": "250px" } as React.CSSProperties}
+      >
         {/* Sidebar — columna izquierda, altura completa */}
         <AdminSidebar />
 
-        {/* Columna derecha: header sticky + contenido */}
-        <div className="flex-1 flex flex-col min-w-0">
+        {/* Columna derecha: header sticky + contenido (.main del prototipo) */}
+        <div className="main flex-1 flex flex-col min-w-0 bg-[#FCFCFC]">
           <AdminHeader
             userRole={user.role}
             userName={user.name || user.email}
           />
 
-          {/* Contenido del módulo — .body del prototipo */}
-          <SidebarInset className="admin-body flex-1 min-w-0 overflow-auto">
-            <main className="px-[22px] py-[30px] pb-[70px] max-w-[1200px] w-full">
+          {/* Contenido del módulo — .body del prototipo con resplandor ambiental */}
+          <div className="flex-1 min-w-0 overflow-y-auto">
+            <main className="body relative w-full max-w-[1200px] px-[22px] py-[30px] pb-[70px]">
               <Suspense fallback={<AdminLayoutSkeleton />}>{children}</Suspense>
             </main>
-          </SidebarInset>
+          </div>
         </div>
       </SidebarProvider>
     </VersionProvider>
