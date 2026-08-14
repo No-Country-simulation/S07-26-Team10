@@ -7,6 +7,7 @@ from app.modules.report_versions.repository import ReportVersionRepository
 from app.modules.report_versions.schema import (
     ReportVersionCreate,
     ReportVersionDetailRead,
+    ReportVersionFullRead,
     ReportVersionRead,
     ReportVersionUpdate,
 )
@@ -189,7 +190,7 @@ class ReportVersionService:
             language=data.language,
             summary=data.summary,
             citation_text=data.citation_text,
-            status=PublicationStatus.DRAFT,
+            status=data.status if data.status else PublicationStatus.DRAFT,
         )
 
         created_version = self.repository.create(version)
@@ -248,3 +249,30 @@ class ReportVersionService:
             raise NotFoundException("Versión no encontrada para este reporte.")
 
         self.repository.delete(version)
+
+    def get_full_report_by_version_and_language(
+        self,
+        report_id: uuid.UUID,
+        version: str,
+        language: LanguageCode,
+    ) -> ReportVersionFullRead:
+        """
+        Obtiene un reporte completo (versión específica) con todas sus relaciones.
+        """
+        # Validar que el reporte existe
+        report = self.report_repository.get_by_id(report_id)
+        if not report:
+            raise NotFoundException(
+                message="Reporte no encontrado.",
+            )
+
+        report_version = self.repository.get_full_report_by_version_and_language(
+            report_id, version, language
+        )
+
+        if not report_version:
+            raise NotFoundException(
+                message=f"Versión {version} en idioma {language.value} no encontrada.",
+            )
+
+        return ReportVersionFullRead.model_validate(report_version)

@@ -29,6 +29,11 @@ class SectionCreate(BaseModel):
         description="Orden de presentación de la sección",
     )
 
+    status: Optional[PublicationStatus] = Field(  # ← AGREGAR
+        default=PublicationStatus.DRAFT,
+        description="Estado de publicación de la sección (DRAFT, PUBLISHED)",
+    )
+
 
 class SectionUpdate(BaseModel):
     """
@@ -133,7 +138,7 @@ class SectionWithResourcesRead(SectionRead):
     Schema de salida para una sección con todos sus recursos.
     """
 
-    resources: list[ResourceRead] = Field(
+    resources: list["ResourceRead"] = Field(
         default_factory=list,
         description="Recursos asociados a la sección",
     )

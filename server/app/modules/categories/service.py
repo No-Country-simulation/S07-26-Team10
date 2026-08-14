@@ -141,7 +141,7 @@ class CategoryService:
             name=data.name,
             description=data.description,
             display_order=display_order,
-            status=PublicationStatus.DRAFT,
+            status=data.status if data.status else PublicationStatus.DRAFT,
         )
 
         created_category = self.repository.create(category)

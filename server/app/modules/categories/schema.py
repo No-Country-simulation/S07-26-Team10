@@ -30,6 +30,11 @@ class CategoryCreate(BaseModel):
         description="Orden de presentación de la categoría",
     )
 
+    status: Optional[PublicationStatus] = Field(  # ← AGREGAR
+        default=PublicationStatus.DRAFT,
+        description="Estado de publicación de la categoría (DRAFT, PUBLISHED)",
+    )
+
 
 class CategoryUpdate(BaseModel):
     """
@@ -110,7 +115,7 @@ class CategoryWithConceptsRead(CategoryRead):
     Schema de salida para una categoría con todos sus conceptos.
     """
 
-    concepts: list[ConceptRead] = Field(
+    concepts: list["ConceptRead"] = Field(
         default_factory=list,
         description="Conceptos asociados a la categoría",
     )

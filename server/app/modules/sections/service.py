@@ -276,7 +276,7 @@ class SectionService:
             slug=slug,
             content=data.content,
             display_order=display_order,
-            status=PublicationStatus.DRAFT,
+            status=data.status if data.status else PublicationStatus.DRAFT,
         )
 
         created_section = self.repository.create(section)

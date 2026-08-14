@@ -1,3 +1,4 @@
+import app.shared.schemas.rebuild
 from fastapi import FastAPI
 from app.core.constants import API_TITLE, API_VERSION
 from app.api.v1.router import api_router

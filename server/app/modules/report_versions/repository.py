@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session, selectinload
 from app.modules.report_versions.model import ReportVersion
 from app.shared.enums.language_code import LanguageCode
 from app.shared.enums.publication_status import PublicationStatus
+from app.modules.sections.model import Section  # ← Importar para evitar circular
+from app.modules.categories.model import Category  # ← Importar para evitar circular
 
 
 class ReportVersionRepository:
@@ -140,3 +142,31 @@ class ReportVersionRepository:
             )
         )
         return self.db.execute(stmt).scalars().first() is not None
+
+    def get_full_report_by_version_and_language(
+        self,
+        report_id: uuid.UUID,
+        version: str,
+        language: LanguageCode,
+    ) -> Optional[ReportVersion]:
+        """
+        Obtiene una versión de reporte con TODAS sus relaciones cargadas.
+        """
+
+        stmt = (
+            select(ReportVersion)
+            .where(
+                and_(
+                    ReportVersion.report_id == report_id,
+                    ReportVersion.version == version,
+                    ReportVersion.language == language,
+                )
+            )
+            .options(
+                selectinload(ReportVersion.report),
+                selectinload(ReportVersion.sections).selectinload(Section.resources),
+                selectinload(ReportVersion.categories).selectinload(Category.concepts),
+                selectinload(ReportVersion.references),
+            )
+        )
+        return self.db.execute(stmt).scalars().first()
