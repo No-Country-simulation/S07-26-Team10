@@ -138,7 +138,7 @@ class SectionWithResourcesRead(SectionRead):
     Schema de salida para una sección con todos sus recursos.
     """
 
-    resources: list[ResourceRead] = Field(
+    resources: list["ResourceRead"] = Field(
         default_factory=list,
         description="Recursos asociados a la sección",
     )

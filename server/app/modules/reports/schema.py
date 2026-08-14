@@ -1,8 +1,11 @@
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING  # ← AGREGAR
 
 from pydantic import BaseModel, ConfigDict, Field
-from app.modules.report_versions.schema import ReportVersionRead
+
+if TYPE_CHECKING:  # ← MOVER LA IMPORTACIÓN DENTRO
+    from app.modules.report_versions.schema import ReportVersionRead
 
 
 class ReportCreate(BaseModel):
@@ -56,7 +59,7 @@ class ReportWithVersionsRead(ReportRead):
     Schema de salida para un reporte con todas sus versiones.
     """
 
-    report_versions: list[ReportVersionRead] = Field(
+    report_versions: list["ReportVersionRead"] = Field(
         default_factory=list,
         description="Versiones del reporte",
     )

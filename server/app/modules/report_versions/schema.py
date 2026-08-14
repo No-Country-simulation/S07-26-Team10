@@ -1,19 +1,19 @@
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.shared.enums.language_code import LanguageCode
 from app.shared.enums.publication_status import PublicationStatus
-from app.modules.categories.schema import CategoryRead
-from app.modules.sections.schema import (
-    SectionRead,
-    SectionWithResourcesRead,
-)  # ← AGREGAR
-from app.modules.categories.schema import CategoryWithConceptsRead  # ← AGREGAR
-from app.modules.references.schema import ReferenceRead
-from app.modules.reports.schema import ReportRead
+
+if TYPE_CHECKING:
+    from app.modules.reports.schema import ReportRead
+    from app.modules.sections.schema import SectionWithResourcesRead
+    from app.modules.categories.schema import CategoryWithConceptsRead
+    from app.modules.references.schema import ReferenceRead
+    from app.modules.categories.schema import CategoryRead
+    from app.modules.sections.schema import SectionRead
 
 
 class ReportVersionCreate(BaseModel):
@@ -136,19 +136,19 @@ class ReportVersionFullRead(ReportVersionRead):
     Schema de salida completo para una versión de reporte con todas sus relaciones.
     """
 
-    report: ReportRead = Field(
+    report: "ReportRead" = Field(  # ← STRING
         ...,
         description="Reporte padre",
     )
-    sections: list[SectionWithResourcesRead] = Field(
+    sections: list["SectionWithResourcesRead"] = Field(  # ← STRING
         default_factory=list,
         description="Secciones con sus recursos",
     )
-    categories: list[CategoryWithConceptsRead] = Field(
+    categories: list["CategoryWithConceptsRead"] = Field(  # ← STRING
         default_factory=list,
         description="Categorías con sus conceptos",
     )
-    references: list[ReferenceRead] = Field(
+    references: list["ReferenceRead"] = Field(  # ← STRING
         default_factory=list,
         description="Referencias bibliográficas",
     )
