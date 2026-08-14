@@ -1,9 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BarChart3, History, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 export function AdminDashboard() {
   const t = useTranslations("AdminPage");
@@ -11,55 +10,39 @@ export function AdminDashboard() {
   return (
     <div className="flex flex-col justify-between min-h-full space-y-8 w-full max-w-5xl mx-auto py-2">
       <div className="space-y-8">
-        {/* Module Header Tags */}
-        <div className="flex items-center justify-between text-[11px] font-mono tracking-widest text-muted-foreground uppercase">
+        {/* Eyebrow — equivale a .eyebrow del prototipo */}
+        <div className="flex items-center gap-3 font-mono text-[11px] tracking-[.07em] uppercase text-primary">
+          <span className="inline-block w-[22px] h-px bg-primary flex-none" />
           <span>{t("moduleInit")}</span>
-          <span>{t("moduleId")}</span>
+          <span className="ml-auto text-muted-foreground">{t("moduleId")}</span>
         </div>
 
         {/* Main Title */}
         <div className="space-y-4">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground">
+          {/* h1 — peso 500, sin serif, tracking -0.03em igual al prototipo */}
+          <h1 className="text-[34px] leading-[1.1] font-medium tracking-[-0.03em] text-foreground">
             {t("titlePrefix")}
-            <span className="font-serif italic font-normal text-primary">
-              {t("titleSuffix")}
-            </span>
+            <span className="text-primary">{t("titleSuffix")}</span>
           </h1>
 
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl leading-relaxed">
+          <p className="text-[15px] text-muted-foreground mt-[9px] max-w-[74ch] leading-relaxed">
             {t("description")}
-            <strong className="font-semibold text-foreground">
-              {t("descriptionBold")}
-            </strong>
+            <strong className="font-medium text-foreground">{t("descriptionBold")}</strong>
             {t("descriptionSuffix")}
           </p>
         </div>
 
-        {/* Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+        {/* Cards Grid — glassmorphism igual al prototipo */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[18px] pt-2">
           {/* Card 1: Database */}
-          <Card className="border border-border/50 bg-card/60 shadow-xs rounded-2xl p-6 flex flex-col justify-between space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                  <BarChart3 className="size-5" />
-                </div>
-                <span className="text-[10px] font-mono tracking-widest text-muted-foreground/80 uppercase">
-                  {t("databaseCard.liveStatus")}
-                </span>
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-foreground">
-                  {t("databaseCard.title")}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                  {t("databaseCard.description")}
-                </p>
-              </div>
+          <div className="admin-card rounded-[var(--radius)] overflow-hidden">
+            <div className="flex items-center gap-3 px-[18px] py-[15px] border-b border-border/60">
+              <h3 className="text-[17px]">{t("databaseCard.title")}</h3>
+              <span className="ml-auto text-[11px] font-mono tracking-[.05em] text-muted-foreground">{t("databaseCard.liveStatus")}</span>
             </div>
-
-            <div className="space-y-2 pt-2">
-              <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+            <div className="p-[18px] space-y-3">
+              <p className="text-[12.5px] text-muted-foreground leading-relaxed">{t("databaseCard.description")}</p>
+              <div className="h-[3px] w-full bg-border rounded-full overflow-hidden">
                 <div className="h-full bg-primary rounded-full w-[84%]" />
               </div>
               <div className="flex items-center justify-between text-[11px] font-mono text-muted-foreground">
@@ -67,49 +50,32 @@ export function AdminDashboard() {
                 <span>{t("databaseCard.version")}</span>
               </div>
             </div>
-          </Card>
+          </div>
 
           {/* Card 2: Recent Changes */}
-          <Card className="border border-border/50 bg-card/60 shadow-xs rounded-2xl p-6 flex flex-col justify-between space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                  <History className="size-5" />
-                </div>
-                <span className="text-[10px] font-mono tracking-widest text-muted-foreground/80 uppercase">
-                  {t("changesCard.recentActivity")}
-                </span>
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-foreground">
-                  {t("changesCard.title")}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                  {t("changesCard.description")}
-                </p>
+          <div className="admin-card rounded-[var(--radius)] overflow-hidden">
+            <div className="flex items-center gap-3 px-[18px] py-[15px] border-b border-border/60">
+              <h3 className="text-[17px]">{t("changesCard.title")}</h3>
+              <span className="ml-auto text-[11px] font-mono tracking-[.05em] text-muted-foreground">{t("changesCard.recentActivity")}</span>
+            </div>
+            <div className="p-[18px] space-y-3">
+              <p className="text-[12.5px] text-muted-foreground leading-relaxed">{t("changesCard.description")}</p>
+              <div className="flex items-center gap-2">
+                {/* dot verde igual al prototipo */}
+                <span className="size-[7px] rounded-full bg-primary flex-none" />
+                <span className="text-[14px] font-medium text-foreground">{t("changesCard.pendingReview")}</span>
               </div>
             </div>
-
-            <div className="flex items-center gap-2 pt-2">
-              <span className="size-2 rounded-full bg-amber-500 animate-pulse" />
-              <span className="text-xs font-medium text-foreground">
-                {t("changesCard.pendingReview")}
-              </span>
-            </div>
-          </Card>
+          </div>
         </div>
 
-        {/* Editorial Note Quote Box */}
-        <Card className="border-l-4 border-l-primary border-y border-r border-border/40 bg-card/40 rounded-xl p-6 sm:p-8">
-          <CardContent className="p-0 space-y-2">
-            <span className="text-[10px] font-mono tracking-widest text-muted-foreground uppercase">
-              {t("editorialNote.tag")}
-            </span>
-            <blockquote className="text-sm sm:text-base italic text-foreground/90 font-serif leading-relaxed">
-              {t("editorialNote.quote")}
-            </blockquote>
-          </CardContent>
-        </Card>
+        {/* Nota editorial — equivale a .quote del prototipo */}
+        <div className="border-l-2 border-primary pl-5 py-0.5 mt-[26px]">
+          <span className="font-mono text-[11px] tracking-[.06em] uppercase text-primary">{t("editorialNote.tag")}</span>
+          <blockquote className="text-[17px] leading-[1.5] tracking-[-0.01em] text-foreground/90 mt-[10px] max-w-[78ch]">
+            {t("editorialNote.quote")}
+          </blockquote>
+        </div>
 
         {/* User Info Bar */}
         <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border/30">

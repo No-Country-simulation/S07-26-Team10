@@ -1,11 +1,17 @@
 /* ============================================================
-   Admin Theme Scoped Tokens — shadcn UX/UI
+   PhysaFlow — Admin theme
+   REEMPLAZA client/src/styles/admin-theme.css
+
+   Criterio: el admin es el mismo producto que el reporte, pero más
+   denso. Misma marca, misma tipografía, mismos verdes. Cambia la
+   densidad, no el lenguaje.
    ============================================================ */
 
 .admin-theme {
-  --surface: var(--color-paper-000, #fcf9f5);
-  --surface-low: var(--color-paper-100, #f6f3ef);
-  --on-surface: var(--color-ink-900, #1c1c1a);
+  /* superficies */
+  --surface:     #ffffff;
+  --surface-low: #fafafa;
+  --on-surface:  #08090a;
 
   --background: var(--surface);
   --foreground: var(--on-surface);
@@ -16,75 +22,180 @@
   --popover: #ffffff;
   --popover-foreground: var(--on-surface);
 
-  --primary: #012d1d;
-  --primary-foreground: #fcf9f5;
+  /* acento único: el verde de marca */
+  --primary: #00603a;
+  --primary-foreground: #ffffff;
 
-  --secondary: #765a15;
-  --secondary-foreground: #fcf9f5;
+  /* el dorado oscuro, solo para acciones secundarias */
+  --secondary: #7a6630;
+  --secondary-foreground: #ffffff;
 
-  --muted: #f6f3ef;
-  --muted-foreground: #6f6f6f;
+  --muted: #fafafa;
+  --muted-foreground: #6f6f6f;        /* AA 5.02:1 */
 
-  --accent: #fed887;
-  --accent-foreground: #012d1d;
+  /* el acento del admin es verde tenue, no dorado */
+  --accent: rgba(0, 96, 58, .07);
+  --accent-foreground: #00603a;
 
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: #ffffff;
 
   --border: #ebebeb;
-  --input: #ebebeb;
-  --ring: #e6c273;
+  --input:  #ebebeb;
+  --ring:   #00603a;
 
-  --sidebar: #f6f3ef;
+  /* barra lateral */
+  --sidebar: #fafafa;
   --sidebar-foreground: var(--on-surface);
-  --sidebar-primary: #012d1d;
-  --sidebar-primary-foreground: #fcf9f5;
-  --sidebar-accent: #fed887;
-  --sidebar-accent-foreground: #012d1d;
+  --sidebar-primary: #00603a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(0, 96, 58, .07);
+  --sidebar-accent-foreground: #00603a;
   --sidebar-border: #ebebeb;
-  --sidebar-ring: #e6c273;
+  --sidebar-ring: #00603a;
+
+  /* densidad: más chico que el reporte */
+  --radius: 0.5rem;
 }
 
 .admin-theme.dark,
 .admin-theme .dark {
-  --surface: #012d1d;
-  --surface-low: #0c3828;
-  --on-surface: #fcf9f5;
+  --surface:     #08090a;
+  --surface-low: #131415;
+  --on-surface:  #ffffff;
 
   --background: var(--surface);
   --foreground: var(--on-surface);
 
-  --card: #0c3828;
+  --card: #131415;
   --card-foreground: var(--on-surface);
 
-  --popover: #0c3828;
+  --popover: #131415;
   --popover-foreground: var(--on-surface);
 
-  --primary: #86af99;
-  --primary-foreground: #012d1d;
+  /* sobre oscuro el verde de marca no tiene contraste: se aclara */
+  --primary: #3fbf83;
+  --primary-foreground: #08090a;
 
-  --secondary: #e6c273;
-  --secondary-foreground: #1c1c1a;
+  --secondary: #c9a961;
+  --secondary-foreground: #08090a;
 
-  --muted: rgba(252, 249, 245, 0.08);
-  --muted-foreground: rgba(252, 249, 245, 0.65);
+  --muted: #1b1c1d;
+  --muted-foreground: #a8a8a8;        /* AA sobre #08090a */
 
-  --accent: rgba(230, 194, 115, 0.18);
-  --accent-foreground: #fed887;
+  --accent: rgba(63, 191, 131, .14);
+  --accent-foreground: #3fbf83;
 
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: #ffffff;
 
-  --border: rgba(252, 249, 245, 0.14);
-  --input: rgba(252, 249, 245, 0.18);
-  --ring: #e6c273;
+  --border: rgba(255, 255, 255, .14);
+  --input:  rgba(255, 255, 255, .18);
+  --ring:   #3fbf83;
 
-  --sidebar: #0c3828;
+  --sidebar: #131415;
   --sidebar-foreground: var(--on-surface);
-  --sidebar-primary: #86af99;
-  --sidebar-primary-foreground: #012d1d;
-  --sidebar-accent: rgba(230, 194, 115, 0.18);
-  --sidebar-accent-foreground: #fed887;
-  --sidebar-border: rgba(252, 249, 245, 0.12);
-  --sidebar-ring: #e6c273;
+  --sidebar-primary: #3fbf83;
+  --sidebar-primary-foreground: #08090a;
+  --sidebar-accent: rgba(63, 191, 131, .14);
+  --sidebar-accent-foreground: #3fbf83;
+  --sidebar-border: rgba(255, 255, 255, .12);
+  --sidebar-ring: #3fbf83;
+}
+
+/* ------------------------------------------------------------
+   Ajustes de marca que shadcn no cubre con tokens
+   ------------------------------------------------------------ */
+
+/* Regla de marca: los títulos van en peso 500. Nunca 700 ni 800. */
+.admin-theme h1,
+.admin-theme h2,
+.admin-theme h3,
+.admin-theme h4 {
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* Piso de tamaño: nada por debajo de 11px. */
+.admin-theme .text-\[10px\] { font-size: 11px; }
+
+/* Foco visible, igual que en el reporte. */
+.admin-theme :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ------------------------------------------------------------
+   Card glassmorphism — equivale a .card del prototipo
+   ------------------------------------------------------------ */
+.admin-theme .admin-card {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(
+    158deg,
+    rgba(255,255,255,.86) 0%,
+    rgba(255,255,255,.62) 58%,
+    rgba(255,255,255,.78) 100%
+  );
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid rgba(8,9,10,.10);
+  border-radius: var(--radius);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 1px 2px rgba(8,9,10,.04),
+    0 10px 22px -14px rgba(8,9,10,.14),
+    0 30px 50px -34px rgba(0,96,58,.20);
+}
+
+.admin-theme .admin-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    140deg,
+    rgba(0,96,58,.26) 0%,
+    rgba(120,205,165,.14) 30%,
+    rgba(255,255,255,.55) 52%,
+    rgba(0,96,58,.08) 74%,
+    rgba(0,96,58,.22) 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.admin-theme .admin-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ------------------------------------------------------------
+   Gradiente de fondo sutil — equivale a .body::before del prototipo
+   ------------------------------------------------------------ */
+.admin-body {
+  position: relative;
+}
+
+.admin-body::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(46% 40% at 12% 10%, rgba(0,96,58,.09) 0%, rgba(0,96,58,0) 68%),
+    radial-gradient(40% 36% at 92% 62%, rgba(0,96,58,.06) 0%, rgba(0,96,58,0) 70%);
+  filter: blur(44px);
+}
+
+.admin-body > * {
+  position: relative;
+  z-index: 1;
 }

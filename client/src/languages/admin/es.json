@@ -41,7 +41,12 @@
   },
   "footer": {
     "systemTitle": "PhysaFlow — Sistema de administración",
-    "version": "Versión 1.0"
+    "version": "Versión 1.0",
+    "sidebarBrand": "Versión 1.0 · PhysaFlow",
+    "versionSingular": "versión",
+    "versionPlural": "versiones",
+    "languageSingular": "idioma",
+    "languagePlural": "idiomas"
   },
   "actions": {
     "logout": "Cerrar sesión"
