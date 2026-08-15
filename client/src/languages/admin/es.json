@@ -259,7 +259,11 @@
       "typeImage": "IMAGE (Imagen)",
       "typeGraph": "GRAPH (Gráfico)",
       "typeDiagram": "DIAGRAM (Diagrama)",
-      "typeFile": "FILE (Archivo)"
+      "typeFile": "FILE (Archivo)",
+      "configTitle": "Configuración",
+      "docReady": "Documento listo para asociar",
+      "accessibilityTitle": "Accesibilidad visual",
+      "accessibilityDesc": "El texto alternativo es obligatorio. Permite a lectores de pantalla e indexadores comprender los diagramas y gráficos del informe."
     }
   },
   "taxonomy": {

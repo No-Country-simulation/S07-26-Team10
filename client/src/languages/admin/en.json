@@ -259,7 +259,11 @@
       "typeImage": "IMAGE (Image)",
       "typeGraph": "GRAPH (Chart)",
       "typeDiagram": "DIAGRAM (Diagram)",
-      "typeFile": "FILE (File)"
+      "typeFile": "FILE (File)",
+      "configTitle": "Configuration",
+      "docReady": "Document ready to attach",
+      "accessibilityTitle": "Visual accessibility",
+      "accessibilityDesc": "Alternative text is required. It allows screen readers and indexers to understand the report's diagrams and charts."
     }
   },
   "taxonomy": {

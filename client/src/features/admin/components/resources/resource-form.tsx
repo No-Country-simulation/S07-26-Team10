@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -11,11 +13,13 @@ import {
   FileCheck,
   CheckCircle2,
   AlertCircle,
-  Link2,
   Loader2,
-  Image as ImageIcon,
 } from "lucide-react";
-import type { ResourceItem } from "../../schemas/resource-schema";
+import {
+  resourceFormSchema,
+  type ResourceFormInput,
+  type ResourceItem,
+} from "../../schemas/resource-schema";
 import { getSectionOptionsAction } from "../../actions/sections-actions";
 import {
   createResourceAction,
@@ -40,31 +44,11 @@ export function ResourceForm({
   const router = useRouter();
   const { activeReportId } = useVersion();
 
-  const [sectionId, setSectionId] = useState(
-    initialData?.section_id || preselectedSectionId || "",
-  );
-  const [type, setType] = useState<"IMAGE" | "GRAPH" | "DIAGRAM" | "FILE">(
-    initialData?.type || "IMAGE",
-  );
-  const [title, setTitle] = useState(initialData?.title || "");
-  const [description, setDescription] = useState(
-    initialData?.description || "",
-  );
-  const [fileUrl, setFileUrl] = useState(initialData?.file_url || "");
-  const [cloudinaryPublicId, setCloudinaryPublicId] = useState(
-    initialData?.cloudinary_public_id || "",
-  );
-  const [altText, setAltText] = useState(initialData?.alt_text || "");
-  const [downloadable, setDownloadable] = useState(
-    initialData?.downloadable ?? true,
-  );
-
   // File upload state & Mutually exclusive Source Mode state
   const [sourceMode, setSourceMode] = useState<"file" | "url">(
     initialData?.file_url && !initialData.cloudinary_public_id ? "url" : "file",
   );
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
@@ -76,35 +60,66 @@ export function ResourceForm({
   >([]);
   const [isLoadingSections, setIsLoadingSections] = useState(true);
 
+  const {
+    control,
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<ResourceFormInput>({
+    resolver: zodResolver(resourceFormSchema),
+    defaultValues: {
+      section_id: initialData?.section_id || preselectedSectionId || "",
+      type: initialData?.type || "IMAGE",
+      title: initialData?.title || "",
+      description: initialData?.description || "",
+      file_url: initialData?.file_url || "",
+      cloudinary_public_id: initialData?.cloudinary_public_id || "",
+      alt_text: initialData?.alt_text || "",
+      downloadable: initialData?.downloadable ?? true,
+    },
+  });
+
+  const watchTitle = useWatch({ control, name: "title" });
+  const watchType = useWatch({ control, name: "type" });
+  const watchFileUrl = useWatch({ control, name: "file_url" });
+  const watchAltText = useWatch({ control, name: "alt_text" });
+  const watchDownloadable = useWatch({ control, name: "downloadable" });
+
   useEffect(() => {
+    let isMounted = true;
     async function loadSections() {
       setIsLoadingSections(true);
       try {
         const secs = await getSectionOptionsAction(activeReportId ?? undefined);
+        if (!isMounted) return;
         setSectionOptions(secs);
         if (
           !initialData?.section_id &&
           !preselectedSectionId &&
           secs.length > 0
         ) {
-          setSectionId(secs[0].id);
+          setValue("section_id", secs[0].id, { shouldValidate: true });
         }
       } catch (err) {
         console.error("Failed to load sections for resource form", err);
       } finally {
-        setIsLoadingSections(false);
+        if (isMounted) {
+          setIsLoadingSections(false);
+        }
       }
     }
     void loadSections();
-  }, [initialData, preselectedSectionId, activeReportId]);
+    return () => {
+      isMounted = false;
+    };
+  }, [initialData, preselectedSectionId, activeReportId, setValue]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const onSubmit = async (values: ResourceFormInput) => {
     setFeedback(null);
 
-    let finalFileUrl = fileUrl;
-    let finalCloudinaryId = cloudinaryPublicId;
+    let finalFileUrl = values.file_url;
+    let finalCloudinaryId = values.cloudinary_public_id;
 
     try {
       // 1. Si sube archivo a Cloudinary
@@ -115,7 +130,7 @@ export function ResourceForm({
 
         const isImage =
           selectedFile.type.startsWith("image/") ||
-          type.toUpperCase() === "IMAGE";
+          values.type.toUpperCase() === "IMAGE";
         const resourceType = isImage ? "image" : "raw";
 
         const uploadRes = await uploadFileAction(formData, resourceType);
@@ -130,12 +145,13 @@ export function ResourceForm({
             type: "error",
             message: uploadRes.message || t("errorUpload"),
           });
-          setIsSubmitting(false);
           return;
         }
 
         finalFileUrl = uploadData.file_url;
         finalCloudinaryId = uploadData.public_id || "";
+        setValue("file_url", finalFileUrl);
+        setValue("cloudinary_public_id", finalCloudinaryId);
       }
 
       if (!finalFileUrl && !selectedFile) {
@@ -143,7 +159,6 @@ export function ResourceForm({
           type: "error",
           message: t("errorNoFileOrUrl"),
         });
-        setIsSubmitting(false);
         return;
       }
 
@@ -151,15 +166,15 @@ export function ResourceForm({
         const res = await updateResourceAction(
           initialData.id,
           {
-            type,
-            title,
-            description,
+            type: values.type,
+            title: values.title,
+            description: values.description,
             file_url: finalFileUrl,
             cloudinary_public_id: finalCloudinaryId,
-            alt_text: altText,
-            downloadable,
+            alt_text: values.alt_text,
+            downloadable: values.downloadable,
           },
-          sectionId,
+          values.section_id,
         );
 
         if (res.success) {
@@ -179,14 +194,14 @@ export function ResourceForm({
         }
       } else {
         const res = await createResourceAction({
-          section_id: sectionId,
-          type,
-          title,
-          description,
+          section_id: values.section_id,
+          type: values.type,
+          title: values.title,
+          description: values.description,
           file_url: finalFileUrl,
           cloudinary_public_id: finalCloudinaryId,
-          alt_text: altText,
-          downloadable,
+          alt_text: values.alt_text,
+          downloadable: values.downloadable,
         });
 
         if (res.success) {
@@ -209,17 +224,16 @@ export function ResourceForm({
       console.error("Error submitting resource form:", err);
       setFeedback({
         type: "error",
-        message: "Ocurrió un error inesperado al guardar el recurso.",
+        message: t("errorGeneric", { defaultValue: "Ocurrió un error inesperado al guardar el recurso." }),
       });
     } finally {
-      setIsSubmitting(false);
       setIsUploading(false);
     }
   };
 
   return (
     <div>
-      <form onSubmit={handleSubmit} noValidate>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
         {/* ── Encabezado y Breadcrumb (.eyebrow del prototipo) ────────── */}
         <div
           style={{
@@ -283,7 +297,11 @@ export function ResourceForm({
                 margin: 0,
               }}
             >
-              {isEditMode ? t("editTitle", { title }) : t("createTitle")}
+              {isEditMode
+                ? t("editTitle", {
+                    title: watchTitle || initialData?.title || "",
+                  })
+                : t("createTitle")}
             </h1>
             <p
               style={{
@@ -340,9 +358,7 @@ export function ResourceForm({
                 </svg>
               )}
               <span>
-                {isSubmitting || isUploading
-                  ? t("saving")
-                  : t("saveResource")}
+                {isSubmitting || isUploading ? t("saving") : t("saveResource")}
               </span>
             </button>
           </div>
@@ -478,14 +494,14 @@ export function ResourceForm({
                   ) : (
                     <select
                       id="resource-section"
-                      value={sectionId}
-                      onChange={(e) => setSectionId(e.target.value)}
-                      required
+                      {...register("section_id")}
                       style={{
                         width: "100%",
                         height: "40px",
                         padding: "0 13px",
-                        border: "1px solid #ebebeb",
+                        border: errors.section_id
+                          ? "1px solid #b3261e"
+                          : "1px solid #ebebeb",
                         borderRadius: "8px",
                         background: "#ffffff",
                         fontFamily:
@@ -502,6 +518,20 @@ export function ResourceForm({
                         </option>
                       ))}
                     </select>
+                  )}
+                  {errors.section_id && (
+                    <p
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "12px",
+                        color: "#b3261e",
+                        marginTop: "5px",
+                        margin: 0,
+                      }}
+                    >
+                      {errors.section_id.message}
+                    </p>
                   )}
                 </div>
 
@@ -531,16 +561,7 @@ export function ResourceForm({
                     </label>
                     <select
                       id="resource-type"
-                      value={type}
-                      onChange={(e) =>
-                        setType(
-                          e.target.value as
-                            | "IMAGE"
-                            | "GRAPH"
-                            | "DIAGRAM"
-                            | "FILE",
-                        )
-                      }
+                      {...register("type")}
                       style={{
                         width: "100%",
                         height: "40px",
@@ -555,10 +576,10 @@ export function ResourceForm({
                         boxSizing: "border-box",
                       }}
                     >
-                      <option value="IMAGE">IMAGE</option>
-                      <option value="GRAPH">GRAPH</option>
-                      <option value="DIAGRAM">DIAGRAM</option>
-                      <option value="FILE">FILE</option>
+                      <option value="IMAGE">{t("typeImage")}</option>
+                      <option value="GRAPH">{t("typeGraph")}</option>
+                      <option value="DIAGRAM">{t("typeDiagram")}</option>
+                      <option value="FILE">{t("typeFile")}</option>
                     </select>
                   </div>
 
@@ -581,15 +602,15 @@ export function ResourceForm({
                     </label>
                     <input
                       id="resource-title"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
+                      {...register("title")}
                       placeholder={t("titlePlaceholder")}
-                      required
                       style={{
                         width: "100%",
                         height: "40px",
                         padding: "0 13px",
-                        border: "1px solid #ebebeb",
+                        border: errors.title
+                          ? "1px solid #b3261e"
+                          : "1px solid #ebebeb",
                         borderRadius: "8px",
                         background: "#ffffff",
                         fontFamily:
@@ -600,6 +621,20 @@ export function ResourceForm({
                         boxSizing: "border-box",
                       }}
                     />
+                    {errors.title && (
+                      <p
+                        style={{
+                          fontFamily:
+                            "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                          fontSize: "12px",
+                          color: "#b3261e",
+                          marginTop: "5px",
+                          margin: 0,
+                        }}
+                      >
+                        {errors.title.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -622,8 +657,7 @@ export function ResourceForm({
                   </label>
                   <textarea
                     id="resource-desc"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    {...register("description")}
                     placeholder={t("descPlaceholder")}
                     rows={2}
                     style={{
@@ -787,7 +821,7 @@ export function ResourceForm({
                           style={{ display: "none" }}
                         />
                       </label>
-                      {fileUrl && !selectedFile && (
+                      {watchFileUrl && !selectedFile && (
                         <p
                           style={{
                             fontFamily:
@@ -799,15 +833,14 @@ export function ResourceForm({
                             wordBreak: "break-all",
                           }}
                         >
-                          {t("currentFile", { url: fileUrl })}
+                          {t("currentFile", { url: watchFileUrl })}
                         </p>
                       )}
                     </div>
                   ) : (
                     <div>
                       <input
-                        value={fileUrl}
-                        onChange={(e) => setFileUrl(e.target.value)}
+                        {...register("file_url")}
                         placeholder={t("fileUrlPlaceholder")}
                         style={{
                           width: "100%",
@@ -859,15 +892,15 @@ export function ResourceForm({
                   </label>
                   <input
                     id="resource-alt"
-                    value={altText}
-                    onChange={(e) => setAltText(e.target.value)}
+                    {...register("alt_text")}
                     placeholder={t("altTextPlaceholder")}
-                    required
                     style={{
                       width: "100%",
                       height: "40px",
                       padding: "0 13px",
-                      border: "1px solid #ebebeb",
+                      border: errors.alt_text
+                        ? "1px solid #b3261e"
+                        : "1px solid #ebebeb",
                       borderRadius: "8px",
                       background: "#ffffff",
                       fontFamily:
@@ -878,6 +911,20 @@ export function ResourceForm({
                       boxSizing: "border-box",
                     }}
                   />
+                  {errors.alt_text && (
+                    <p
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "12px",
+                        color: "#b3261e",
+                        marginTop: "5px",
+                        margin: 0,
+                      }}
+                    >
+                      {errors.alt_text.message}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -911,7 +958,7 @@ export function ResourceForm({
                     margin: 0,
                   }}
                 >
-                  Configuración
+                  {t("configTitle")}
                 </h3>
               </div>
 
@@ -936,8 +983,8 @@ export function ResourceForm({
                   >
                     {t("downloadableLabel")}
                   </label>
-                  <span className={downloadable ? "bg pub" : "bg draft"}>
-                    {downloadable ? tRoot("yes") : tRoot("no")}
+                  <span className={watchDownloadable ? "bg pub" : "bg draft"}>
+                    {watchDownloadable ? tRoot("yes") : tRoot("no")}
                   </span>
                 </div>
                 <div
@@ -959,18 +1006,22 @@ export function ResourceForm({
                       color: "#6f6f6f",
                     }}
                   >
-                    {downloadable ? tRoot("yes") : tRoot("no")}
+                    {watchDownloadable ? tRoot("yes") : tRoot("no")}
                   </span>
                   <Switch
-                    checked={downloadable}
-                    onCheckedChange={setDownloadable}
+                    checked={watchDownloadable ?? true}
+                    onCheckedChange={(checked) =>
+                      setValue("downloadable", checked, {
+                        shouldValidate: true,
+                      })
+                    }
                   />
                 </div>
               </div>
             </div>
 
             {/* Card: Vista Previa del Asset */}
-            {(fileUrl || selectedFile) && (
+            {(watchFileUrl || selectedFile) && (
               <div className="card admin-card" style={{ overflow: "hidden" }}>
                 <div
                   style={{
@@ -999,17 +1050,17 @@ export function ResourceForm({
                     background: "#fafafa",
                   }}
                 >
-                  {type.toUpperCase() === "IMAGE" ||
-                  type.toUpperCase() === "GRAPH" ||
-                  type.toUpperCase() === "DIAGRAM" ? (
+                  {watchType.toUpperCase() === "IMAGE" ||
+                  watchType.toUpperCase() === "GRAPH" ||
+                  watchType.toUpperCase() === "DIAGRAM" ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={
                         selectedFile
                           ? URL.createObjectURL(selectedFile)
-                          : fileUrl
+                          : watchFileUrl
                       }
-                      alt={altText || title}
+                      alt={watchAltText || watchTitle}
                       style={{
                         maxHeight: "180px",
                         maxWidth: "100%",
@@ -1031,7 +1082,7 @@ export function ResourceForm({
                       <FileCheck
                         style={{ width: 24, height: 24, color: "#00603a" }}
                       />
-                      <span>Documento listo para asociar</span>
+                      <span>{t("docReady")}</span>
                     </div>
                   )}
                 </div>
@@ -1056,7 +1107,7 @@ export function ResourceForm({
                   marginBottom: "4px",
                 }}
               >
-                Accesibilidad visual
+                {t("accessibilityTitle")}
               </div>
               <p
                 style={{
@@ -1067,9 +1118,7 @@ export function ResourceForm({
                   margin: 0,
                 }}
               >
-                El texto alternativo es obligatorio. Permite a lectores de
-                pantalla e indexadores comprender los diagramas y gráficos del
-                informe.
+                {t("accessibilityDesc")}
               </p>
             </div>
           </div>

@@ -904,7 +904,7 @@ export function SectionForm({
                             )}
                             {res.id && (
                               <Link
-                                href={`/admin/resources/${res.id}`}
+                                href={`/admin/resources/${res.id}?sectionId=${initialData?.id || res.section_id || ""}`}
                                 title={t("editResource")}
                                 className="b icon ghost"
                               >

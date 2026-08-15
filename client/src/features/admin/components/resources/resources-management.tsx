@@ -1005,7 +1005,7 @@ export function ResourcesManagement() {
                                       </button>
                                     )}
                                     <Link
-                                      href={`/admin/resources/${res.id}`}
+                                      href={`/admin/resources/${res.id}?sectionId=${res.section_id || section.id}`}
                                       className="b icon ghost"
                                       title={t("editTooltip")}
                                     >
@@ -1177,10 +1177,10 @@ export function ResourcesManagement() {
                                   </button>
                                 )}
                                 <Link
-                                  href={`/admin/resources/${res.id}`}
-                                  className="b icon ghost"
-                                  title={t("editTooltip")}
-                                >
+                                   href={`/admin/resources/${res.id}${res.section_id ? `?sectionId=${res.section_id}` : ""}`}
+                                   className="b icon ghost"
+                                   title={t("editTooltip")}
+                                 >
                                   <svg viewBox="0 0 24 24">
                                     <path d="M4 20h4l10-10-4-4L4 16z" />
                                   </svg>

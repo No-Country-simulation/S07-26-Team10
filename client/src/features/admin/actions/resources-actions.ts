@@ -9,7 +9,8 @@ import {
   type UpdateResourceInput,
   type ResourceItem,
 } from "../schemas/resource-schema";
-import { getSectionsAction } from "./sections-actions";
+import { getSectionsAction, getSectionsWithResourcesAction } from "./sections-actions";
+import { getReportsWithVersionsAction } from "./reports-actions";
 import { getApiUrl } from "@/lib/api-url";
 
 async function getAuthHeaders(): Promise<HeadersInit> {
@@ -67,7 +68,6 @@ export async function getResourceByIdAction(resourceId: string, sectionId?: stri
       const urlsToTry = [
         `/sections/${sectionId}/resources/admin/${resourceId}`,
         `/sections/${sectionId}/resources/${resourceId}`,
-        `/resources/${resourceId}`,
       ];
 
       for (const url of urlsToTry) {
@@ -78,38 +78,29 @@ export async function getResourceByIdAction(resourceId: string, sectionId?: stri
 
         if (res.ok) {
           const data = (await res.json()) as ResourceItem;
-          return data;
+          return {
+            ...data,
+            section_id: data.section_id || sectionId,
+          };
         }
       }
     }
 
-    const sections = await getSectionsAction();
-    for (const sec of sections) {
-      const urlsToTry = [
-        `/sections/${sec.id}/resources/admin/${resourceId}`,
-        `/sections/${sec.id}/resources/${resourceId}`,
-      ];
+    // Si no tenemos sectionId, buscar a través de los reportes y versiones
+    const reports = await getReportsWithVersionsAction();
+    const allVersions = reports.flatMap((r) => r.report_versions || []);
 
-      for (const url of urlsToTry) {
-        const res = await fetch(getApiUrl(url), {
-          headers,
-          cache: "no-store",
-        });
-
-        if (res.ok) {
-          const data = (await res.json()) as ResourceItem;
-          return data;
+    for (const ver of allVersions) {
+      const sectionsWithRes = await getSectionsWithResourcesAction(ver.id);
+      for (const sec of sectionsWithRes) {
+        const found = sec.resources?.find((r) => r.id === resourceId);
+        if (found) {
+          return {
+            ...found,
+            section_id: sec.id,
+          };
         }
       }
-    }
-
-    const res = await fetch(getApiUrl(`/resources/${resourceId}`), {
-      headers,
-      cache: "no-store",
-    });
-    if (res.ok) {
-      const data = (await res.json()) as ResourceItem;
-      return data;
     }
   } catch (error) {
     console.error("Error fetching resource by ID from API:", error);
