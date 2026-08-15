@@ -64,4 +64,40 @@ export const updateCategorySchema = z.object({
 
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;
 
+export const categoryFormSchema = z.object({
+  name: z
+    .string()
+    .min(1, "El nombre de la categoría es obligatorio")
+    .max(150, "Máximo 150 caracteres"),
+  description: z.string(),
+  display_order: z
+    .number()
+    .int()
+    .min(0, "El orden debe ser mayor o igual a 0")
+    .optional()
+    .nullable(),
+  status: categoryStatusEnum,
+  published: z.boolean(),
+});
+
+export type CategoryFormInput = z.infer<typeof categoryFormSchema>;
+
+export const conceptFormSchema = z.object({
+  category_id: z.string().min(1, "Debe seleccionar una categoría"),
+  name: z
+    .string()
+    .min(1, "El nombre del concepto es obligatorio")
+    .max(150, "Máximo 150 caracteres"),
+  description: z.string(),
+  display_order: z
+    .number()
+    .int()
+    .min(0, "El orden debe ser mayor o igual a 0")
+    .optional()
+    .nullable(),
+  section_id: z.string().optional().nullable(),
+});
+
+export type ConceptFormInput = z.infer<typeof conceptFormSchema>;
+
 

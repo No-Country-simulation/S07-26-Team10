@@ -324,7 +324,9 @@
       "iconPlaceholder": "Seleccionar icono (zap, server, network...)",
       "errorCreate": "Error al crear la categoría.",
       "errorUpdate": "Error al actualizar la categoría.",
-      "errorGeneric": "Ocurrió un error inesperado al guardar la categoría."
+      "errorGeneric": "Ocurrió un error inesperado al guardar la categoría.",
+      "successCreated": "Categoría creada correctamente.",
+      "successUpdated": "Categoría actualizada correctamente."
     },
     "conceptForm": {
       "breadcrumbBase": "Taxonomía",
@@ -350,7 +352,10 @@
       "autoOrderLabel": "Asignar al final",
       "autoOrderNotice": "Se asignará automáticamente al final de los conceptos.",
       "errorCreate": "Error al crear el concepto.",
-      "errorGeneric": "Ocurrió un error inesperado al guardar el concepto."
+      "errorUpdate": "Error al actualizar el concepto.",
+      "errorGeneric": "Ocurrió un error inesperado al guardar el concepto.",
+      "successCreated": "Concepto creado correctamente.",
+      "successUpdated": "Concepto actualizado correctamente."
     }
   },
   "sectionForm": {

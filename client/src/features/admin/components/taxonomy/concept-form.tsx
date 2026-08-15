@@ -4,8 +4,14 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Switch } from "@/components/ui/switch";
-import type { ConceptItem } from "../../schemas/taxonomy-schema";
+import {
+  conceptFormSchema,
+  type ConceptFormInput,
+  type ConceptItem,
+} from "../../schemas/taxonomy-schema";
 import {
   getCategoryOptionsAction,
   createConceptAction,
@@ -30,18 +36,9 @@ export function ConceptForm({
   const targetVersionId =
     activeReportVersion?.id || activeVersionId || activeReportId;
 
-  const [name, setName] = useState(initialData?.name || "");
-  const [description, setDescription] = useState(
-    initialData?.description || "",
-  );
-  const [categoryId, setCategoryId] = useState(initialData?.category_id || "");
-  const [displayOrder, setDisplayOrder] = useState(
-    initialData?.display_order || 1,
-  );
   const [autoOrder, setAutoOrder] = useState<boolean>(
     !isEditMode && initialData?.display_order === undefined,
   );
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -49,44 +46,69 @@ export function ConceptForm({
     { id: string; name: string }[]
   >([]);
 
+  const {
+    control,
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<ConceptFormInput>({
+    resolver: zodResolver(conceptFormSchema),
+    defaultValues: {
+      category_id: initialData?.category_id || "",
+      name: initialData?.name || "",
+      description: initialData?.description || "",
+      display_order: initialData?.display_order ?? undefined,
+      section_id: initialData?.section_id || null,
+    },
+  });
+
+  const watchName = useWatch({ control, name: "name" });
+  const watchDisplayOrder = useWatch({ control, name: "display_order" });
+
   useEffect(() => {
+    let isMounted = true;
     async function loadOptions() {
       try {
         const cats = await getCategoryOptionsAction(
           targetVersionId || undefined,
         );
+        if (!isMounted) return;
         setCategoryOptions(cats);
 
         if (!initialData?.category_id && cats.length > 0) {
-          setCategoryId(cats[0].id);
+          setValue("category_id", cats[0].id, { shouldValidate: true });
         }
       } catch (err) {
         console.error("Failed to load options for concept form", err);
       }
     }
     void loadOptions();
-  }, [initialData, activeReportId, targetVersionId]);
+    return () => {
+      isMounted = false;
+    };
+  }, [initialData, targetVersionId, setValue]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const onSubmit = async (values: ConceptFormInput) => {
     setErrorMessage(null);
     setSuccessMessage(null);
 
     try {
+      const orderToSend = autoOrder ? undefined : (values.display_order ?? undefined);
+
       if (isEditMode && initialData?.id) {
         const res = await updateConceptAction(
           initialData.id,
           {
-            name,
-            description,
-            ...(autoOrder ? {} : { display_order: displayOrder }),
+            name: values.name,
+            description: values.description,
+            ...(autoOrder ? {} : { display_order: orderToSend }),
           },
-          categoryId,
+          values.category_id,
         );
 
         if (res.success) {
-          setSuccessMessage("Concepto actualizado correctamente.");
+          setSuccessMessage(t("successUpdated"));
           setTimeout(() => {
             router.push("/admin/taxonomy");
             router.refresh();
@@ -96,14 +118,14 @@ export function ConceptForm({
         }
       } else {
         const res = await createConceptAction({
-          category_id: categoryId,
-          name,
-          description,
-          ...(autoOrder ? {} : { display_order: displayOrder }),
+          category_id: values.category_id,
+          name: values.name,
+          description: values.description,
+          ...(autoOrder ? {} : { display_order: orderToSend }),
         });
 
         if (res.success) {
-          setSuccessMessage("Concepto creado correctamente.");
+          setSuccessMessage(t("successCreated"));
           setTimeout(() => {
             router.push("/admin/taxonomy");
             router.refresh();
@@ -115,14 +137,12 @@ export function ConceptForm({
     } catch (err) {
       console.error("Error submitting concept form:", err);
       setErrorMessage(t("errorGeneric"));
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   return (
     <div>
-      <form onSubmit={handleSubmit} noValidate>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
         {/* ── Encabezado y Breadcrumb (.eyebrow del prototipo) ────────── */}
         <div
           style={{
@@ -186,7 +206,11 @@ export function ConceptForm({
                 margin: 0,
               }}
             >
-              {isEditMode ? t("editTitle", { name }) : t("createTitle")}
+              {isEditMode
+                ? t("editTitle", {
+                    name: watchName || initialData?.name || "",
+                  })
+                : t("createTitle")}
             </h1>
             <p
               style={{
@@ -232,9 +256,7 @@ export function ConceptForm({
                 <polyline points="17 21 17 13 7 13 7 21" />
                 <polyline points="7 3 7 8 15 8" />
               </svg>
-              <span>
-                {isSubmitting ? t("saving") : t("saveConcept")}
-              </span>
+              <span>{isSubmitting ? t("saving") : t("saveConcept")}</span>
             </button>
           </div>
         </div>
@@ -352,14 +374,14 @@ export function ConceptForm({
                   </label>
                   <select
                     id="concept-category"
-                    value={categoryId}
-                    onChange={(e) => setCategoryId(e.target.value)}
-                    required
+                    {...register("category_id")}
                     style={{
                       width: "100%",
                       height: "40px",
                       padding: "0 13px",
-                      border: "1px solid #ebebeb",
+                      border: errors.category_id
+                        ? "1px solid #b3261e"
+                        : "1px solid #ebebeb",
                       borderRadius: "8px",
                       background: "#ffffff",
                       fontFamily:
@@ -379,6 +401,20 @@ export function ConceptForm({
                       </option>
                     ))}
                   </select>
+                  {errors.category_id && (
+                    <p
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "12px",
+                        color: "#b3261e",
+                        marginTop: "5px",
+                        margin: 0,
+                      }}
+                    >
+                      {errors.category_id.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Nombre del concepto */}
@@ -400,15 +436,15 @@ export function ConceptForm({
                   </label>
                   <input
                     id="concept-name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    {...register("name")}
                     placeholder={t("namePlaceholder")}
-                    required
                     style={{
                       width: "100%",
                       height: "40px",
                       padding: "0 13px",
-                      border: "1px solid #ebebeb",
+                      border: errors.name
+                        ? "1px solid #b3261e"
+                        : "1px solid #ebebeb",
                       borderRadius: "8px",
                       background: "#ffffff",
                       fontFamily:
@@ -419,6 +455,20 @@ export function ConceptForm({
                       boxSizing: "border-box",
                     }}
                   />
+                  {errors.name && (
+                    <p
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "12px",
+                        color: "#b3261e",
+                        marginTop: "5px",
+                        margin: 0,
+                      }}
+                    >
+                      {errors.name.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Definición técnica */}
@@ -440,8 +490,7 @@ export function ConceptForm({
                   </label>
                   <textarea
                     id="concept-desc"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    {...register("description")}
                     placeholder={t("descPlaceholder")}
                     rows={4}
                     style={{
@@ -528,7 +577,20 @@ export function ConceptForm({
                     <Switch
                       id="auto-order-concept-switch"
                       checked={autoOrder}
-                      onCheckedChange={setAutoOrder}
+                      onCheckedChange={(checked) => {
+                        setAutoOrder(checked);
+                        if (checked) {
+                          setValue("display_order", undefined, {
+                            shouldValidate: true,
+                          });
+                        } else {
+                          setValue(
+                            "display_order",
+                            initialData?.display_order || 1,
+                            { shouldValidate: true },
+                          );
+                        }
+                      }}
                     />
                   </div>
 
@@ -565,12 +627,22 @@ export function ConceptForm({
                       </label>
                       <input
                         id="order-concept-input"
-                        type="number"
-                        min={1}
-                        value={displayOrder}
-                        onChange={(e) =>
-                          setDisplayOrder(parseInt(e.target.value) || 1)
-                        }
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={watchDisplayOrder ?? 1}
+                        onKeyDown={(e) => {
+                          if (["e", "E", "+", "-", ".", ","].includes(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/[^0-9]/g, "");
+                          const val = raw ? parseInt(raw, 10) : undefined;
+                          setValue("display_order", val, {
+                            shouldValidate: true,
+                          });
+                        }}
                         style={{
                           width: "70px",
                           height: "36px",

@@ -4,8 +4,14 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Switch } from "@/components/ui/switch";
-import type { CategoryItem } from "../../schemas/taxonomy-schema";
+import {
+  categoryFormSchema,
+  type CategoryFormInput,
+  type CategoryItem,
+} from "../../schemas/taxonomy-schema";
 import {
   createCategoryAction,
   updateCategoryAction,
@@ -27,57 +33,68 @@ export function CategoryForm({
   const router = useRouter();
   const { activeReportId, activeVersionId, activeReportVersion } = useVersion();
 
-  const [name, setName] = useState(initialData?.name || "");
-  const [description, setDescription] = useState(
-    initialData?.description || "",
-  );
-  const [displayOrder, setDisplayOrder] = useState(
-    initialData?.display_order || 1,
-  );
   const [autoOrder, setAutoOrder] = useState<boolean>(
     !initialData?.display_order,
   );
-  const [active, setActive] = useState<boolean>(
-    initialData?.status === "PUBLISHED" ||
-      initialData?.active ||
-      initialData?.published ||
-      true,
-  );
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const {
+    control,
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<CategoryFormInput>({
+    resolver: zodResolver(categoryFormSchema),
+    defaultValues: {
+      name: initialData?.name || "",
+      description: initialData?.description || "",
+      display_order: initialData?.display_order ?? undefined,
+      status:
+        initialData?.status ||
+        (initialData?.published || initialData?.active ? "PUBLISHED" : "DRAFT"),
+      published:
+        initialData?.status === "PUBLISHED" ||
+        initialData?.published ||
+        initialData?.active ||
+        true,
+    },
+  });
+
+  const watchName = useWatch({ control, name: "name" });
+  const watchPublished = useWatch({ control, name: "published" });
+  const watchDisplayOrder = useWatch({ control, name: "display_order" });
+
+  const onSubmit = async (values: CategoryFormInput) => {
     setErrorMessage(null);
     setSuccessMessage(null);
 
     try {
-      const statusVal = active ? "PUBLISHED" : "DRAFT";
+      const statusVal = values.published ? "PUBLISHED" : "DRAFT";
       const targetVersionId =
         initialData?.report_version_id ||
         initialData?.report_id ||
         activeReportVersion?.id ||
         activeVersionId ||
         activeReportId;
-      const orderToSend = autoOrder ? undefined : displayOrder;
+      const orderToSend = autoOrder ? undefined : (values.display_order ?? undefined);
 
       if (isEditMode && initialData?.id) {
         const res = await updateCategoryAction(
           initialData.id,
           {
-            name,
-            description,
+            name: values.name,
+            description: values.description,
             display_order: orderToSend,
             status: statusVal,
-            published: active,
+            published: values.published,
           },
           targetVersionId || undefined,
         );
 
         if (res.success) {
-          setSuccessMessage("Categoría actualizada correctamente.");
+          setSuccessMessage(t("successUpdated"));
           setTimeout(() => {
             router.push("/admin/taxonomy");
             router.refresh();
@@ -88,15 +105,15 @@ export function CategoryForm({
       } else {
         const res = await createCategoryAction({
           report_id: targetVersionId || undefined,
-          name,
-          description,
+          name: values.name,
+          description: values.description,
           display_order: orderToSend,
           status: statusVal,
-          published: active,
+          published: values.published,
         });
 
         if (res.success) {
-          setSuccessMessage("Categoría creada correctamente.");
+          setSuccessMessage(t("successCreated"));
           setTimeout(() => {
             router.push("/admin/taxonomy");
             router.refresh();
@@ -108,14 +125,12 @@ export function CategoryForm({
     } catch (err) {
       console.error("Error submitting category form:", err);
       setErrorMessage(t("errorGeneric"));
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   return (
     <div>
-      <form onSubmit={handleSubmit} noValidate>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
         {/* ── Encabezado y Breadcrumb (.eyebrow del prototipo) ────────── */}
         <div
           style={{
@@ -179,7 +194,9 @@ export function CategoryForm({
                 margin: 0,
               }}
             >
-              {isEditMode ? t("editTitle", { name }) : t("createTitle")}
+              {isEditMode
+                ? t("editTitle", { name: watchName || initialData?.name || "" })
+                : t("createTitle")}
             </h1>
             <p
               style={{
@@ -225,9 +242,7 @@ export function CategoryForm({
                 <polyline points="17 21 17 13 7 13 7 21" />
                 <polyline points="7 3 7 8 15 8" />
               </svg>
-              <span>
-                {isSubmitting ? t("saving") : t("saveCategory")}
-              </span>
+              <span>{isSubmitting ? t("saving") : t("saveCategory")}</span>
             </button>
           </div>
         </div>
@@ -344,15 +359,15 @@ export function CategoryForm({
                   </label>
                   <input
                     id="cat-name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    {...register("name")}
                     placeholder={t("namePlaceholder")}
-                    required
                     style={{
                       width: "100%",
                       height: "40px",
                       padding: "0 13px",
-                      border: "1px solid #ebebeb",
+                      border: errors.name
+                        ? "1px solid #b3261e"
+                        : "1px solid #ebebeb",
                       borderRadius: "8px",
                       background: "#ffffff",
                       fontFamily:
@@ -363,6 +378,20 @@ export function CategoryForm({
                       boxSizing: "border-box",
                     }}
                   />
+                  {errors.name && (
+                    <p
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "12px",
+                        color: "#b3261e",
+                        marginTop: "5px",
+                        margin: 0,
+                      }}
+                    >
+                      {errors.name.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Descripción */}
@@ -376,7 +405,7 @@ export function CategoryForm({
                       fontSize: "14px",
                       fontWeight: 500,
                       letterSpacing: "-0.01em",
-                      color: "#08090a",
+                      color: "#00603a",
                       marginBottom: "6px",
                     }}
                   >
@@ -384,8 +413,7 @@ export function CategoryForm({
                   </label>
                   <textarea
                     id="cat-desc"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    {...register("description")}
                     placeholder={t("descPlaceholder")}
                     rows={3}
                     style={{
@@ -468,8 +496,8 @@ export function CategoryForm({
                     >
                       {t("statusLabel")}
                     </label>
-                    <span className={active ? "bg pub" : "bg draft"}>
-                      {active ? t("statusActive") : t("statusInactive")}
+                    <span className={watchPublished ? "bg pub" : "bg draft"}>
+                      {watchPublished ? t("statusActive") : t("statusInactive")}
                     </span>
                   </div>
                   <div
@@ -491,9 +519,16 @@ export function CategoryForm({
                         color: "#6f6f6f",
                       }}
                     >
-                      {active ? t("statusActive") : t("statusInactive")}
+                      {watchPublished ? t("statusActive") : t("statusInactive")}
                     </span>
-                    <Switch checked={active} onCheckedChange={setActive} />
+                    <Switch
+                      checked={watchPublished ?? true}
+                      onCheckedChange={(checked) =>
+                        setValue("published", checked, {
+                          shouldValidate: true,
+                        })
+                      }
+                    />
                   </div>
                 </div>
 
@@ -524,7 +559,20 @@ export function CategoryForm({
                     <Switch
                       id="auto-order-switch"
                       checked={autoOrder}
-                      onCheckedChange={setAutoOrder}
+                      onCheckedChange={(checked) => {
+                        setAutoOrder(checked);
+                        if (checked) {
+                          setValue("display_order", undefined, {
+                            shouldValidate: true,
+                          });
+                        } else {
+                          setValue(
+                            "display_order",
+                            initialData?.display_order || 1,
+                            { shouldValidate: true },
+                          );
+                        }
+                      }}
                     />
                   </div>
 
@@ -561,12 +609,22 @@ export function CategoryForm({
                       </label>
                       <input
                         id="order-input"
-                        type="number"
-                        min={0}
-                        value={displayOrder}
-                        onChange={(e) =>
-                          setDisplayOrder(parseInt(e.target.value) || 0)
-                        }
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={watchDisplayOrder ?? 1}
+                        onKeyDown={(e) => {
+                          if (["e", "E", "+", "-", ".", ","].includes(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/[^0-9]/g, "");
+                          const val = raw ? parseInt(raw, 10) : undefined;
+                          setValue("display_order", val, {
+                            shouldValidate: true,
+                          });
+                        }}
                         style={{
                           width: "70px",
                           height: "36px",

@@ -324,7 +324,9 @@
       "iconPlaceholder": "Select icon (zap, server, network...)",
       "errorCreate": "Error creating category.",
       "errorUpdate": "Error updating category.",
-      "errorGeneric": "An unexpected error occurred while saving the category."
+      "errorGeneric": "An unexpected error occurred while saving the category.",
+      "successCreated": "Category created successfully.",
+      "successUpdated": "Category updated successfully."
     },
     "conceptForm": {
       "breadcrumbBase": "Taxonomy",
@@ -350,7 +352,10 @@
       "autoOrderLabel": "Assign to end",
       "autoOrderNotice": "Will be automatically assigned to the end of the concepts.",
       "errorCreate": "Error creating concept.",
-      "errorGeneric": "An unexpected error occurred while saving the concept."
+      "errorUpdate": "Error updating concept.",
+      "errorGeneric": "An unexpected error occurred while saving the concept.",
+      "successCreated": "Concept created successfully.",
+      "successUpdated": "Concept updated successfully."
     }
   },
   "reports": {
