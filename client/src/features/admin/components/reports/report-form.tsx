@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import {
@@ -61,10 +61,10 @@ export function ReportForm({
   const defaultVersionRaw = parseInitialVersionNumber(initialData?.version);
 
   const {
+    control,
     register,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors },
   } = useForm<ReportFormInput>({
     resolver: zodResolver(reportFormSchema),
@@ -82,11 +82,11 @@ export function ReportForm({
     },
   });
 
-  const watchTitle = watch("title");
-  const watchSummary = watch("summary");
-  const watchVersion = watch("version");
-  const watchLanguage = watch("language");
-  const watchStatus = watch("status");
+  const watchTitle = useWatch({ control, name: "title" });
+  const watchSummary = useWatch({ control, name: "summary" });
+  const watchVersion = useWatch({ control, name: "version" });
+  const watchLanguage = useWatch({ control, name: "language" });
+  const watchStatus = useWatch({ control, name: "status" });
 
   const cleanVer = (watchVersion || "").replace(/[^0-9]/g, "");
   const formattedVersion = `v${cleanVer || "1"}`;

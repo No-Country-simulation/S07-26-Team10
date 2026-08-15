@@ -16,7 +16,6 @@ import { Layers } from "lucide-react";
 export function SectionsManagement() {
   const t = useTranslations("AdminPage");
   const {
-    activeReport,
     activeReportVersion,
     activeVersionId,
     reportVersions,
@@ -147,10 +146,6 @@ export function SectionsManagement() {
   const draftCount = sections.filter(
     (s) => s.status?.toUpperCase() !== "PUBLISHED" && !s.published,
   ).length;
-  const totalFigures = sections.reduce(
-    (acc, s) => acc + (s.resources?.length || 0),
-    0,
-  );
   const publishedPercent =
     totalSections > 0 ? Math.round((publishedCount / totalSections) * 100) : 0;
 

@@ -12,7 +12,7 @@ import {
   createReportAction,
 } from "../../actions/reports-actions";
 import type { BaseReport, ReportVersion } from "../../schemas/report-schema";
-import { Layers, Search, X, Plus, Loader2 } from "lucide-react";
+import { Search, X, Plus, Loader2 } from "lucide-react";
 
 export function ReportsManagementSkeleton() {
   return (
@@ -243,13 +243,10 @@ export function ReportsManagement() {
   } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCreatingBase, setIsCreatingBase] = useState(false);
-  const [newBaseTitle, setNewBaseTitle] = useState("");
-  const [newBaseSlug, setNewBaseSlug] = useState("");
   const [isSubmittingBase, setIsSubmittingBase] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
-    setActionError(null);
     try {
       const reportsWithVersions = await getReportsWithVersionsAction();
       const bases: BaseReport[] = reportsWithVersions.map((r) => {
@@ -272,8 +269,38 @@ export function ReportsManagement() {
   }, [refreshReports]);
 
   useEffect(() => {
-    void loadData();
-  }, [loadData]);
+    let isMounted = true;
+    async function fetchData() {
+      try {
+        const reportsWithVersions = await getReportsWithVersionsAction();
+        if (!isMounted) return;
+        const bases: BaseReport[] = reportsWithVersions.map((r) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { report_versions, ...base } = r;
+          return base;
+        });
+        const allVersions: ReportVersion[] = reportsWithVersions.flatMap(
+          (r) => r.report_versions || [],
+        );
+
+        setBaseReports(bases);
+        setVersions(allVersions);
+        await refreshReports();
+      } catch (err) {
+        console.error("Failed to load reports data", err);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshReports]);
 
   // Manejo de creación de nuevo Reporte Base contenedor
   const handleCreateBaseReport = async (e: React.FormEvent) => {

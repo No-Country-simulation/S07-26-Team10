@@ -7,8 +7,8 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import {
-  createSectionSchema,
-  updateSectionSchema,
+  sectionFormSchema,
+  type SectionFormInput,
   type CreateSectionInput,
   type UpdateSectionInput,
   type SectionItem,
@@ -30,7 +30,6 @@ import { getReferencesAction } from "@/features/admin/actions/references-actions
 import type { ResourceItem } from "@/features/admin/schemas/resource-schema";
 import type { ReferenceItem } from "@/features/admin/schemas/reference-schema";
 import {
-  Layers,
   Copy,
   Pencil,
   Trash2,
@@ -62,7 +61,6 @@ export function SectionForm({
     contentLanguage,
   } = useVersion();
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [feedback, setFeedback] = useState<{
@@ -128,44 +126,23 @@ export function SectionForm({
     register,
     handleSubmit,
     setValue,
-    formState: { errors },
-  } = useForm<CreateSectionInput>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(
-      isEditMode ? updateSectionSchema : createSectionSchema,
-    ) as any,
+    formState: { errors, isSubmitting },
+  } = useForm<SectionFormInput>({
+    resolver: zodResolver(sectionFormSchema),
     defaultValues: {
       report_id: targetReportVersionId,
       title: initialData?.title || "",
       content: initialData?.content || "",
       display_order: initialData?.display_order ?? undefined,
+      status: initialData?.status || "DRAFT",
       published: initialData?.published ?? true,
     },
   });
 
-  const watchTitle = useWatch({
-    control,
-    name: "title",
-    defaultValue: initialData?.title || "",
-  });
-
-  const watchContent = useWatch({
-    control,
-    name: "content",
-    defaultValue: initialData?.content || "",
-  });
-
-  const watchDisplayOrder = useWatch({
-    control,
-    name: "display_order",
-    defaultValue: initialData?.display_order,
-  });
-
-  const watchPublished = useWatch({
-    control,
-    name: "published",
-    defaultValue: initialData?.published ?? true,
-  });
+  const watchTitle = useWatch({ control, name: "title" });
+  const watchContent = useWatch({ control, name: "content" });
+  const watchDisplayOrder = useWatch({ control, name: "display_order" });
+  const watchPublished = useWatch({ control, name: "published" });
 
   useEffect(() => {
     if (!isEditMode && targetReportVersionId) {
@@ -173,8 +150,7 @@ export function SectionForm({
     }
   }, [targetReportVersionId, isEditMode, setValue]);
 
-  const onSubmit = async (values: CreateSectionInput) => {
-    setIsSubmitting(true);
+  const onSubmit = async (values: SectionFormInput) => {
     setFeedback(null);
 
     try {
@@ -187,7 +163,7 @@ export function SectionForm({
         const updateInput: UpdateSectionInput = {
           title: values.title,
           content: values.content,
-          display_order: autoOrder ? undefined : values.display_order,
+          display_order: autoOrder ? undefined : (values.display_order ?? undefined),
           status: statusVal,
           published: isPub,
         };
@@ -214,7 +190,6 @@ export function SectionForm({
             type: "error",
             message: t("noActiveReportWarning"),
           });
-          setIsSubmitting(false);
           return;
         }
 
@@ -222,7 +197,7 @@ export function SectionForm({
           report_id: targetReportVersionId,
           title: values.title,
           content: values.content,
-          display_order: autoOrder ? undefined : values.display_order,
+          display_order: autoOrder ? undefined : (values.display_order ?? undefined),
           status: statusVal,
           published: isPub,
         };
@@ -248,8 +223,6 @@ export function SectionForm({
         type: "error",
         message: t("genericError"),
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -1304,16 +1277,21 @@ export function SectionForm({
                       >
                         <input
                           id="order"
-                          type="number"
-                          min={1}
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           value={watchDisplayOrder ?? 1}
+                          onKeyDown={(e) => {
+                            if (["e", "E", "+", "-", ".", ","].includes(e.key)) {
+                              e.preventDefault();
+                            }
+                          }}
                           onChange={(e) => {
-                            const val = parseInt(e.target.value);
-                            setValue(
-                              "display_order",
-                              isNaN(val) ? undefined : val,
-                              { shouldValidate: true },
-                            );
+                            const raw = e.target.value.replace(/[^0-9]/g, "");
+                            const val = raw ? parseInt(raw, 10) : undefined;
+                            setValue("display_order", val, {
+                              shouldValidate: true,
+                            });
                           }}
                           style={{
                             width: "70px",
