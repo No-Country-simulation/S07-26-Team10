@@ -219,7 +219,7 @@ export function ResourceForm({
 
   return (
     <div>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {/* ── Encabezado y Breadcrumb (.eyebrow del prototipo) ────────── */}
         <div
           style={{

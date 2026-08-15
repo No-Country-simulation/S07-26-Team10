@@ -70,6 +70,23 @@ export type UpdateReportVersionInput = z.infer<
   typeof updateReportVersionSchema
 >;
 
+export const reportFormSchema = z.object({
+  title: z
+    .string()
+    .min(1, "El título es obligatorio")
+    .max(255, "Máximo 255 caracteres"),
+  version: z
+    .string()
+    .min(1, "La versión es obligatoria")
+    .regex(/^[0-9]+$/, "Solo se permiten números enteros"),
+  language: reportLanguageEnum,
+  summary: z.string().min(1, "El resumen es obligatorio"),
+  citation_text: z.string().min(1, "El texto de citación es obligatorio"),
+  status: reportVersionStatusEnum,
+});
+
+export type ReportFormInput = z.infer<typeof reportFormSchema>;
+
 // Compatibilidad retroactiva mientras se realiza la migración
 export const reportSchema = reportVersionSchema;
 export type ReportItem = ReportVersion;

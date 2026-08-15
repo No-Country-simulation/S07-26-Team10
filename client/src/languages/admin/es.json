@@ -507,6 +507,18 @@
       "summaryPlaceholder": "Descripción general del contenido y alcance del reporte...",
       "citationLabel": "Texto de Citación",
       "citationPlaceholder": "Ej. Physa Energy Analytics. (2026). Stranded Capacity Report.",
+      "statusDraftBadge": "Borrador",
+      "statusPublishedBadge": "Publicada",
+      "langOptionEs": "ES (Español)",
+      "langOptionEn": "EN (Inglés)",
+      "immutabilityTitle": "Inmutabilidad de versiones",
+      "immutabilityDesc": "Una versión publicada mantiene la integridad histórica de los datos. Para cambios estructurales posteriores, cree una nueva versión (ej. v2).",
+      "msgUpdated": "Versión actualizada correctamente.",
+      "msgCreated": "Versión creada exitosamente.",
+      "errUpdate": "Error al actualizar la versión.",
+      "errCreate": "Error al crear la versión.",
+      "errCreateBase": "No se pudo crear el contenedor de Reporte Base.",
+      "errUnexpected": "Ocurrió un error inesperado al guardar la versión.",
       "slugLabel": "Slug (URL)",
       "slugHelper": "Generado automáticamente por el servidor a partir del título."
     }

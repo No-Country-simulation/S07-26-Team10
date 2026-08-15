@@ -4,8 +4,16 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
-import type { BaseReport, ReportVersion } from "../../schemas/report-schema";
+import {
+  reportFormSchema,
+  type BaseReport,
+  type ReportVersion,
+  type ReportFormInput,
+  type UpdateReportVersionInput,
+} from "../../schemas/report-schema";
 import {
   createReportAction,
   getReportsAction,
@@ -22,7 +30,7 @@ interface ReportFormProps {
   isEditMode?: boolean;
 }
 
-const parseInitialVersion = (initialVersion?: string) => {
+const parseInitialVersionNumber = (initialVersion?: string) => {
   if (!initialVersion) return "1";
   const sanitized = initialVersion.replace(/[^0-9]/g, "");
   return sanitized || "1";
@@ -45,33 +53,43 @@ export function ReportForm({
     BaseReport[]
   >([]);
   const [selectedReportId, setSelectedReportId] = useState<string>("new");
-
-  const [versionNumber, setVersionNumber] = useState<string>(
-    parseInitialVersion(initialData?.version),
-  );
-  const [language, setLanguage] = useState<"ES" | "EN">(
-    isEditMode
-      ? (initialData?.language as "ES" | "EN") || "ES"
-      : (contentLanguage.toUpperCase() as "ES" | "EN") ||
-          (currentContextLang.toUpperCase() as "ES" | "EN") ||
-          "ES",
-  );
-  const [status, setStatus] = useState<"DRAFT" | "PUBLISHED">(
-    initialData?.status || "DRAFT",
-  );
-
-  const cleanVer = versionNumber.replace(/[^0-9]/g, "");
-  const formattedVersion = `v${cleanVer || "1"}`;
-  const [title, setTitle] = useState(initialData?.title || "");
-
-  const [summary, setSummary] = useState(initialData?.summary || "");
-  const [citationText, setCitationText] = useState(
-    initialData?.citation_text || "",
-  );
   const [summaryTab, setSummaryTab] = useState<"editor" | "preview">("editor");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string[]>>({});
-  const [successMsg, setSuccessMsg] = useState("");
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  const defaultVersionRaw = parseInitialVersionNumber(initialData?.version);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<ReportFormInput>({
+    resolver: zodResolver(reportFormSchema),
+    defaultValues: {
+      title: initialData?.title || "",
+      version: defaultVersionRaw,
+      language: isEditMode
+        ? (initialData?.language as "ES" | "EN") || "ES"
+        : (contentLanguage.toUpperCase() as "ES" | "EN") ||
+          (currentContextLang.toUpperCase() as "ES" | "EN") ||
+          "ES",
+      summary: initialData?.summary || "",
+      citation_text: initialData?.citation_text || "",
+      status: initialData?.status || "DRAFT",
+    },
+  });
+
+  const watchTitle = watch("title");
+  const watchSummary = watch("summary");
+  const watchVersion = watch("version");
+  const watchLanguage = watch("language");
+  const watchStatus = watch("status");
+
+  const cleanVer = (watchVersion || "").replace(/[^0-9]/g, "");
+  const formattedVersion = `v${cleanVer || "1"}`;
 
   useEffect(() => {
     async function loadBaseReports() {
@@ -97,55 +115,35 @@ export function ReportForm({
     void loadBaseReports();
   }, [isEditMode, preselectedReportId]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onFormSubmit = async (data: ReportFormInput) => {
     setIsSubmitting(true);
-    setErrors({});
-    setSuccessMsg("");
-
-    const validationErrors: Record<string, string[]> = {};
-    if (!title.trim()) {
-      validationErrors.title = ["El título es obligatorio."];
-    }
-    if (!summary.trim()) {
-      validationErrors.summary = ["El resumen ejecutivo es obligatorio."];
-    }
-    if (!citationText.trim()) {
-      validationErrors.citation_text = ["El texto de citación es obligatorio."];
-    }
-
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      setIsSubmitting(false);
-      return;
-    }
+    setServerError(null);
+    setSuccessMsg(null);
 
     try {
       if (isEditMode && initialData?.id) {
+        const updatePayload: UpdateReportVersionInput = {
+          title: data.title,
+          summary: data.summary,
+          citation_text: data.citation_text,
+          status: data.status,
+        };
+
         const res = await updateReportVersionAction(
           initialData.report_id,
           initialData.id,
-          {
-            title,
-            summary,
-            citation_text: citationText,
-            status,
-          },
+          updatePayload,
         );
 
         if (res.success) {
-          setSuccessMsg("Versión actualizada correctamente.");
+          setSuccessMsg(t("msgUpdated"));
           await refreshReports();
           setTimeout(() => {
             router.push("/admin/reports");
             router.refresh();
           }, 800);
         } else {
-          if (res.errors) setErrors(res.errors);
-          else
-            setErrors({
-              global: [res.message || "Error al actualizar la versión."],
-            });
+          setServerError(res.message || t("errUpdate"));
         }
       } else {
         let parentReportId = selectedReportId;
@@ -154,12 +152,9 @@ export function ReportForm({
           const createBaseRes = await createReportAction();
 
           if (!createBaseRes.success || !createBaseRes.data?.id) {
-            setErrors({
-              global: [
-                createBaseRes.message ||
-                  "No se pudo crear el contenedor de Reporte Base.",
-              ],
-            });
+            setServerError(
+              createBaseRes.message || t("errCreateBase"),
+            );
             setIsSubmitting(false);
             return;
           }
@@ -167,34 +162,28 @@ export function ReportForm({
         }
 
         const res = await createReportVersionAction(parentReportId, {
+          title: data.title,
           version: formattedVersion,
-          title,
-          summary,
-          citation_text: citationText,
-          language,
-          status,
+          language: data.language,
+          summary: data.summary,
+          citation_text: data.citation_text,
+          status: data.status,
         });
 
         if (res.success) {
-          setSuccessMsg("Versión creada exitosamente.");
+          setSuccessMsg(t("msgCreated"));
           await refreshReports();
           setTimeout(() => {
             router.push("/admin/reports");
             router.refresh();
           }, 800);
         } else {
-          if (res.errors) setErrors(res.errors);
-          else
-            setErrors({
-              global: [res.message || "Error al crear la versión."],
-            });
+          setServerError(res.message || t("errCreate"));
         }
       }
     } catch (err) {
       console.error("Error submitting report version form:", err);
-      setErrors({
-        global: ["Ocurrió un error inesperado al guardar la versión."],
-      });
+      setServerError(t("errUnexpected"));
     } finally {
       setIsSubmitting(false);
     }
@@ -202,7 +191,7 @@ export function ReportForm({
 
   return (
     <div>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onFormSubmit)} noValidate>
         {/* ── Encabezado y Breadcrumb (.eyebrow del prototipo) ────────── */}
         <div
           style={{
@@ -266,7 +255,9 @@ export function ReportForm({
                 margin: 0,
               }}
             >
-              {isEditMode ? t("editTitle", { title }) : t("createTitle")}
+              {isEditMode
+                ? t("editTitle", { title: watchTitle || initialData?.title || "" })
+                : t("createTitle")}
             </h1>
             <p
               style={{
@@ -350,7 +341,7 @@ export function ReportForm({
           </div>
         )}
 
-        {errors.global && (
+        {serverError && (
           <div
             style={{
               display: "flex",
@@ -368,7 +359,7 @@ export function ReportForm({
             }}
           >
             <AlertCircle style={{ width: 18, height: 18, flexShrink: 0 }} />
-            <span>{errors.global.join(", ")}</span>
+            <span>{serverError}</span>
           </div>
         )}
 
@@ -502,15 +493,15 @@ export function ReportForm({
                   </label>
                   <input
                     id="report-title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    {...register("title")}
                     placeholder={t("titlePlaceholder")}
-                    required
                     style={{
                       width: "100%",
                       height: "40px",
                       padding: "0 13px",
-                      border: "1px solid #ebebeb",
+                      border: errors.title
+                        ? "1px solid #b3261e"
+                        : "1px solid #ebebeb",
                       borderRadius: "8px",
                       background: "#ffffff",
                       fontFamily:
@@ -529,7 +520,7 @@ export function ReportForm({
                         marginTop: "4px",
                       }}
                     >
-                      {errors.title[0]}
+                      {errors.title.message}
                     </p>
                   )}
                 </div>
@@ -632,8 +623,10 @@ export function ReportForm({
                       }}
                     >
                       <MDXEditorComponent
-                        markdown={summary}
-                        onChange={setSummary}
+                        markdown={watchSummary || ""}
+                        onChange={(val) =>
+                          setValue("summary", val, { shouldValidate: true })
+                        }
                       />
                     </div>
                   ) : (
@@ -646,7 +639,7 @@ export function ReportForm({
                         minHeight: "140px",
                       }}
                     >
-                      <MdxPreview content={summary} />
+                      <MdxPreview content={watchSummary || ""} />
                     </div>
                   )}
                   {errors.summary && (
@@ -657,7 +650,7 @@ export function ReportForm({
                         marginTop: "4px",
                       }}
                     >
-                      {errors.summary[0]}
+                      {errors.summary.message}
                     </p>
                   )}
                 </div>
@@ -682,10 +675,8 @@ export function ReportForm({
                   </label>
                   <input
                     id="report-citation"
-                    value={citationText}
-                    onChange={(e) => setCitationText(e.target.value)}
+                    {...register("citation_text")}
                     placeholder={t("citationPlaceholder")}
-                    required
                     style={{
                       width: "100%",
                       height: "40px",
@@ -711,7 +702,7 @@ export function ReportForm({
                         marginTop: "4px",
                       }}
                     >
-                      {errors.citation_text[0]}
+                      {errors.citation_text.message}
                     </p>
                   )}
                 </div>
@@ -797,19 +788,32 @@ export function ReportForm({
                       </span>
                       <input
                         id="version-number"
-                        type="number"
-                        min="1"
-                        step="1"
-                        value={cleanVer}
-                        onChange={(e) => setVersionNumber(e.target.value)}
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        {...register("version", {
+                          onChange: (e) => {
+                            const val = (e.target.value as string).replace(
+                              /[^0-9]/g,
+                              "",
+                            );
+                            setValue("version", val, { shouldValidate: true });
+                          },
+                        })}
+                        onKeyDown={(e) => {
+                          if (["e", "E", "+", "-", ".", ","].includes(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
                         placeholder="1"
-                        required
                         style={{
                           width: "100%",
                           height: "38px",
                           paddingLeft: "26px",
                           paddingRight: "12px",
-                          border: "1px solid #ebebeb",
+                          border: errors.version
+                            ? "1px solid #b3261e"
+                            : "1px solid #ebebeb",
                           borderRadius: "8px",
                           background: "#ffffff",
                           fontFamily:
@@ -821,6 +825,17 @@ export function ReportForm({
                         }}
                       />
                     </div>
+                    {errors.version && (
+                      <p
+                        style={{
+                          color: "#b3261e",
+                          fontSize: "12px",
+                          marginTop: "4px",
+                        }}
+                      >
+                        {errors.version.message}
+                      </p>
+                    )}
                   </div>
                 ) : (
                   <div>
@@ -851,45 +866,72 @@ export function ReportForm({
                 )}
 
                 {/* Idioma */}
-                <div>
-                  <label
-                    htmlFor="report-lang"
-                    style={{
-                      display: "block",
-                      fontFamily:
-                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
-                      fontSize: "13.5px",
-                      fontWeight: 500,
-                      color: "#00603a",
-                      marginBottom: "6px",
-                    }}
-                  >
-                    {t("langLabel")}
-                  </label>
-                  <select
-                    id="report-lang"
-                    value={language}
-                    onChange={(e) =>
-                      setLanguage(e.target.value as "ES" | "EN")
-                    }
-                    style={{
-                      width: "100%",
-                      height: "38px",
-                      padding: "0 12px",
-                      border: "1px solid #ebebeb",
-                      borderRadius: "8px",
-                      background: "#ffffff",
-                      fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
-                      fontSize: "13px",
-                      color: "#08090a",
-                      outline: "none",
-                      boxSizing: "border-box",
-                    }}
-                  >
-                    <option value="ES">ES (Español)</option>
-                    <option value="EN">EN (English)</option>
-                  </select>
-                </div>
+                {!isEditMode ? (
+                  <div>
+                    <label
+                      htmlFor="report-lang"
+                      style={{
+                        display: "block",
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "13.5px",
+                        fontWeight: 500,
+                        color: "#00603a",
+                        marginBottom: "6px",
+                      }}
+                    >
+                      {t("langLabel")}
+                    </label>
+                    <select
+                      id="report-lang"
+                      {...register("language")}
+                      style={{
+                        width: "100%",
+                        height: "38px",
+                        padding: "0 12px",
+                        border: "1px solid #ebebeb",
+                        borderRadius: "8px",
+                        background: "#ffffff",
+                        fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                        fontSize: "13px",
+                        color: "#08090a",
+                        outline: "none",
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      <option value="ES">{t("langOptionEs")}</option>
+                      <option value="EN">{t("langOptionEn")}</option>
+                    </select>
+                  </div>
+                ) : (
+                  <div>
+                    <label
+                      style={{
+                        display: "block",
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "13.5px",
+                        fontWeight: 500,
+                        color: "#6f6f6f",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      {t("langLabel")}
+                    </label>
+                    <span
+                      className="mono"
+                      style={{
+                        fontSize: "15px",
+                        fontWeight: 500,
+                        color: "#08090a",
+                      }}
+                    >
+                      {watchLanguage === "EN"
+                        ? t("langOptionEn")
+                        : t("langOptionEs")}
+                    </span>
+                  </div>
+                )}
 
                 {/* Estado de Publicación */}
                 <div>
@@ -915,18 +957,17 @@ export function ReportForm({
                     </label>
                     <span
                       className={
-                        status === "PUBLISHED" ? "bg pub" : "bg draft"
+                        watchStatus === "PUBLISHED" ? "bg pub" : "bg draft"
                       }
                     >
-                      {status === "PUBLISHED" ? "Publicada" : "Borrador"}
+                      {watchStatus === "PUBLISHED"
+                        ? t("statusPublishedBadge")
+                        : t("statusDraftBadge")}
                     </span>
                   </div>
                   <select
                     id="report-status"
-                    value={status}
-                    onChange={(e) =>
-                      setStatus(e.target.value as "DRAFT" | "PUBLISHED")
-                    }
+                    {...register("status")}
                     style={{
                       width: "100%",
                       height: "38px",
@@ -967,7 +1008,7 @@ export function ReportForm({
                   marginBottom: "4px",
                 }}
               >
-                Inmutabilidad de versiones
+                {t("immutabilityTitle")}
               </div>
               <p
                 style={{
@@ -978,9 +1019,7 @@ export function ReportForm({
                   margin: 0,
                 }}
               >
-                Una versión publicada mantiene la integridad histórica de los
-                datos. Para cambios estructurales posteriores, cree una nueva
-                versión (ej. v2).
+                {t("immutabilityDesc")}
               </p>
             </div>
           </div>

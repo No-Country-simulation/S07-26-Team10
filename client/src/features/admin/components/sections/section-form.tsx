@@ -308,7 +308,7 @@ export function SectionForm({
 
   return (
     <div>
-      <form onSubmit={handleSubmit(onSubmit, onError)}>
+      <form onSubmit={handleSubmit(onSubmit, onError)} noValidate>
         {/* ── Encabezado y Breadcrumb (.eyebrow del prototipo) ────────── */}
         <div
           style={{
