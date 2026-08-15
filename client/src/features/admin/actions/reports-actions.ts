@@ -286,16 +286,20 @@ export async function createReportVersionAction(
   }
 
   try {
+    const cleanNum = result.data.version.replace(/[^0-9]/g, "");
+    const formattedVersion = `v${cleanNum || "1"}`;
+
     const headers = await getAuthHeaders();
     const res = await fetch(getApiUrl(`/reports/${reportId}/versions`), {
       method: "POST",
       headers,
       body: JSON.stringify({
         title: result.data.title,
-        version: result.data.version,
+        version: formattedVersion,
         language: result.data.language,
-        summary: result.data.summary,
-        citation_text: result.data.citation_text,
+        summary: result.data.summary || null,
+        citation_text: result.data.citation_text || null,
+        status: result.data.status || "DRAFT",
       }),
     });
 
@@ -588,7 +592,7 @@ export async function getAllReportVersionsAction(): Promise<ReportVersion[]> {
 
 export async function updateReportAction(
   id: string,
-  input: CreateReportVersionInput
+  input: UpdateReportVersionInput
 ): Promise<{
   success: boolean;
   data?: ReportVersion;

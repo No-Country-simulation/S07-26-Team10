@@ -4,12 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Save, FileText, Wand2, Eye } from "lucide-react";
+import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import type { BaseReport, ReportVersion } from "../../schemas/report-schema";
 import {
   createReportAction,
@@ -19,11 +14,8 @@ import {
 } from "../../actions/reports-actions";
 import { MDXEditorComponent } from "@/features/admin/components/ui/mdx/mdx-editor-component";
 import { MdxPreview } from "@/features/admin/components/ui/mdx/mdx-preview";
-
 import { useLanguage } from "@/context/language-context";
 import { useVersion } from "@/context/version-context";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { Badge } from "@/components/ui/badge";
 
 interface ReportFormProps {
   initialData?: ReportVersion;
@@ -36,8 +28,12 @@ const parseInitialVersion = (initialVersion?: string) => {
   return sanitized || "1";
 };
 
-export function ReportForm({ initialData, isEditMode = false }: ReportFormProps) {
+export function ReportForm({
+  initialData,
+  isEditMode = false,
+}: ReportFormProps) {
   const t = useTranslations("AdminPage.reports.reportForm");
+  const tRoot = useTranslations("AdminPage.reports");
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedReportId = searchParams?.get("reportId");
@@ -45,21 +41,23 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
   const { language: currentContextLang } = useLanguage();
   const { contentLanguage, refreshReports } = useVersion();
 
-  const [availableBaseReports, setAvailableBaseReports] = useState<BaseReport[]>([]);
+  const [availableBaseReports, setAvailableBaseReports] = useState<
+    BaseReport[]
+  >([]);
   const [selectedReportId, setSelectedReportId] = useState<string>("new");
 
   const [versionNumber, setVersionNumber] = useState<string>(
-    parseInitialVersion(initialData?.version)
+    parseInitialVersion(initialData?.version),
   );
   const [language, setLanguage] = useState<"ES" | "EN">(
     isEditMode
       ? (initialData?.language as "ES" | "EN") || "ES"
       : (contentLanguage.toUpperCase() as "ES" | "EN") ||
-        (currentContextLang.toUpperCase() as "ES" | "EN") ||
-        "ES"
+          (currentContextLang.toUpperCase() as "ES" | "EN") ||
+          "ES",
   );
   const [status, setStatus] = useState<"DRAFT" | "PUBLISHED">(
-    initialData?.status || "DRAFT"
+    initialData?.status || "DRAFT",
   );
 
   const cleanVer = versionNumber.replace(/[^0-9]/g, "");
@@ -67,7 +65,9 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
   const [title, setTitle] = useState(initialData?.title || "");
 
   const [summary, setSummary] = useState(initialData?.summary || "");
-  const [citationText, setCitationText] = useState(initialData?.citation_text || "");
+  const [citationText, setCitationText] = useState(
+    initialData?.citation_text || "",
+  );
   const [summaryTab, setSummaryTab] = useState<"editor" | "preview">("editor");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
@@ -79,7 +79,10 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
         const reports = await getReportsAction();
         setAvailableBaseReports(reports);
         if (!isEditMode) {
-          if (preselectedReportId && reports.some((r) => r.id === preselectedReportId)) {
+          if (
+            preselectedReportId &&
+            reports.some((r) => r.id === preselectedReportId)
+          ) {
             setSelectedReportId(preselectedReportId);
           } else if (reports.length > 0) {
             setSelectedReportId(reports[0].id);
@@ -91,7 +94,7 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
         console.error("Failed to load base reports for version form", err);
       }
     }
-    loadBaseReports();
+    void loadBaseReports();
   }, [isEditMode, preselectedReportId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -100,9 +103,26 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
     setErrors({});
     setSuccessMsg("");
 
+    const validationErrors: Record<string, string[]> = {};
+    if (!title.trim()) {
+      validationErrors.title = ["El título es obligatorio."];
+    }
+    if (!summary.trim()) {
+      validationErrors.summary = ["El resumen ejecutivo es obligatorio."];
+    }
+    if (!citationText.trim()) {
+      validationErrors.citation_text = ["El texto de citación es obligatorio."];
+    }
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      if (isEditMode && initialData?.report_id && initialData?.id) {
-        const result = await updateReportVersionAction(
+      if (isEditMode && initialData?.id) {
+        const res = await updateReportVersionAction(
           initialData.report_id,
           initialData.id,
           {
@@ -110,313 +130,864 @@ export function ReportForm({ initialData, isEditMode = false }: ReportFormProps)
             summary,
             citation_text: citationText,
             status,
-          }
+          },
         );
 
-        if (result.success) {
-          setSuccessMsg(result.message || "Versión actualizada con éxito.");
+        if (res.success) {
+          setSuccessMsg("Versión actualizada correctamente.");
           await refreshReports();
           setTimeout(() => {
             router.push("/admin/reports");
-          }, 400);
+            router.refresh();
+          }, 800);
         } else {
-          const mergedErrors: Record<string, string[]> = { ...(result.errors || {}) };
-          if (result.message) {
-            mergedErrors.general = [result.message];
-          }
-          setErrors(mergedErrors);
+          if (res.errors) setErrors(res.errors);
+          else
+            setErrors({
+              global: [res.message || "Error al actualizar la versión."],
+            });
         }
       } else {
-        let targetReportId = selectedReportId;
+        let parentReportId = selectedReportId;
 
-        if (targetReportId === "new" || !targetReportId) {
+        if (selectedReportId === "new") {
           const createBaseRes = await createReportAction();
-          if (createBaseRes.success && createBaseRes.data?.id) {
-            targetReportId = createBaseRes.data.id;
-          } else {
-            setErrors({ general: [createBaseRes.message || "Error al crear el reporte base."] });
+
+          if (!createBaseRes.success || !createBaseRes.data?.id) {
+            setErrors({
+              global: [
+                createBaseRes.message ||
+                  "No se pudo crear el contenedor de Reporte Base.",
+              ],
+            });
             setIsSubmitting(false);
             return;
           }
+          parentReportId = createBaseRes.data.id;
         }
 
-        const result = await createReportVersionAction(targetReportId, {
-          title,
+        const res = await createReportVersionAction(parentReportId, {
           version: formattedVersion,
-          language,
+          title,
           summary,
           citation_text: citationText,
+          language,
+          status,
         });
 
-        if (result.success) {
-          setSuccessMsg(result.message || "Versión creada exitosamente.");
+        if (res.success) {
+          setSuccessMsg("Versión creada exitosamente.");
           await refreshReports();
           setTimeout(() => {
             router.push("/admin/reports");
-          }, 400);
+            router.refresh();
+          }, 800);
         } else {
-          const mergedErrors: Record<string, string[]> = { ...(result.errors || {}) };
-          if (result.message) {
-            mergedErrors.general = [result.message];
-          }
-          setErrors(mergedErrors);
+          if (res.errors) setErrors(res.errors);
+          else
+            setErrors({
+              global: [res.message || "Error al crear la versión."],
+            });
         }
       }
-    } catch {
-      setErrors({ general: ["Ocurrió un error inesperado al procesar la solicitud."] });
+    } catch (err) {
+      console.error("Error submitting report version form:", err);
+      setErrors({
+        global: ["Ocurrió un error inesperado al guardar la versión."],
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full max-w-4xl mx-auto py-2">
-      {/* Breadcrumb Header */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-          <Link href="/admin/reports" className="hover:text-foreground">
+    <div>
+      <form onSubmit={handleSubmit}>
+        {/* ── Encabezado y Breadcrumb (.eyebrow del prototipo) ────────── */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+            fontSize: "11px",
+            letterSpacing: ".07em",
+            textTransform: "uppercase",
+            color: "#00603a",
+          }}
+        >
+          <span
+            style={{
+              width: "22px",
+              height: "1px",
+              background: "#00603a",
+              display: "inline-block",
+              flexShrink: 0,
+            }}
+          />
+          <span>{tRoot("headerTag")}</span>
+          <span style={{ color: "#a8a8a8" }}>/</span>
+          <Link
+            href="/admin/reports"
+            style={{
+              color: "#6f6f6f",
+              textDecoration: "none",
+              transition: "color .16s",
+            }}
+          >
             {t("breadcrumbBase")}
           </Link>
-          <span>›</span>
-          <span className="text-foreground">{isEditMode ? t("breadcrumbEdit") : t("breadcrumbNew")}</span>
+          <span style={{ color: "#a8a8a8" }}>/</span>
+          <span style={{ color: "#08090a", fontWeight: 500 }}>
+            {isEditMode ? t("breadcrumbEdit") : t("breadcrumbNew")}
+          </span>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* ── Título, Subtítulo y Botones de Acción (.mh del prototipo) ── */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: "20px",
+            margin: "16px 0 28px",
+            flexWrap: "wrap",
+          }}
+        >
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              {isEditMode ? t("editTitle", { title: initialData?.title || "" }) : t("createTitle")}
+            <h1
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "34px",
+                fontWeight: 500,
+                lineHeight: 1.1,
+                letterSpacing: "-0.03em",
+                color: "#08090a",
+                margin: 0,
+              }}
+            >
+              {isEditMode ? t("editTitle", { title }) : t("createTitle")}
             </h1>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "15px",
+                color: "#706f6f",
+                marginTop: "8px",
+                maxWidth: "74ch",
+                lineHeight: 1.45,
+                letterSpacing: "-0.01em",
+              }}
+            >
               {t("subtitle")}
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link href="/admin/reports">
-              <Button type="button" variant="outline" className="rounded-xl border-border/60">
-                {t("cancel")}
-              </Button>
+          {/* Botones Superiores */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <Link href="/admin/reports" className="b sec">
+              {t("cancel")}
             </Link>
-            <Button
+            <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-xl px-5 gap-2 shadow-xs bg-emerald-950 text-emerald-100 hover:bg-emerald-900"
+              className="b pri"
+              style={{
+                background: "#00603a",
+                borderColor: "#00603a",
+                color: "#ffffff",
+              }}
             >
-              <Save className="size-4" />
-              <span>{isSubmitting ? t("saving") : t("saveReport")}</span>
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Success Message */}
-      {successMsg && (
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-800 dark:text-emerald-300 font-medium">
-          {successMsg}
-        </div>
-      )}
-
-      {/* Error Messages */}
-      {errors.general && (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive font-medium">
-          {errors.general.join(", ")}
-        </div>
-      )}
-
-      <Card className="border border-border/60 bg-card shadow-xs rounded-2xl p-6">
-        <CardHeader className="p-0 mb-6 border-b border-border/40 pb-4">
-          <div className="flex items-center gap-2.5">
-            <FileText className="size-5 text-emerald-700 dark:text-emerald-400" />
-            <CardTitle className="text-base font-semibold">{t("cardTitle")}</CardTitle>
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-0 space-y-5">
-          {/* Version Details Grid */}
-          <div className="space-y-3 p-4 rounded-2xl border border-border/60 bg-muted/20">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("versionConfigTitle")} <span className="text-destructive">*</span>
-              </Label>
-              <Badge variant="outline" className="font-mono text-xs font-bold px-3 py-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 rounded-lg">
-                {formattedVersion} ({language})
-              </Badge>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-              {/* Selector de Reporte Base (Solo en modo creación) */}
-              {!isEditMode && (
-                <div className="space-y-1.5 sm:col-span-3">
-                  <Label htmlFor="base-report-select" className="text-xs text-muted-foreground font-medium">
-                    {t("baseReportLabel")} <span className="text-destructive">*</span>
-                  </Label>
-                  <NativeSelect
-                    id="base-report-select"
-                    value={selectedReportId}
-                    onChange={(e) => setSelectedReportId(e.target.value)}
-                    className="w-full bg-background rounded-xl text-xs font-mono"
-                  >
-                    <NativeSelectOption value="new">
-                      {t("newBaseReportOption")}
-                    </NativeSelectOption>
-                    {availableBaseReports.map((b) => (
-                      <NativeSelectOption key={b.id} value={b.id}>
-                        Reporte Base: {b.slug} (ID: {b.id.substring(0, 8)}...)
-                      </NativeSelectOption>
-                    ))}
-                  </NativeSelect>
-                  <p className="text-[10px] text-muted-foreground">
-                    {selectedReportId === "new"
-                      ? t("newBaseReportNotice")
-                      : t("existingBaseReportNotice")}
-                  </p>
-                </div>
-              )}
-
-              {/* Título de la versión */}
-              <div className="space-y-1.5 sm:col-span-3">
-                <Label htmlFor="version-title" className="text-xs text-muted-foreground font-medium">
-                  {t("versionTitleLabel")}
-                </Label>
-                <Input
-                  id="version-title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Ej: Stranded Capacity Report v1"
-                  className="rounded-xl bg-background text-sm font-medium"
-                  required
+              {isSubmitting ? (
+                <Loader2
+                  style={{
+                    width: 15,
+                    height: 15,
+                    animation: "spin 1s linear infinite",
+                  }}
                 />
+              ) : (
+                <svg
+                  viewBox="0 0 24 24"
+                  style={{
+                    width: 15,
+                    height: 15,
+                    stroke: "#ffffff",
+                    fill: "none",
+                    strokeWidth: 2,
+                  }}
+                >
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+              )}
+              <span>{isSubmitting ? t("saving") : t("saveReport")}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* ── Banners de Error y Éxito ──────────────────────────────── */}
+        {successMsg && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              padding: "14px 16px",
+              borderRadius: "8px",
+              marginBottom: "24px",
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "13.5px",
+              border: "1px solid rgba(0,96,58,.25)",
+              borderLeft: "3px solid #00603a",
+              background: "rgba(0,96,58,.04)",
+              color: "#00603a",
+            }}
+          >
+            <CheckCircle2 style={{ width: 18, height: 18, flexShrink: 0 }} />
+            <span>{successMsg}</span>
+          </div>
+        )}
+
+        {errors.global && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              padding: "14px 16px",
+              borderRadius: "8px",
+              marginBottom: "24px",
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "13.5px",
+              border: "1px solid rgba(179,38,30,.28)",
+              borderLeft: "3px solid #b3261e",
+              background: "rgba(179,38,30,.04)",
+              color: "#b3261e",
+            }}
+          >
+            <AlertCircle style={{ width: 18, height: 18, flexShrink: 0 }} />
+            <span>{errors.global.join(", ")}</span>
+          </div>
+        )}
+
+        {/* ── Grid Principal de Formulario (8 cols + 4 cols) ─────────── */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(12, 1fr)",
+            gap: "24px",
+            alignItems: "start",
+          }}
+        >
+          {/* Columna Izquierda: Parámetros del Reporte (8 cols) */}
+          <div
+            style={{
+              gridColumn: "span 8",
+              display: "flex",
+              flexDirection: "column",
+              gap: "24px",
+            }}
+            className="col-span-12 lg:col-span-8"
+          >
+            <div className="card admin-card" style={{ overflow: "hidden" }}>
+              <div
+                style={{
+                  padding: "15px 20px",
+                  borderBottom: "1px solid #ebebeb",
+                }}
+              >
+                <h3
+                  style={{
+                    fontFamily:
+                      "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                    fontSize: "17px",
+                    fontWeight: 500,
+                    color: "#08090a",
+                    margin: 0,
+                  }}
+                >
+                  {t("cardTitle")}
+                </h3>
               </div>
 
-              {/* Input de Número de Versión */}
-              <div className="space-y-1.5">
-                <Label htmlFor="version-input" className="text-xs text-muted-foreground font-medium">
-                  {t("versionLabel")}
-                </Label>
-                <div className="flex items-center rounded-xl border border-border/60 bg-background overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500/20">
-                  <span className="px-3 py-2 text-xs font-mono font-bold bg-muted/60 text-muted-foreground border-r border-border/40 select-none">
-                    v
-                  </span>
-                  <Input
-                    id="version-input"
-                    value={versionNumber}
-                    disabled={isEditMode}
-                    onChange={(e) => {
-                      const sanitized = e.target.value.replace(/[^0-9]/g, "");
-                      setVersionNumber(sanitized);
+              <div
+                style={{
+                  padding: "20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "18px",
+                }}
+              >
+                {/* Contenedor Reporte Base */}
+                {!isEditMode && (
+                  <div>
+                    <label
+                      htmlFor="base-report"
+                      style={{
+                        display: "block",
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "14px",
+                        fontWeight: 500,
+                        letterSpacing: "-0.01em",
+                        color: "#00603a",
+                        marginBottom: "6px",
+                      }}
+                    >
+                      {t("baseReportLabel")}{" "}
+                      <span style={{ color: "#b3261e" }}>*</span>
+                    </label>
+                    <select
+                      id="base-report"
+                      value={selectedReportId}
+                      onChange={(e) => setSelectedReportId(e.target.value)}
+                      style={{
+                        width: "100%",
+                        height: "40px",
+                        padding: "0 13px",
+                        border: "1px solid #ebebeb",
+                        borderRadius: "8px",
+                        background: "#ffffff",
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "14px",
+                        color: "#08090a",
+                        outline: "none",
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      <option value="new">{t("newBaseReportOption")}</option>
+                      {availableBaseReports.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.slug}
+                        </option>
+                      ))}
+                    </select>
+                    <p
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "12px",
+                        color: "#6f6f6f",
+                        marginTop: "6px",
+                        margin: "6px 0 0",
+                      }}
+                    >
+                      {selectedReportId === "new"
+                        ? t("newBaseReportNotice")
+                        : t("existingBaseReportNotice")}
+                    </p>
+                  </div>
+                )}
+
+                {/* Título de la Versión / Reporte */}
+                <div>
+                  <label
+                    htmlFor="report-title"
+                    style={{
+                      display: "block",
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      letterSpacing: "-0.01em",
+                      color: "#00603a",
+                      marginBottom: "6px",
                     }}
-                    placeholder="1"
-                    className="border-0 rounded-none bg-transparent text-sm font-mono focus-visible:ring-0 focus-visible:border-transparent"
+                  >
+                    {t("titleLabel")}{" "}
+                    <span style={{ color: "#b3261e" }}>*</span>
+                  </label>
+                  <input
+                    id="report-title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder={t("titlePlaceholder")}
                     required
+                    style={{
+                      width: "100%",
+                      height: "40px",
+                      padding: "0 13px",
+                      border: "1px solid #ebebeb",
+                      borderRadius: "8px",
+                      background: "#ffffff",
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "14px",
+                      color: "#08090a",
+                      outline: "none",
+                      boxSizing: "border-box",
+                    }}
                   />
+                  {errors.title && (
+                    <p
+                      style={{
+                        color: "#b3261e",
+                        fontSize: "12px",
+                        marginTop: "4px",
+                      }}
+                    >
+                      {errors.title[0]}
+                    </p>
+                  )}
                 </div>
-                <p className="text-[10px] text-muted-foreground">{t("versionNumberHelper")}</p>
+
+                {/* Resumen Ejecutivo (Con tabs de Editor y Preview sobre fondo blanco) */}
+                <div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <label
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "14px",
+                        fontWeight: 500,
+                        letterSpacing: "-0.01em",
+                        color: "#00603a",
+                      }}
+                    >
+                      {t("summaryLabel")}{" "}
+                      <span style={{ color: "#b3261e" }}>*</span>
+                    </label>
+
+                    {/* Tabs Editor / Preview */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "2px",
+                        background: "#ebebeb",
+                        padding: "2px",
+                        borderRadius: "6px",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setSummaryTab("editor")}
+                        style={{
+                          padding: "4px 10px",
+                          borderRadius: "4px",
+                          border: "none",
+                          fontFamily:
+                            "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                          fontSize: "12px",
+                          fontWeight: summaryTab === "editor" ? 500 : 400,
+                          background:
+                            summaryTab === "editor"
+                              ? "#ffffff"
+                              : "transparent",
+                          color:
+                            summaryTab === "editor"
+                              ? "#08090a"
+                              : "#6f6f6f",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {t("tabEditor")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSummaryTab("preview")}
+                        style={{
+                          padding: "4px 10px",
+                          borderRadius: "4px",
+                          border: "none",
+                          fontFamily:
+                            "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                          fontSize: "12px",
+                          fontWeight: summaryTab === "preview" ? 500 : 400,
+                          background:
+                            summaryTab === "preview"
+                              ? "#ffffff"
+                              : "transparent",
+                          color:
+                            summaryTab === "preview"
+                              ? "#08090a"
+                              : "#6f6f6f",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {t("tabPreview")}
+                      </button>
+                    </div>
+                  </div>
+
+                  {summaryTab === "editor" ? (
+                    <div
+                      style={{
+                        borderRadius: "8px",
+                        overflow: "hidden",
+                        border: errors.summary
+                          ? "1px solid #b3261e"
+                          : "1px solid #ebebeb",
+                        background: "#ffffff",
+                      }}
+                    >
+                      <MDXEditorComponent
+                        markdown={summary}
+                        onChange={setSummary}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        padding: "20px",
+                        borderRadius: "8px",
+                        border: "1px solid #ebebeb",
+                        background: "#ffffff",
+                        minHeight: "140px",
+                      }}
+                    >
+                      <MdxPreview content={summary} />
+                    </div>
+                  )}
+                  {errors.summary && (
+                    <p
+                      style={{
+                        color: "#b3261e",
+                        fontSize: "12px",
+                        marginTop: "4px",
+                      }}
+                    >
+                      {errors.summary[0]}
+                    </p>
+                  )}
+                </div>
+
+                {/* Texto de Citación */}
+                <div>
+                  <label
+                    htmlFor="report-citation"
+                    style={{
+                      display: "block",
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      letterSpacing: "-0.01em",
+                      color: "#00603a",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    {t("citationLabel")}{" "}
+                    <span style={{ color: "#b3261e" }}>*</span>
+                  </label>
+                  <input
+                    id="report-citation"
+                    value={citationText}
+                    onChange={(e) => setCitationText(e.target.value)}
+                    placeholder={t("citationPlaceholder")}
+                    required
+                    style={{
+                      width: "100%",
+                      height: "40px",
+                      padding: "0 13px",
+                      border: errors.citation_text
+                        ? "1px solid #b3261e"
+                        : "1px solid #ebebeb",
+                      borderRadius: "8px",
+                      background: "#ffffff",
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "14px",
+                      color: "#08090a",
+                      outline: "none",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                  {errors.citation_text && (
+                    <p
+                      style={{
+                        color: "#b3261e",
+                        fontSize: "12px",
+                        marginTop: "4px",
+                      }}
+                    >
+                      {errors.citation_text[0]}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Columna Derecha: Configuración de Versión (4 cols) */}
+          <div
+            style={{
+              gridColumn: "span 4",
+              display: "flex",
+              flexDirection: "column",
+              gap: "20px",
+            }}
+            className="col-span-12 lg:col-span-4"
+          >
+            {/* Card: Configuración de Versión */}
+            <div className="card admin-card" style={{ overflow: "hidden" }}>
+              <div
+                style={{
+                  padding: "15px 18px",
+                  borderBottom: "1px solid #ebebeb",
+                }}
+              >
+                <h3
+                  style={{
+                    fontFamily:
+                      "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                    fontSize: "16px",
+                    fontWeight: 500,
+                    color: "#08090a",
+                    margin: 0,
+                  }}
+                >
+                  {t("versionConfigTitle")}
+                </h3>
               </div>
 
+              <div
+                style={{
+                  padding: "18px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "16px",
+                }}
+              >
+                {/* Número de Versión */}
+                {!isEditMode ? (
+                  <div>
+                    <label
+                      htmlFor="version-number"
+                      style={{
+                        display: "block",
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "13.5px",
+                        fontWeight: 500,
+                        color: "#00603a",
+                        marginBottom: "6px",
+                      }}
+                    >
+                      {t("versionLabel")}{" "}
+                      <span style={{ color: "#b3261e" }}>*</span>
+                    </label>
+                    <div
+                      style={{
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      <span
+                        style={{
+                          position: "absolute",
+                          left: "12px",
+                          fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                          fontSize: "13.5px",
+                          color: "#6f6f6f",
+                        }}
+                      >
+                        v
+                      </span>
+                      <input
+                        id="version-number"
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={cleanVer}
+                        onChange={(e) => setVersionNumber(e.target.value)}
+                        placeholder="1"
+                        required
+                        style={{
+                          width: "100%",
+                          height: "38px",
+                          paddingLeft: "26px",
+                          paddingRight: "12px",
+                          border: "1px solid #ebebeb",
+                          borderRadius: "8px",
+                          background: "#ffffff",
+                          fontFamily:
+                            "var(--m, 'IBM Plex Mono', monospace)",
+                          fontSize: "14px",
+                          color: "#08090a",
+                          outline: "none",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label
+                      style={{
+                        display: "block",
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "13.5px",
+                        fontWeight: 500,
+                        color: "#6f6f6f",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      {t("versionLabel")}
+                    </label>
+                    <span
+                      className="mono"
+                      style={{
+                        fontSize: "16px",
+                        fontWeight: 500,
+                        color: "#00603a",
+                      }}
+                    >
+                      {formattedVersion}
+                    </span>
+                  </div>
+                )}
 
-              {/* Selector de Idioma */}
-              <div className="space-y-1.5">
-                <Label htmlFor="lang-select" className="text-xs text-muted-foreground font-medium">
-                  {t("langLabel")}
-                </Label>
-                <NativeSelect
-                  id="lang-select"
-                  value={language}
-                  disabled={isEditMode}
-                  onChange={(e) => setLanguage(e.target.value as "ES" | "EN")}
-                  className="w-full bg-background rounded-xl"
-                >
-                  <NativeSelectOption value="ES">Español (ES)</NativeSelectOption>
-                  <NativeSelectOption value="EN">English (EN)</NativeSelectOption>
-                </NativeSelect>
-              </div>
+                {/* Idioma */}
+                <div>
+                  <label
+                    htmlFor="report-lang"
+                    style={{
+                      display: "block",
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "13.5px",
+                      fontWeight: 500,
+                      color: "#00603a",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    {t("langLabel")}
+                  </label>
+                  <select
+                    id="report-lang"
+                    value={language}
+                    onChange={(e) =>
+                      setLanguage(e.target.value as "ES" | "EN")
+                    }
+                    style={{
+                      width: "100%",
+                      height: "38px",
+                      padding: "0 12px",
+                      border: "1px solid #ebebeb",
+                      borderRadius: "8px",
+                      background: "#ffffff",
+                      fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                      fontSize: "13px",
+                      color: "#08090a",
+                      outline: "none",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <option value="ES">ES (Español)</option>
+                    <option value="EN">EN (English)</option>
+                  </select>
+                </div>
 
-              {/* Selector de Estado */}
-              <div className="space-y-1.5">
-                <Label htmlFor="status-select" className="text-xs text-muted-foreground font-medium">
-                  {t("statusLabel")}
-                </Label>
-                <NativeSelect
-                  id="status-select"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value as "DRAFT" | "PUBLISHED")}
-                  className="w-full bg-background rounded-xl"
-                >
-                  <NativeSelectOption value="DRAFT">{t("statusDraft")}</NativeSelectOption>
-                  <NativeSelectOption value="PUBLISHED">{t("statusPublished")}</NativeSelectOption>
-                </NativeSelect>
+                {/* Estado de Publicación */}
+                <div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    <label
+                      htmlFor="report-status"
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "13.5px",
+                        fontWeight: 500,
+                        color: "#00603a",
+                      }}
+                    >
+                      {t("statusLabel")}
+                    </label>
+                    <span
+                      className={
+                        status === "PUBLISHED" ? "bg pub" : "bg draft"
+                      }
+                    >
+                      {status === "PUBLISHED" ? "Publicada" : "Borrador"}
+                    </span>
+                  </div>
+                  <select
+                    id="report-status"
+                    value={status}
+                    onChange={(e) =>
+                      setStatus(e.target.value as "DRAFT" | "PUBLISHED")
+                    }
+                    style={{
+                      width: "100%",
+                      height: "38px",
+                      padding: "0 12px",
+                      border: "1px solid #ebebeb",
+                      borderRadius: "8px",
+                      background: "#ffffff",
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "13.5px",
+                      color: "#08090a",
+                      outline: "none",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <option value="DRAFT">{t("statusDraft")}</option>
+                    <option value="PUBLISHED">{t("statusPublished")}</option>
+                  </select>
+                </div>
               </div>
             </div>
 
-            {errors.title && <p className="text-xs text-destructive">{errors.title.join(", ")}</p>}
-          </div>
-
-          {/* Summary (Markdown Editor & Preview) */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="rpt-summary" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("summaryLabel")} <span className="text-destructive">*</span>
-              </Label>
-              <div className="flex items-center gap-1 p-1 bg-muted rounded-xl border border-border/40 text-xs">
-                <button
-                  type="button"
-                  onClick={() => setSummaryTab("editor")}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all ${
-                    summaryTab === "editor"
-                      ? "bg-background text-foreground font-medium shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Wand2 className="size-3.5" />
-                  <span>{t("tabEditor")}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSummaryTab("preview")}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all ${
-                    summaryTab === "preview"
-                      ? "bg-background text-foreground font-medium shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Eye className="size-3.5" />
-                  <span>{t("tabPreview")}</span>
-                </button>
+            {/* Nota editorial (.quote) */}
+            <div
+              style={{
+                borderLeft: "2px solid #00603a",
+                padding: "2px 0 2px 14px",
+                margin: "4px 0",
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                  fontSize: "11px",
+                  letterSpacing: ".07em",
+                  textTransform: "uppercase",
+                  color: "#00603a",
+                  marginBottom: "4px",
+                }}
+              >
+                Inmutabilidad de versiones
               </div>
+              <p
+                style={{
+                  fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                  fontSize: "12.5px",
+                  color: "#6f6f6f",
+                  lineHeight: 1.45,
+                  margin: 0,
+                }}
+              >
+                Una versión publicada mantiene la integridad histórica de los
+                datos. Para cambios estructurales posteriores, cree una nueva
+                versión (ej. v2).
+              </p>
             </div>
-
-            {summaryTab === "editor" ? (
-              <MDXEditorComponent
-                markdown={summary}
-                onChange={(val) => setSummary(val)}
-              />
-            ) : (
-              <MdxPreview content={summary} />
-            )}
-            {errors.summary && <p className="text-xs text-destructive">{errors.summary.join(", ")}</p>}
           </div>
-
-          {/* Citation Text */}
-          <div className="space-y-2">
-            <Label htmlFor="rpt-citation" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {t("citationLabel")} <span className="text-destructive">*</span>
-            </Label>
-            <Textarea
-              id="rpt-citation"
-              value={citationText}
-              onChange={(e) => setCitationText(e.target.value)}
-              placeholder={t("citationPlaceholder")}
-              className="rounded-xl bg-background text-sm font-medium italic font-serif min-h-[80px] resize-y"
-              required
-            />
-            {errors.citation_text && <p className="text-xs text-destructive">{errors.citation_text.join(", ")}</p>}
-          </div>
-        </CardContent>
-      </Card>
-    </form>
+        </div>
+      </form>
+    </div>
   );
 }
 
 export default ReportForm;
-
-
