@@ -318,10 +318,64 @@ export function TaxonomyManagement() {
         style={{ overflow: "hidden", marginBottom: "36px" }}
       >
         {loading ? (
-          <div style={{ padding: "20px" }} className="space-y-3">
-            <Skeleton className="h-10 w-full rounded-md" />
-            <Skeleton className="h-14 w-full rounded-md" />
-            <Skeleton className="h-14 w-full rounded-md" />
+          <div style={{ width: "100%", overflowX: "auto" }}>
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th style={{ width: "70px", textAlign: "left" }}>
+                    {t("colOrder")}
+                  </th>
+                  <th style={{ textAlign: "left" }}>{t("colCategory")}</th>
+                  <th style={{ textAlign: "left" }}>{t("colDescription")}</th>
+                  <th style={{ width: "120px", textAlign: "left" }}>
+                    {t("colStatus")}
+                  </th>
+                  <th
+                    style={{
+                      width: "92px",
+                      textAlign: "right",
+                      paddingRight: "20px",
+                    }}
+                  >
+                    {t("colActions")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {[1, 2, 3].map((i) => (
+                  <tr key={i}>
+                    <td>
+                      <Skeleton className="h-4 w-6 rounded-sm" />
+                    </td>
+                    <td>
+                      <Skeleton className="h-4 w-36 rounded-sm mb-1" />
+                      <Skeleton className="h-3 w-20 rounded-sm" />
+                    </td>
+                    <td>
+                      <Skeleton className="h-4 w-52 rounded-sm" />
+                    </td>
+                    <td>
+                      <Skeleton className="h-5 w-16 rounded-full" />
+                    </td>
+                    <td
+                      className="act"
+                      style={{ paddingRight: "20px", textAlign: "right" }}
+                    >
+                      <div
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <Skeleton className="h-7 w-7 rounded-md" />
+                        <Skeleton className="h-7 w-7 rounded-md" />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : categories.length === 0 ? (
           <div
@@ -557,9 +611,77 @@ export function TaxonomyManagement() {
 
       {/* ── Cards de Conceptos por cada Categoría ───────────────────── */}
       {loading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-44 w-full rounded-xl" />
-          <Skeleton className="h-44 w-full rounded-xl" />
+        <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+          {[1, 2].map((i) => (
+            <div
+              key={i}
+              className="card admin-card"
+              style={{ overflow: "hidden" }}
+            >
+              <div
+                style={{
+                  padding: "15px 20px",
+                  borderBottom: "1px solid #ebebeb",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "4px",
+                  }}
+                >
+                  <Skeleton className="h-4 w-36 rounded-sm" />
+                  <Skeleton className="h-3 w-48 rounded-sm" />
+                </div>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <Skeleton className="h-6 w-24 rounded-full" />
+                  <Skeleton className="h-7 w-28 rounded-md" />
+                </div>
+              </div>
+              <div style={{ padding: "16px 20px" }}>
+                {[1, 2].map((j) => (
+                  <div
+                    key={j}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "8px 0",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "12px",
+                        width: "70%",
+                      }}
+                    >
+                      <Skeleton className="h-4 w-12 rounded-sm" />
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "4px",
+                          width: "80%",
+                        }}
+                      >
+                        <Skeleton className="h-4 w-32 rounded-sm" />
+                        <Skeleton className="h-3 w-3/4 rounded-sm" />
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: "6px" }}>
+                      <Skeleton className="h-7 w-7 rounded-md" />
+                      <Skeleton className="h-7 w-7 rounded-md" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       ) : categories.length === 0 ? null : (
         <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>

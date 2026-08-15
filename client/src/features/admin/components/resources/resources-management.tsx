@@ -13,21 +13,207 @@ import { Layers, Copy, Check } from "lucide-react";
 
 export function ResourcesManagementSkeleton() {
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-36" />
-        <Skeleton className="h-9 w-64" />
-        <Skeleton className="h-4 w-96" />
+    <div>
+      {/* ── Encabezado y Breadcrumb ────────────────────────────────── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+          fontSize: "11px",
+          letterSpacing: ".07em",
+          textTransform: "uppercase",
+          color: "#00603a",
+        }}
+      >
+        <span
+          style={{
+            width: "22px",
+            height: "1px",
+            background: "#00603a",
+            display: "inline-block",
+          }}
+        />
+        <span>Recursos</span>
       </div>
-      <div className="grid grid-cols-4 gap-4">
-        <Skeleton className="h-24 w-full rounded-xl" />
-        <Skeleton className="h-24 w-full rounded-xl" />
-        <Skeleton className="h-24 w-full rounded-xl" />
-        <Skeleton className="h-24 w-full rounded-xl" />
+
+      {/* ── Título Principal, Subtítulo y Botón ─────────────────────── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: "20px",
+          margin: "16px 0 28px",
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <h1
+            style={{
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "34px",
+              fontWeight: 500,
+              lineHeight: 1.1,
+              letterSpacing: "-0.03em",
+              color: "#08090a",
+              margin: 0,
+            }}
+          >
+            Activos visuales y archivos
+          </h1>
+          <p
+            style={{
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "15px",
+              color: "#706f6f",
+              marginTop: "8px",
+              maxWidth: "74ch",
+              lineHeight: 1.45,
+              letterSpacing: "-0.01em",
+            }}
+          >
+            Imágenes y archivos descargables del informe. El texto alternativo es
+            obligatorio: sin él la figura no se publica.
+          </p>
+        </div>
+
+        <div className="b pri" style={{ opacity: 0.6, cursor: "default" }}>
+          <svg
+            viewBox="0 0 24 24"
+            style={{
+              width: 15,
+              height: 15,
+              stroke: "#ffffff",
+              fill: "none",
+              strokeWidth: 2,
+            }}
+          >
+            <path d="M12 16V4M7 9l5-5 5 5M5 20h14" />
+          </svg>
+          <span>Subir recurso</span>
+        </div>
       </div>
-      <div className="space-y-4">
-        <Skeleton className="h-44 w-full rounded-xl" />
-        <Skeleton className="h-44 w-full rounded-xl" />
+
+      {/* ── Stats Skeleton ─────────────────────────────────────────── */}
+      <div
+        className="stats admin-stats"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: "1px",
+          background: "#ebebeb",
+          borderRadius: "12px",
+          overflow: "hidden",
+          border: "1px solid #ebebeb",
+          marginBottom: "32px",
+        }}
+      >
+        {["Recursos totales", "Descargables", "Sin texto alt", "Almacenamiento"].map(
+          (label, idx) => (
+            <div
+              key={idx}
+              style={{
+                background: "#ffffff",
+                padding: "20px 22px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "6px",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                  fontSize: "12.5px",
+                  letterSpacing: ".04em",
+                  color: "#6f6f6f",
+                }}
+              >
+                {label}
+              </span>
+              <Skeleton className="h-10 w-20 rounded-sm my-0.5" />
+            </div>
+          ),
+        )}
+      </div>
+
+      {/* ── Tablas Skeleton ─────────────────────────────────────────── */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+        {[1, 2].map((grp) => (
+          <div key={grp}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                gap: "10px",
+                marginBottom: "10px",
+              }}
+            >
+              <Skeleton className="h-5 w-44 rounded-sm" />
+              <Skeleton className="h-3.5 w-20 rounded-sm" />
+            </div>
+            <div className="card admin-card" style={{ overflow: "hidden" }}>
+              <table className="tbl">
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: "left" }}>Recurso</th>
+                    <th style={{ width: "110px", textAlign: "left" }}>Tipo</th>
+                    <th style={{ width: "130px", textAlign: "left" }}>
+                      Descargable
+                    </th>
+                    <th style={{ width: "200px", textAlign: "left" }}>
+                      Texto alternativo
+                    </th>
+                    <th
+                      style={{
+                        width: "110px",
+                        textAlign: "right",
+                        paddingRight: "20px",
+                      }}
+                    >
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[1, 2].map((i) => (
+                    <tr key={i}>
+                      <td>
+                        <Skeleton className="h-4 w-44 rounded-sm mb-1.5" />
+                        <Skeleton className="h-3 w-32 rounded-sm" />
+                      </td>
+                      <td>
+                        <Skeleton className="h-4 w-12 rounded-sm" />
+                      </td>
+                      <td>
+                        <Skeleton className="h-5 w-10 rounded-full" />
+                      </td>
+                      <td>
+                        <Skeleton className="h-4 w-28 rounded-sm" />
+                      </td>
+                      <td
+                        className="act"
+                        style={{ paddingRight: "20px", textAlign: "right" }}
+                      >
+                        <div
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          <Skeleton className="h-7 w-7 rounded-md" />
+                          <Skeleton className="h-7 w-7 rounded-md" />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -282,18 +468,22 @@ export function ResourcesManagement() {
           >
             {t("statTotal")}
           </span>
-          <b
-            style={{
-              fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
-              fontSize: "40px",
-              fontWeight: 500,
-              letterSpacing: "-0.02em",
-              color: "#08090a",
-              lineHeight: 1,
-            }}
-          >
-            {totalResources}
-          </b>
+          {loading ? (
+            <Skeleton className="h-10 w-16 rounded-sm my-0.5" />
+          ) : (
+            <b
+              style={{
+                fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                fontSize: "40px",
+                fontWeight: 500,
+                letterSpacing: "-0.02em",
+                color: "#08090a",
+                lineHeight: 1,
+              }}
+            >
+              {totalResources}
+            </b>
+          )}
         </div>
 
         {/* Stat 2: Descargables con track de progreso */}
@@ -316,50 +506,63 @@ export function ResourcesManagement() {
           >
             {t("statDownloadable")}
           </span>
-          <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
-            <b
-              style={{
-                fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
-                fontSize: "40px",
-                fontWeight: 500,
-                letterSpacing: "-0.02em",
-                color: "#08090a",
-                lineHeight: 1,
-              }}
-            >
-              {downloadableCount}
-            </b>
-            <em
-              style={{
-                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
-                fontStyle: "normal",
-                fontSize: "12.5px",
-                color: "#6f6f6f",
-              }}
-            >
-              ({downloadablePercent}%)
-            </em>
-          </div>
-          <div
-            style={{
-              width: "100%",
-              height: "4px",
-              background: "#f0f0f0",
-              borderRadius: "2px",
-              overflow: "hidden",
-              marginTop: "4px",
-            }}
-          >
-            <div
-              style={{
-                width: `${downloadablePercent}%`,
-                height: "100%",
-                background: "#00603a",
-                borderRadius: "2px",
-                transition: "width .4s ease",
-              }}
-            />
-          </div>
+          {loading ? (
+            <Skeleton className="h-10 w-24 rounded-sm my-0.5" />
+          ) : (
+            <>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: "8px",
+                }}
+              >
+                <b
+                  style={{
+                    fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                    fontSize: "40px",
+                    fontWeight: 500,
+                    letterSpacing: "-0.02em",
+                    color: "#08090a",
+                    lineHeight: 1,
+                  }}
+                >
+                  {downloadableCount}
+                </b>
+                <em
+                  style={{
+                    fontFamily:
+                      "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                    fontStyle: "normal",
+                    fontSize: "12.5px",
+                    color: "#6f6f6f",
+                  }}
+                >
+                  ({downloadablePercent}%)
+                </em>
+              </div>
+              <div
+                style={{
+                  width: "100%",
+                  height: "4px",
+                  background: "#f0f0f0",
+                  borderRadius: "2px",
+                  overflow: "hidden",
+                  marginTop: "4px",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${downloadablePercent}%`,
+                    height: "100%",
+                    background: "#00603a",
+                    borderRadius: "2px",
+                    transition: "width .4s ease",
+                  }}
+                />
+              </div>
+            </>
+          )}
         </div>
 
         {/* Stat 3: Faltan Alt Text */}
@@ -382,18 +585,22 @@ export function ResourcesManagement() {
           >
             {t("statMissingAlt")}
           </span>
-          <b
-            style={{
-              fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
-              fontSize: "40px",
-              fontWeight: 500,
-              letterSpacing: "-0.02em",
-              color: missingAltCount > 0 ? "#b3261e" : "#00603a",
-              lineHeight: 1,
-            }}
-          >
-            {missingAltCount}
-          </b>
+          {loading ? (
+            <Skeleton className="h-10 w-16 rounded-sm my-0.5" />
+          ) : (
+            <b
+              style={{
+                fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                fontSize: "40px",
+                fontWeight: 500,
+                letterSpacing: "-0.02em",
+                color: missingAltCount > 0 ? "#b3261e" : "#00603a",
+                lineHeight: 1,
+              }}
+            >
+              {missingAltCount}
+            </b>
+          )}
         </div>
 
         {/* Stat 4: Almacenamiento */}
@@ -416,58 +623,150 @@ export function ResourcesManagement() {
           >
             {t("statStorage")}
           </span>
-          <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
-            <b
-              style={{
-                fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
-                fontSize: "40px",
-                fontWeight: 500,
-                letterSpacing: "-0.02em",
-                color: "#08090a",
-                lineHeight: 1,
-              }}
-            >
-              {storageMB}
-            </b>
-            <em
-              style={{
-                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
-                fontStyle: "normal",
-                fontSize: "12.5px",
-                color: "#6f6f6f",
-              }}
-            >
-              {t("storageUnit")}
-            </em>
-          </div>
-          <div
-            style={{
-              width: "100%",
-              height: "4px",
-              background: "#f0f0f0",
-              borderRadius: "2px",
-              overflow: "hidden",
-              marginTop: "4px",
-            }}
-          >
-            <div
-              style={{
-                width: `${Math.max(storagePercent, 2)}%`,
-                height: "100%",
-                background: "#00603a",
-                borderRadius: "2px",
-                transition: "width .4s ease",
-              }}
-            />
-          </div>
+          {loading ? (
+            <Skeleton className="h-10 w-28 rounded-sm my-0.5" />
+          ) : (
+            <>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: "8px",
+                }}
+              >
+                <b
+                  style={{
+                    fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                    fontSize: "40px",
+                    fontWeight: 500,
+                    letterSpacing: "-0.02em",
+                    color: "#08090a",
+                    lineHeight: 1,
+                  }}
+                >
+                  {storageMB}
+                </b>
+                <em
+                  style={{
+                    fontFamily:
+                      "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                    fontStyle: "normal",
+                    fontSize: "12.5px",
+                    color: "#6f6f6f",
+                  }}
+                >
+                  {t("storageUnit")}
+                </em>
+              </div>
+              <div
+                style={{
+                  width: "100%",
+                  height: "4px",
+                  background: "#f0f0f0",
+                  borderRadius: "2px",
+                  overflow: "hidden",
+                  marginTop: "4px",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${Math.max(storagePercent, 2)}%`,
+                    height: "100%",
+                    background: "#00603a",
+                    borderRadius: "2px",
+                    transition: "width .4s ease",
+                  }}
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
 
       {/* ── Grupos de Recursos por Sección (.grp + .card) ──────────── */}
       {loading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-44 w-full rounded-xl" />
-          <Skeleton className="h-44 w-full rounded-xl" />
+        <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+          {[1, 2].map((grp) => (
+            <div key={grp}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: "10px",
+                  marginBottom: "10px",
+                }}
+              >
+                <Skeleton className="h-5 w-44 rounded-sm" />
+                <Skeleton className="h-3.5 w-20 rounded-sm" />
+              </div>
+              <div className="card admin-card" style={{ overflow: "hidden" }}>
+                <table className="tbl">
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: "left" }}>
+                        {t("colResource")}
+                      </th>
+                      <th style={{ width: "110px", textAlign: "left" }}>
+                        {t("colType")}
+                      </th>
+                      <th style={{ width: "130px", textAlign: "left" }}>
+                        {t("colDownloadable")}
+                      </th>
+                      <th style={{ width: "200px", textAlign: "left" }}>
+                        {t("colAltText")}
+                      </th>
+                      <th
+                        style={{
+                          width: "110px",
+                          textAlign: "right",
+                          paddingRight: "20px",
+                        }}
+                      >
+                        {t("colActions")}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[1, 2].map((i) => (
+                      <tr key={i}>
+                        <td>
+                          <Skeleton className="h-4 w-44 rounded-sm mb-1.5" />
+                          <Skeleton className="h-3 w-32 rounded-sm" />
+                        </td>
+                        <td>
+                          <Skeleton className="h-4 w-12 rounded-sm" />
+                        </td>
+                        <td>
+                          <Skeleton className="h-5 w-10 rounded-full" />
+                        </td>
+                        <td>
+                          <Skeleton className="h-4 w-28 rounded-sm" />
+                        </td>
+                        <td
+                          className="act"
+                          style={{
+                            paddingRight: "20px",
+                            textAlign: "right",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
+                          >
+                            <Skeleton className="h-7 w-7 rounded-md" />
+                            <Skeleton className="h-7 w-7 rounded-md" />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
         </div>
       ) : sections.length === 0 && resources.length === 0 ? (
         <div
