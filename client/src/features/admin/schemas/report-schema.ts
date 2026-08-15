@@ -18,7 +18,10 @@ export type ReportVersionStatus = z.infer<typeof reportVersionStatusEnum>;
 export const reportVersionSchema = z.object({
   id: z.string().uuid(),
   report_id: z.string().uuid(),
-  title: z.string().min(1, "El título es obligatorio").max(255, "Máximo 255 caracteres"),
+  title: z
+    .string()
+    .min(1, "El título es obligatorio")
+    .max(255, "Máximo 255 caracteres"),
   version: z.string().min(1, "La versión es obligatoria"),
   language: reportLanguageEnum.default("ES"),
   summary: z.string().min(1, "El resumen es obligatorio"),
@@ -34,23 +37,55 @@ export const reportVersionSchema = z.object({
 export type ReportVersion = z.infer<typeof reportVersionSchema>;
 
 export const createReportVersionSchema = z.object({
-  title: z.string().min(1, "El título es obligatorio").max(255, "Máximo 255 caracteres"),
+  title: z
+    .string()
+    .min(1, "El título es obligatorio")
+    .max(255, "Máximo 255 caracteres"),
   version: z.string().min(1, "La versión es obligatoria"),
   language: reportLanguageEnum.default("ES"),
   summary: z.string().min(1, "El resumen es obligatorio"),
   citation_text: z.string().min(1, "El texto de citación es obligatorio"),
+  status: reportVersionStatusEnum.default("DRAFT").optional(),
 });
 
-export type CreateReportVersionInput = z.infer<typeof createReportVersionSchema>;
+export type CreateReportVersionInput = z.infer<
+  typeof createReportVersionSchema
+>;
 
 export const updateReportVersionSchema = z.object({
-  title: z.string().min(1, "El título es obligatorio").max(255, "Máximo 255 caracteres").optional(),
+  title: z
+    .string()
+    .min(1, "El título es obligatorio")
+    .max(255, "Máximo 255 caracteres")
+    .optional(),
   summary: z.string().min(1, "El resumen es obligatorio").optional(),
-  citation_text: z.string().min(1, "El texto de citación es obligatorio").optional(),
+  citation_text: z
+    .string()
+    .min(1, "El texto de citación es obligatorio")
+    .optional(),
   status: reportVersionStatusEnum.optional(),
 });
 
-export type UpdateReportVersionInput = z.infer<typeof updateReportVersionSchema>;
+export type UpdateReportVersionInput = z.infer<
+  typeof updateReportVersionSchema
+>;
+
+export const reportFormSchema = z.object({
+  title: z
+    .string()
+    .min(1, "El título es obligatorio")
+    .max(255, "Máximo 255 caracteres"),
+  version: z
+    .string()
+    .min(1, "La versión es obligatoria")
+    .regex(/^[0-9]+$/, "Solo se permiten números enteros"),
+  language: reportLanguageEnum,
+  summary: z.string().min(1, "El resumen es obligatorio"),
+  citation_text: z.string().min(1, "El texto de citación es obligatorio"),
+  status: reportVersionStatusEnum,
+});
+
+export type ReportFormInput = z.infer<typeof reportFormSchema>;
 
 // Compatibilidad retroactiva mientras se realiza la migración
 export const reportSchema = reportVersionSchema;

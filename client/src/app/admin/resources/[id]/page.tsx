@@ -3,11 +3,20 @@ import { getResourceByIdAction } from "@/features/admin/actions/resources-action
 
 interface EditResourcePageProps {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ sectionId?: string }>;
 }
 
-export default async function EditResourcePage({ params }: EditResourcePageProps) {
+export default async function EditResourcePage({ params, searchParams }: EditResourcePageProps) {
   const { id } = await params;
-  const resource = await getResourceByIdAction(id);
+  const sParams = searchParams ? await searchParams : undefined;
+  const sectionId = sParams?.sectionId;
+  const resource = await getResourceByIdAction(id, sectionId);
 
-  return <ResourceForm isEditMode={true} initialData={resource} />;
+  return (
+    <ResourceForm
+      isEditMode={true}
+      initialData={resource}
+      preselectedSectionId={sectionId || resource?.section_id}
+    />
+  );
 }

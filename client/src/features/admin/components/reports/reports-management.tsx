@@ -1,52 +1,222 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Plus,
-  Pencil,
-  Trash2,
-  CalendarDays,
-  Search,
-  AlertCircle,
-} from "lucide-react";
-
-import { Input } from "@/components/ui/input";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
 import { useVersion } from "@/context/version-context";
 import {
   getReportsWithVersionsAction,
   deleteReportAction,
   deleteReportVersionAction,
   createReportAction,
-  updateReportVersionAction,
 } from "../../actions/reports-actions";
 import type { BaseReport, ReportVersion } from "../../schemas/report-schema";
+import { Search, X, Plus, Loader2 } from "lucide-react";
+
+export function ReportsManagementSkeleton() {
+  return (
+    <div>
+      {/* ── Encabezado y Breadcrumb ────────────────────────────────── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+          fontSize: "11px",
+          letterSpacing: ".07em",
+          textTransform: "uppercase",
+          color: "#00603a",
+        }}
+      >
+        <span
+          style={{
+            width: "22px",
+            height: "1px",
+            background: "#00603a",
+            display: "inline-block",
+          }}
+        />
+        <span>Módulo de informes</span>
+      </div>
+
+      {/* ── Título Principal, Subtítulo y Botón ─────────────────────── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: "20px",
+          margin: "16px 0 28px",
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <h1
+            style={{
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "34px",
+              fontWeight: 500,
+              lineHeight: 1.1,
+              letterSpacing: "-0.03em",
+              color: "#08090a",
+              margin: 0,
+            }}
+          >
+            Administrar informes
+          </h1>
+          <p
+            style={{
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "15px",
+              color: "#706f6f",
+              marginTop: "8px",
+              maxWidth: "74ch",
+              lineHeight: 1.45,
+              letterSpacing: "-0.01em",
+            }}
+          >
+            Versiones del informe. Una versión publicada no se edita: se crea la
+            siguiente.
+          </p>
+        </div>
+
+        <div className="b pri" style={{ opacity: 0.6, cursor: "default" }}>
+          <svg
+            viewBox="0 0 24 24"
+            style={{
+              width: 15,
+              height: 15,
+              stroke: "#ffffff",
+              fill: "none",
+              strokeWidth: 2,
+            }}
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          <span>Nueva versión</span>
+        </div>
+      </div>
+
+      {/* ── Stats Skeleton ─────────────────────────────────────────── */}
+      <div
+        className="stats admin-stats"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: "1px",
+          background: "#ebebeb",
+          borderRadius: "12px",
+          overflow: "hidden",
+          border: "1px solid #ebebeb",
+          marginBottom: "32px",
+        }}
+      >
+        {["Total versiones", "Publicadas", "Informes base", "Último cambio"].map(
+          (label, idx) => (
+            <div
+              key={idx}
+              style={{
+                background: "#ffffff",
+                padding: "20px 22px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "6px",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                  fontSize: "12.5px",
+                  letterSpacing: ".04em",
+                  color: "#6f6f6f",
+                }}
+              >
+                {label}
+              </span>
+              <Skeleton className="h-10 w-20 rounded-sm my-0.5" />
+            </div>
+          ),
+        )}
+      </div>
+
+      {/* ── Card de Versiones Skeleton ─────────────────────────────── */}
+      <div
+        className="card admin-card"
+        style={{ overflow: "hidden", marginBottom: "24px" }}
+      >
+        <div
+          style={{
+            padding: "16px 20px",
+            borderBottom: "1px solid #ebebeb",
+          }}
+        >
+          <Skeleton className="h-5 w-32 rounded-sm" />
+        </div>
+        <div style={{ width: "100%", overflowX: "auto" }}>
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th style={{ width: "90px", textAlign: "left" }}>Versión</th>
+                <th style={{ textAlign: "left" }}>Título</th>
+                <th style={{ width: "85px", textAlign: "left" }}>Idioma</th>
+                <th style={{ width: "120px", textAlign: "left" }}>Estado</th>
+                <th style={{ width: "110px", textAlign: "left" }}>Fecha</th>
+                <th
+                  style={{
+                    width: "92px",
+                    textAlign: "right",
+                    paddingRight: "20px",
+                  }}
+                >
+                  Acciones
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {[1, 2, 3].map((i) => (
+                <tr key={i}>
+                  <td className="mono">
+                    <Skeleton className="h-4 w-10 rounded-sm" />
+                  </td>
+                  <td>
+                    <Skeleton className="h-4 w-48 rounded-sm mb-1" />
+                    <Skeleton className="h-3 w-32 rounded-sm" />
+                  </td>
+                  <td>
+                    <Skeleton className="h-4 w-8 rounded-sm" />
+                  </td>
+                  <td>
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </td>
+                  <td className="mono">
+                    <Skeleton className="h-4 w-14 rounded-sm" />
+                  </td>
+                  <td
+                    className="act"
+                    style={{ paddingRight: "20px", textAlign: "right" }}
+                  >
+                    <div
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      <Skeleton className="h-7 w-7 rounded-md" />
+                      <Skeleton className="h-7 w-7 rounded-md" />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function ReportsManagement() {
   const t = useTranslations("AdminPage.reports");
@@ -54,24 +224,29 @@ export function ReportsManagement() {
   const [baseReports, setBaseReports] = useState<BaseReport[]>([]);
   const [versions, setVersions] = useState<ReportVersion[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Filtros de versiones
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBaseReportFilter, setSelectedBaseReportFilter] =
+    useState<string>("all");
+  const [selectedStatusFilter, setSelectedStatusFilter] =
+    useState<string>("all");
+  const [selectedLangFilter, setSelectedLangFilter] =
+    useState<string>("all");
+
+  // Estados de eliminación y creación de reporte base
   const [deleteTarget, setDeleteTarget] = useState<{
     type: "report" | "version";
     reportId: string;
     versionId?: string;
+    name?: string;
   } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCreatingBase, setIsCreatingBase] = useState(false);
+  const [isSubmittingBase, setIsSubmittingBase] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const [reportFilterLang, setReportFilterLang] = useState<"all" | "ES" | "EN">(
-    "all",
-  );
-  const [selectedBaseReportFilter, setSelectedBaseReportFilter] =
-    useState<string>("all");
-
   const loadData = useCallback(async () => {
-    setActionError(null);
     try {
       const reportsWithVersions = await getReportsWithVersionsAction();
       const bases: BaseReport[] = reportsWithVersions.map((r) => {
@@ -80,7 +255,7 @@ export function ReportsManagement() {
         return base;
       });
       const allVersions: ReportVersion[] = reportsWithVersions.flatMap(
-        (r) => r.report_versions,
+        (r) => r.report_versions || [],
       );
 
       setBaseReports(bases);
@@ -95,18 +270,17 @@ export function ReportsManagement() {
 
   useEffect(() => {
     let isMounted = true;
-    async function init() {
+    async function fetchData() {
       try {
         const reportsWithVersions = await getReportsWithVersionsAction();
         if (!isMounted) return;
-
         const bases: BaseReport[] = reportsWithVersions.map((r) => {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { report_versions, ...base } = r;
           return base;
         });
         const allVersions: ReportVersion[] = reportsWithVersions.flatMap(
-          (r) => r.report_versions,
+          (r) => r.report_versions || [],
         );
 
         setBaseReports(bases);
@@ -115,495 +289,1242 @@ export function ReportsManagement() {
       } catch (err) {
         console.error("Failed to load reports data", err);
       } finally {
-        if (isMounted) setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
-    init();
+
+    void fetchData();
+
     return () => {
       isMounted = false;
     };
   }, [refreshReports]);
 
-  const handleCreateBaseReport = async () => {
+  // Manejo de creación de nuevo Reporte Base contenedor
+  const handleCreateBaseReport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingBase(true);
     setActionError(null);
-    setIsCreatingBase(true);
     try {
       const res = await createReportAction();
+
       if (res.success) {
+        setIsCreatingBase(false);
         await loadData();
       } else {
-        setActionError(res.message || "Error al crear el reporte base.");
+        setActionError(res.message || "Error al crear el informe base.");
       }
     } catch (err) {
-      console.error("Failed to create base report", err);
-      setActionError("Error de conexión al crear el reporte base.");
+      console.error("Error creating base report:", err);
+      setActionError("Error de conexión al crear el informe base.");
     } finally {
-      setIsCreatingBase(false);
+      setIsSubmittingBase(false);
     }
   };
 
-  const handleToggleStatus = async (ver: ReportVersion) => {
-    const newStatus = ver.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
-    try {
-      const res = await updateReportVersionAction(ver.report_id, ver.id, {
-        status: newStatus,
-      });
-      if (res.success) {
-        setVersions((prev) =>
-          prev.map((v) => (v.id === ver.id ? { ...v, status: newStatus } : v)),
-        );
-        await refreshReports();
-      }
-    } catch (err) {
-      console.error("Failed to toggle status", err);
-    }
-  };
-
+  // Manejo de eliminación
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     setIsDeleting(true);
+    setActionError(null);
+
     try {
-      if (deleteTarget.type === "report") {
-        await deleteReportAction(deleteTarget.reportId);
-      } else if (deleteTarget.type === "version" && deleteTarget.versionId) {
-        await deleteReportVersionAction(
+      if (deleteTarget.type === "version" && deleteTarget.versionId) {
+        const res = await deleteReportVersionAction(
           deleteTarget.reportId,
           deleteTarget.versionId,
         );
+        if (res.success) {
+          setDeleteTarget(null);
+          await loadData();
+        } else {
+          setActionError(res.message || "Error al eliminar la versión.");
+        }
+      } else if (deleteTarget.type === "report") {
+        const res = await deleteReportAction(deleteTarget.reportId);
+        if (res.success) {
+          setDeleteTarget(null);
+          await loadData();
+        } else {
+          setActionError(res.message || "Error al eliminar el informe base.");
+        }
       }
-      await loadData();
     } catch (err) {
-      console.error("Failed to delete target", err);
+      console.error("Error during deletion:", err);
+      setActionError("Error al procesar la eliminación.");
     } finally {
       setIsDeleting(false);
-      setDeleteTarget(null);
     }
   };
 
-  const baseFilteredVersions = versions.filter((ver) => {
-    if (selectedBaseReportFilter === "all") return true;
-    return ver.report_id === selectedBaseReportFilter;
-  });
+  // Filtrado reactivo de versiones
+  const filteredVersions = useMemo(() => {
+    return versions.filter((ver) => {
+      // 1. Filtro por Informe Base
+      if (
+        selectedBaseReportFilter !== "all" &&
+        ver.report_id !== selectedBaseReportFilter
+      ) {
+        return false;
+      }
 
-  const languageFilteredVersions = baseFilteredVersions.filter((ver) => {
-    if (reportFilterLang === "all") return true;
-    return (ver.language || "ES").toUpperCase() === reportFilterLang;
-  });
+      // 2. Filtro por Estado
+      if (selectedStatusFilter !== "all") {
+        const statusUpper = ver.status?.toUpperCase() || "DRAFT";
+        if (statusUpper !== selectedStatusFilter.toUpperCase()) {
+          return false;
+        }
+      }
 
-  const filteredVersions = languageFilteredVersions.filter((ver) => {
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase().trim();
-    return (
-      ver.title?.toLowerCase().includes(q) ||
-      ver.version?.toLowerCase().includes(q) ||
-      ver.citation_text?.toLowerCase().includes(q) ||
-      ver.summary?.toLowerCase().includes(q)
-    );
-  });
+      // 3. Filtro por Idioma
+      if (selectedLangFilter !== "all") {
+        const langUpper = ver.language?.toUpperCase() || "ES";
+        if (langUpper !== selectedLangFilter.toUpperCase()) {
+          return false;
+        }
+      }
 
+      // 4. Filtro por Búsqueda (Título, resumen, versión)
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const titleMatch = ver.title?.toLowerCase().includes(q);
+        const summaryMatch = ver.summary?.toLowerCase().includes(q);
+        const versionMatch = ver.version?.toLowerCase().includes(q);
+        if (!titleMatch && !summaryMatch && !versionMatch) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [
+    versions,
+    selectedBaseReportFilter,
+    selectedStatusFilter,
+    selectedLangFilter,
+    searchQuery,
+  ]);
+
+  const hasActiveFilters =
+    searchQuery.trim() !== "" ||
+    selectedBaseReportFilter !== "all" ||
+    selectedStatusFilter !== "all" ||
+    selectedLangFilter !== "all";
+
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setSelectedBaseReportFilter("all");
+    setSelectedStatusFilter("all");
+    setSelectedLangFilter("all");
+  };
+
+  // Cálculos de métricas estadísticas
+  const totalVersionsCount = versions.length;
   const publishedCount = versions.filter(
-    (v) => v.status === "PUBLISHED",
+    (v) => v.status?.toUpperCase() === "PUBLISHED",
   ).length;
+  const publishedPercent =
+    totalVersionsCount > 0
+      ? Math.round((publishedCount / totalVersionsCount) * 100)
+      : 0;
+
+  // Formato de última fecha
+  const latestDateFormatted = useMemo(() => {
+    if (versions.length === 0) return "—";
+    const sorted = [...versions].sort((a, b) => {
+      const dateA = new Date(a.updated_at || a.created_at || 0).getTime();
+      const dateB = new Date(b.updated_at || b.created_at || 0).getTime();
+      return dateB - dateA;
+    });
+    const top = sorted[0];
+    const rawDate = top.updated_at || top.created_at;
+    if (!rawDate) return "Reciente";
+    const d = new Date(rawDate);
+    return d.toLocaleDateString("es-ES", {
+      day: "numeric",
+      month: "short",
+    });
+  }, [versions]);
 
   return (
-    <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-2">
-      {/* Header section matching taxonomy style */}
-      <div className="space-y-1">
-        <div className="flex items-center gap-2 text-xs font-mono font-semibold text-amber-700 dark:text-amber-500 uppercase tracking-widest">
-          <span className="w-6 h-[2px] bg-amber-600/70 inline-block" />
-          <span>{t("headerTag")}</span>
-        </div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-          {t("title")}
-        </h1>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
-          <p className="text-sm text-muted-foreground max-w-3xl leading-relaxed">
-            {t("subtitle")}
-          </p>
-          <div className="flex items-center gap-2">
-            {baseReports.length === 0 && (
-              <Button
-                onClick={handleCreateBaseReport}
-                disabled={isCreatingBase}
-                variant="outline"
-                className="rounded-xl px-4 text-xs font-bold border-amber-600/30 text-amber-800 dark:text-amber-300"
-              >
-                {isCreatingBase ? "Creando..." : "Crear Reporte Base"}
-              </Button>
-            )}
-            <Link href="/admin/reports/new">
-              <Button className="rounded-xl px-4 gap-2 shadow-xs bg-emerald-950 text-emerald-100 hover:bg-emerald-900 text-xs font-bold">
-                <Plus className="size-4" />
-                <span>Nueva Versión</span>
-              </Button>
-            </Link>
-          </div>
-        </div>
+    <div>
+      {/* ── Encabezado y Breadcrumb (.eyebrow del prototipo) ────────── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+          fontSize: "11px",
+          letterSpacing: ".07em",
+          textTransform: "uppercase",
+          color: "#00603a",
+        }}
+      >
+        <span
+          style={{
+            width: "22px",
+            height: "1px",
+            background: "#00603a",
+            display: "inline-block",
+            flexShrink: 0,
+          }}
+        />
+        <span>{t("headerTag")}</span>
       </div>
 
+      {/* ── Título Principal, Subtítulo y Botón Nueva Versión (.mh) ── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: "20px",
+          margin: "16px 0 28px",
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <h1
+            style={{
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "34px",
+              fontWeight: 500,
+              lineHeight: 1.1,
+              letterSpacing: "-0.03em",
+              color: "#08090a",
+              margin: 0,
+            }}
+          >
+            {t("title")}
+          </h1>
+          <p
+            style={{
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "15px",
+              color: "#706f6f",
+              marginTop: "8px",
+              maxWidth: "74ch",
+              lineHeight: 1.45,
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {t("subtitle")}
+          </p>
+        </div>
+
+        <Link
+          href="/admin/reports/new"
+          className="b pri"
+          style={{ textDecoration: "none" }}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            style={{
+              width: 15,
+              height: 15,
+              stroke: "#ffffff",
+              fill: "none",
+              strokeWidth: 2,
+            }}
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          <span>{t("newVersionBtn")}</span>
+        </Link>
+      </div>
+
+      {/* ── Banner de Error en Acciones ────────────────────────────── */}
       {actionError && (
-        <div className="p-4 rounded-xl text-sm font-medium flex items-center gap-3 border bg-destructive/10 border-destructive/30 text-destructive">
-          <AlertCircle className="size-5 shrink-0" />
-          <span>{actionError}</span>
+        <div
+          style={{
+            padding: "12px 16px",
+            borderRadius: "8px",
+            marginBottom: "20px",
+            fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+            fontSize: "13.5px",
+            border: "1px solid rgba(179,38,30,.25)",
+            borderLeft: "3px solid #b3261e",
+            background: "rgba(179,38,30,.04)",
+            color: "#b3261e",
+          }}
+        >
+          {actionError}
         </div>
       )}
 
-      {/* KPI Stats Cards */}
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-4 flex flex-col justify-between">
-          <span className="text-xs text-muted-foreground font-medium">
+      {/* ── Bloque de 4 Estadísticas (.stats del prototipo) ──────────── */}
+      <div
+        className="stats admin-stats"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: "1px",
+          background: "#ebebeb",
+          borderRadius: "12px",
+          overflow: "hidden",
+          border: "1px solid #ebebeb",
+          marginBottom: "32px",
+        }}
+      >
+        {/* Stat 1: Total versiones */}
+        <div
+          style={{
+            background: "#ffffff",
+            padding: "20px 22px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "6px",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+              fontSize: "12.5px",
+              letterSpacing: ".04em",
+              color: "#6f6f6f",
+            }}
+          >
             {t("statTotalVersions")}
           </span>
-          <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-3xl font-extrabold text-foreground">
-              {loading ? "-" : versions.length}
-            </span>
-            <span className="text-[10px] font-mono text-muted-foreground">
-              {t("statOfReports", { count: baseReports.length })}
-            </span>
+          <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
+            {loading ? (
+              <Skeleton className="h-10 w-16 rounded-sm my-0.5" />
+            ) : (
+              <>
+                <b
+                  style={{
+                    fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                    fontSize: "40px",
+                    fontWeight: 500,
+                    letterSpacing: "-0.02em",
+                    color: "#08090a",
+                    lineHeight: 1,
+                  }}
+                >
+                  {totalVersionsCount}
+                </b>
+                <em
+                  style={{
+                    fontFamily:
+                      "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                    fontStyle: "normal",
+                    fontSize: "12.5px",
+                    color: "#6f6f6f",
+                  }}
+                >
+                  {t("statOfReports", { count: baseReports.length })}
+                </em>
+              </>
+            )}
           </div>
-        </Card>
+        </div>
 
-        <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-4 flex flex-col justify-between">
-          <span className="text-xs text-muted-foreground font-medium">
+        {/* Stat 2: Publicadas con track de porcentaje */}
+        <div
+          style={{
+            background: "#ffffff",
+            padding: "20px 22px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "6px",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+              fontSize: "12.5px",
+              letterSpacing: ".04em",
+              color: "#6f6f6f",
+            }}
+          >
             {t("statPublished")}
           </span>
-          <div className="flex items-center gap-3 mt-2">
-            <span className="text-3xl font-extrabold text-foreground">
-              {loading ? "-" : publishedCount}
-            </span>
-            <div className="w-16 h-2 rounded-full bg-emerald-500/20 overflow-hidden">
-              <div
-                className="h-full bg-emerald-700 rounded-full"
+          {loading ? (
+            <Skeleton className="h-10 w-24 rounded-sm my-0.5" />
+          ) : (
+            <>
+              <b
                 style={{
-                  width: `${versions.length > 0 ? (publishedCount / versions.length) * 100 : 0}%`,
+                  fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                  fontSize: "40px",
+                  fontWeight: 500,
+                  letterSpacing: "-0.02em",
+                  color: "#00603a",
+                  lineHeight: 1,
                 }}
-              />
-            </div>
-          </div>
-        </Card>
+              >
+                {publishedCount}
+              </b>
+              <div
+                style={{
+                  width: "100%",
+                  height: "4px",
+                  background: "#f0f0f0",
+                  borderRadius: "2px",
+                  overflow: "hidden",
+                  marginTop: "4px",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${publishedPercent}%`,
+                    height: "100%",
+                    background: "#00603a",
+                    borderRadius: "2px",
+                    transition: "width .4s ease",
+                  }}
+                />
+              </div>
+            </>
+          )}
+        </div>
 
-        <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-4 flex flex-col justify-between">
-          <span className="text-xs text-muted-foreground font-medium">
+        {/* Stat 3: Informes base */}
+        <div
+          style={{
+            background: "#ffffff",
+            padding: "20px 22px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "6px",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+              fontSize: "12.5px",
+              letterSpacing: ".04em",
+              color: "#6f6f6f",
+            }}
+          >
             {t("statBaseReports")}
           </span>
-          <div className="flex items-center gap-2 mt-2">
-            <CalendarDays className="size-4 text-muted-foreground/60" />
-            <span className="text-sm font-bold font-mono text-foreground">
-              {loading ? "-" : t("statActiveCount", { count: baseReports.length })}
-            </span>
-          </div>
-        </Card>
+          {loading ? (
+            <Skeleton className="h-10 w-16 rounded-sm my-0.5" />
+          ) : (
+            <b
+              style={{
+                fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                fontSize: "40px",
+                fontWeight: 500,
+                letterSpacing: "-0.02em",
+                color: "#08090a",
+                lineHeight: 1,
+              }}
+            >
+              {baseReports.length}
+            </b>
+          )}
+        </div>
+
+        {/* Stat 4: Último cambio */}
+        <div
+          style={{
+            background: "#ffffff",
+            padding: "20px 22px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "6px",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+              fontSize: "12.5px",
+              letterSpacing: ".04em",
+              color: "#6f6f6f",
+            }}
+          >
+            {t("statLastChange")}
+          </span>
+          {loading ? (
+            <Skeleton className="h-10 w-24 rounded-sm my-0.5" />
+          ) : (
+            <b
+              style={{
+                fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                fontSize: "28px",
+                fontWeight: 500,
+                letterSpacing: "-0.02em",
+                color: "#08090a",
+                lineHeight: 1,
+                paddingTop: "6px",
+              }}
+            >
+              {latestDateFormatted}
+            </b>
+          )}
+        </div>
       </div>
 
-      {/* Versions Table */}
-      {loading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-64 w-full rounded-2xl" />
+      {/* ── Barra de Filtros para Versiones ──────────────────────────── */}
+      <div
+        className="card admin-card"
+        style={{
+          padding: "14px 18px",
+          marginBottom: "20px",
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          flexWrap: "wrap",
+        }}
+      >
+        {/* Buscador */}
+        <div
+          style={{
+            position: "relative",
+            flex: "1 1 240px",
+            minWidth: "200px",
+          }}
+        >
+          <Search
+            style={{
+              position: "absolute",
+              left: "11px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              width: "15px",
+              height: "15px",
+              color: "#6f6f6f",
+            }}
+          />
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t("searchPlaceholder")}
+            style={{
+              width: "100%",
+              height: "36px",
+              paddingLeft: "34px",
+              paddingRight: "12px",
+              border: "1px solid #ebebeb",
+              borderRadius: "8px",
+              background: "#ffffff",
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "13.5px",
+              color: "#08090a",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          />
         </div>
-      ) : (
-        <div className="space-y-3">
-          {/* Row 1: Title + count + action */}
-          <div className="flex items-center justify-between gap-3 border-b border-border/40 pb-3">
-            <div className="flex items-baseline gap-3">
-              <h2 className="text-2xl font-extrabold text-foreground tracking-tight">
-                {t("tableTitle")}
-              </h2>
-              <span className="text-xs font-mono font-semibold text-muted-foreground/80 uppercase tracking-widest">
-                {String(filteredVersions.length).padStart(2, "0")} / VERSIONES
-              </span>
+
+        {/* Filtro: Informe Base */}
+        <div style={{ flex: "0 1 200px", minWidth: "160px" }}>
+          <select
+            value={selectedBaseReportFilter}
+            onChange={(e) => setSelectedBaseReportFilter(e.target.value)}
+            style={{
+              width: "100%",
+              height: "36px",
+              padding: "0 10px",
+              border: "1px solid #ebebeb",
+              borderRadius: "8px",
+              background: "#ffffff",
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "13px",
+              color: "#08090a",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          >
+            <option value="all">{t("filterAllBaseReports")}</option>
+            {baseReports.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.slug}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Filtro: Estado */}
+        <div style={{ flex: "0 1 140px", minWidth: "120px" }}>
+          <select
+            value={selectedStatusFilter}
+            onChange={(e) => setSelectedStatusFilter(e.target.value)}
+            style={{
+              width: "100%",
+              height: "36px",
+              padding: "0 10px",
+              border: "1px solid #ebebeb",
+              borderRadius: "8px",
+              background: "#ffffff",
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "13px",
+              color: "#08090a",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          >
+            <option value="all">{t("filterAllStatuses")}</option>
+            <option value="PUBLISHED">{t("statusPublished")}</option>
+            <option value="DRAFT">{t("statusDraft")}</option>
+            <option value="ARCHIVED">{t("statusArchived")}</option>
+          </select>
+        </div>
+
+        {/* Filtro: Idioma */}
+        <div style={{ flex: "0 1 130px", minWidth: "110px" }}>
+          <select
+            value={selectedLangFilter}
+            onChange={(e) => setSelectedLangFilter(e.target.value)}
+            style={{
+              width: "100%",
+              height: "36px",
+              padding: "0 10px",
+              border: "1px solid #ebebeb",
+              borderRadius: "8px",
+              background: "#ffffff",
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "13px",
+              color: "#08090a",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          >
+            <option value="all">{t("filterAllLanguages")}</option>
+            <option value="ES">ES (Español)</option>
+            <option value="EN">EN (English)</option>
+          </select>
+        </div>
+
+        {/* Botón Reset de filtros */}
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={handleResetFilters}
+            className="b ghost sm"
+            style={{
+              height: "36px",
+              padding: "0 10px",
+              fontSize: "12.5px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+            }}
+          >
+            <X style={{ width: 14, height: 14 }} />
+            <span>Limpiar filtros</span>
+          </button>
+        )}
+      </div>
+
+      {/* ── Card 1: Tabla de Versiones (.card.admin-card) ──────────── */}
+      <div
+        className="card admin-card"
+        style={{ overflow: "hidden", marginBottom: "28px" }}
+      >
+        {/* Cabecera de la card */}
+        <div
+          style={{
+            padding: "16px 20px",
+            borderBottom: "1px solid #ebebeb",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "10px",
+          }}
+        >
+          <div>
+            <h3
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "17px",
+                fontWeight: 500,
+                color: "#08090a",
+                margin: 0,
+              }}
+            >
+              {t("versionsCardTitle")}
+            </h3>
+            <div
+              style={{
+                fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                fontSize: "12px",
+                color: "#6f6f6f",
+                marginTop: "2px",
+              }}
+            >
+              {selectedBaseReportFilter !== "all"
+                ? baseReports.find((b) => b.id === selectedBaseReportFilter)
+                    ?.slug || "informe-seleccionado"
+                : "Todas las versiones del sistema"}
             </div>
           </div>
+        </div>
 
-          {/* Row 2: Unified filter toolbar */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-            {/* Base report selector */}
-            {baseReports.length > 0 && (
-              <NativeSelect
-                value={selectedBaseReportFilter}
-                onChange={(e) => setSelectedBaseReportFilter(e.target.value)}
-              >
-                <NativeSelectOption value="all">
-                  Todos los Reportes ({baseReports.length})
-                </NativeSelectOption>
-                {baseReports.map((b) => (
-                  <NativeSelectOption key={b.id} value={b.id}>
-                    {b.slug}
-                  </NativeSelectOption>
-                ))}
-              </NativeSelect>
-            )}
-
-            {/* Divider */}
-            <span className="hidden sm:block h-5 w-px bg-border/60 shrink-0" />
-
-            {/* Language toggle */}
-            <div className="flex items-center p-0.5 rounded-xl bg-muted/40 border border-border/60 text-xs font-semibold shrink-0">
-              {(["all", "ES", "EN"] as const).map((lang) => (
-                <button
-                  key={lang}
-                  type="button"
-                  onClick={() => setReportFilterLang(lang)}
-                  className={`px-2.5 py-1 rounded-lg transition-all ${
-                    reportFilterLang === lang
-                      ? "bg-card text-foreground shadow-2xs font-bold"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
+        {/* Tabla */}
+        <div style={{ width: "100%", overflowX: "auto" }}>
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th style={{ width: "90px", textAlign: "left" }}>
+                  {t("colVersion")}
+                </th>
+                <th style={{ textAlign: "left" }}>{t("colTitle")}</th>
+                <th style={{ width: "85px", textAlign: "left" }}>
+                  {t("colLanguage")}
+                </th>
+                <th style={{ width: "120px", textAlign: "left" }}>
+                  {t("colStatus")}
+                </th>
+                <th style={{ width: "110px", textAlign: "left" }}>
+                  {t("colDate")}
+                </th>
+                <th
+                  style={{
+                    width: "92px",
+                    textAlign: "right",
+                    paddingRight: "20px",
+                  }}
                 >
-                  {lang === "all" ? "Todos" : lang}
-                </button>
-              ))}
-            </div>
-
-            {/* Search — grows to fill remaining space */}
-            <div className="relative flex-1 min-w-0">
-              <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-              <Input
-                type="text"
-                placeholder={t("searchPlaceholder")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-3 py-1.5 h-9 w-full rounded-xl bg-card border-border/60 text-xs shadow-2xs focus-visible:ring-emerald-500/20"
-              />
-            </div>
-          </div>
-
-          <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl overflow-hidden">
-            <Table>
-              <TableHeader className="bg-muted/30">
-                <TableRow className="border-b border-border/50">
-                  <TableHead className="font-bold text-xs text-foreground/80 py-3">
-                    {t("colVersionTitle")}
-                  </TableHead>
-                  <TableHead className="font-bold text-xs text-foreground/80 py-3 text-center w-28">
-                    {t("colStatus")}
-                  </TableHead>
-                  <TableHead className="font-bold text-xs text-foreground/80 py-3 text-right w-28">
-                    {t("colActions")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredVersions.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={3}
-                      className="text-center py-8 text-xs text-muted-foreground italic"
+                  {t("colActions")}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                [1, 2, 3].map((i) => (
+                  <tr key={i}>
+                    <td>
+                      <Skeleton className="h-4 w-10 rounded-sm" />
+                    </td>
+                    <td>
+                      <Skeleton className="h-4 w-44 rounded-sm mb-1.5" />
+                      <Skeleton className="h-3 w-32 rounded-sm" />
+                    </td>
+                    <td>
+                      <Skeleton className="h-4 w-8 rounded-sm" />
+                    </td>
+                    <td>
+                      <Skeleton className="h-5 w-16 rounded-full" />
+                    </td>
+                    <td>
+                      <Skeleton className="h-4 w-14 rounded-sm" />
+                    </td>
+                    <td
+                      className="act"
+                      style={{ paddingRight: "20px", textAlign: "right" }}
                     >
-                      {searchQuery ? t("noSearchMatch") : t("noReports")}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredVersions.map((item) => (
-                    <TableRow
-                      key={item.id}
-                      className="border-b border-border/40 hover:bg-muted/20"
+                      <div
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <Skeleton className="h-7 w-7 rounded-md" />
+                        <Skeleton className="h-7 w-7 rounded-md" />
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : filteredVersions.length === 0 ? (
+                <tr>
+                  <td colSpan={6}>
+                    <div
+                      style={{
+                        padding: "36px 24px",
+                        textAlign: "center",
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "13.5px",
+                        color: "#6f6f6f",
+                      }}
                     >
-                      <TableCell className="py-3.5">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-bold text-foreground">
-                              {item.title}
-                            </span>
-                            <Badge
-                              variant="outline"
-                              className="bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 font-mono text-[10px] font-bold px-2 py-0.5 rounded-md border-emerald-500/30"
-                            >
-                              {item.version}
-                            </Badge>
-                            <Badge
-                              variant="outline"
-                              className="bg-muted/40 font-mono text-[10px] text-muted-foreground font-semibold px-2 py-0.5 rounded-md border-border/60"
-                            >
-                              {item.language}
-                            </Badge>
-                          </div>
-                          <div className="text-[11px] text-muted-foreground italic font-serif leading-relaxed">
-                            {item.citation_text}
-                          </div>
-                        </div>
-                      </TableCell>
+                      {t("noVersions")}
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredVersions.map((ver) => {
+                  const statusUpper = ver.status?.toUpperCase() || "DRAFT";
+                  const isPublished = statusUpper === "PUBLISHED";
+                  const isArchived = statusUpper === "ARCHIVED";
+                  const statusBadgeClass = isPublished
+                    ? "bg pub"
+                    : isArchived
+                    ? "bg arch"
+                    : "bg draft";
 
-                      <TableCell className="text-center py-3.5">
-                        <button
-                          type="button"
-                          onClick={() => handleToggleStatus(item)}
-                          className="cursor-pointer outline-none"
+                  const statusText = isPublished
+                    ? t("statusPublished")
+                    : isArchived
+                    ? t("statusArchived")
+                    : t("statusDraft");
+
+                  const rawDate = ver.updated_at || ver.created_at;
+                  const dateStr = rawDate
+                    ? new Date(rawDate).toLocaleDateString("es-ES", {
+                        day: "numeric",
+                        month: "short",
+                      })
+                    : "—";
+
+                  const versionLabel = ver.version?.startsWith("v")
+                    ? ver.version
+                    : `v${ver.version || "1.0"}`;
+
+                  return (
+                    <tr key={ver.id}>
+                      {/* Versión (v1, v2, v3) en mono */}
+                      <td
+                        className="mono"
+                        style={{
+                          color: isPublished ? "#00603a" : "#08090a",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {versionLabel}
+                      </td>
+
+                      {/* Título y Subtítulo / Resumen */}
+                      <td>
+                        <div
+                          style={{
+                            fontFamily:
+                              "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                            fontSize: "15px",
+                            fontWeight: 500,
+                            color: "#08090a",
+                            letterSpacing: "-0.01em",
+                          }}
                         >
-                          <Badge
-                            className={
-                              item.status === "PUBLISHED"
-                                ? "bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] rounded-full"
-                                : "bg-amber-600/20 text-amber-800 dark:text-amber-300 hover:bg-amber-600/30 font-bold text-[10px] rounded-full border border-amber-600/30"
-                            }
-                          >
-                            {item.status === "PUBLISHED"
-                              ? t("statusPublished")
-                              : t("statusDraft")}
-                          </Badge>
-                        </button>
-                      </TableCell>
+                          {ver.title}
+                        </div>
+                        <div
+                          style={{
+                            fontFamily:
+                              "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                            fontSize: "12.5px",
+                            color: "#6f6f6f",
+                            marginTop: "2px",
+                            letterSpacing: "-0.01em",
+                          }}
+                        >
+                          {ver.summary ||
+                            (isPublished
+                              ? "Versión publicada"
+                              : "Borrador de trabajo")}
+                        </div>
+                      </td>
 
-                      <TableCell className="text-right py-3.5">
-                        <div className="flex items-center justify-end gap-1">
-                          <Link href={`/admin/reports/${item.id}`}>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-8 text-muted-foreground hover:text-foreground"
-                            >
-                              <Pencil className="size-3.5" />
-                            </Button>
+                      {/* Idioma */}
+                      <td
+                        className="mono"
+                        style={{ color: "#08090a", fontSize: "12.5px" }}
+                      >
+                        {ver.language?.toUpperCase() || "ES"}
+                      </td>
+
+                      {/* Estado */}
+                      <td>
+                        <span className={statusBadgeClass}>{statusText}</span>
+                      </td>
+
+                      {/* Fecha */}
+                      <td
+                        className="mono"
+                        style={{ color: "#6f6f6f", fontSize: "12px" }}
+                      >
+                        {dateStr}
+                      </td>
+
+                      {/* Botones de acción */}
+                      <td
+                        className="act"
+                        style={{
+                          paddingRight: "20px",
+                          textAlign: "right",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          <Link
+                            href={`/admin/reports/${ver.id}`}
+                            className="b icon ghost"
+                            title={t("editTooltip")}
+                          >
+                            <svg viewBox="0 0 24 24">
+                              <path d="M4 20h4l10-10-4-4L4 16z" />
+                            </svg>
                           </Link>
-                          <Button
-                            variant="ghost"
-                            size="icon"
+                          <button
+                            type="button"
                             onClick={() =>
                               setDeleteTarget({
                                 type: "version",
-                                reportId: item.report_id,
-                                versionId: item.id,
+                                reportId: ver.report_id || "",
+                                versionId: ver.id,
+                                name: `${ver.title} (${versionLabel})`,
                               })
                             }
-                            className="size-8 text-muted-foreground hover:text-destructive"
+                            className="b icon danger"
+                            title={t("deleteTooltip")}
                           >
-                            <Trash2 className="size-3.5" />
-                          </Button>
+                            <svg viewBox="0 0 24 24">
+                              <path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13" />
+                            </svg>
+                          </button>
                         </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </Card>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ── Card 2: Informes Base (.card.admin-card) ───────────────── */}
+      <div className="card admin-card" style={{ overflow: "hidden" }}>
+        <div
+          style={{
+            padding: "16px 20px",
+            borderBottom: "1px solid #ebebeb",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "12px",
+          }}
+        >
+          <div>
+            <h3
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "17px",
+                fontWeight: 500,
+                color: "#08090a",
+                margin: 0,
+              }}
+            >
+              {t("baseReportsCardTitle")}
+            </h3>
+            <div
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "12.5px",
+                color: "#6f6f6f",
+                marginTop: "2px",
+              }}
+            >
+              {t("baseReportsCount", { count: baseReports.length })}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsCreatingBase(true)}
+            className="b sec sm"
+            style={{ height: "34px", padding: "0 14px" }}
+          >
+            <Plus style={{ width: 14, height: 14 }} />
+            <span>{t("newBaseReportBtn")}</span>
+          </button>
+        </div>
+
+        <div style={{ width: "100%", overflowX: "auto" }}>
+          <table className="tbl">
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td>
+                    <Skeleton className="h-4 w-48 rounded-sm mb-1" />
+                    <Skeleton className="h-3 w-32 rounded-sm" />
+                  </td>
+                  <td
+                    className="act"
+                    style={{ width: "92px", paddingRight: "20px" }}
+                  >
+                    <Skeleton className="h-7 w-7 rounded-md" />
+                  </td>
+                </tr>
+              ) : baseReports.length === 0 ? (
+                <tr>
+                  <td colSpan={2}>
+                    <div
+                      style={{
+                        padding: "32px 20px",
+                        textAlign: "center",
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "13px",
+                        color: "#6f6f6f",
+                      }}
+                    >
+                      {t("noBaseReports")}
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                baseReports.map((base) => {
+                  const countVersions = versions.filter(
+                    (v) => v.report_id === base.id,
+                  ).length;
+
+                  return (
+                    <tr key={base.id}>
+                      <td>
+                        <div
+                          style={{
+                            fontFamily:
+                              "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                            fontSize: "15px",
+                            fontWeight: 500,
+                            color: "#08090a",
+                            letterSpacing: "-0.01em",
+                          }}
+                        >
+                          {base.slug}
+                        </div>
+                        <div
+                          style={{
+                            fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                            fontSize: "12px",
+                            color: "#6f6f6f",
+                            marginTop: "2px",
+                          }}
+                        >
+                          ID: {base.id} ·{" "}
+                          {t("versionCountSuffix", { count: countVersions })}
+                        </div>
+                      </td>
+
+                      <td
+                        className="act"
+                        style={{
+                          width: "92px",
+                          paddingRight: "20px",
+                          textAlign: "right",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setDeleteTarget({
+                                type: "report",
+                                reportId: base.id,
+                                name: base.slug,
+                              })
+                            }
+                            className="b icon danger"
+                            title={t("deleteBaseTooltip")}
+                          >
+                            <svg viewBox="0 0 24 24">
+                              <path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ── Modal para Crear Nuevo Informe Base ───────────────────────── */}
+      {isCreatingBase && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(8,9,10,0.45)",
+            backdropFilter: "blur(4px)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 50,
+            padding: "20px",
+          }}
+        >
+          <div
+            className="admin-card"
+            style={{
+              width: "100%",
+              maxWidth: "460px",
+              padding: "24px",
+              borderRadius: "12px",
+              background: "#ffffff",
+              boxShadow: "0 10px 30px -10px rgba(8,9,10,0.2)",
+            }}
+          >
+            <h3
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "18px",
+                fontWeight: 500,
+                color: "#08090a",
+                margin: "0 0 6px 0",
+              }}
+            >
+              {t("createBaseModalTitle")}
+            </h3>
+            <p
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "13px",
+                color: "#706f6f",
+                margin: "0 0 20px 0",
+                lineHeight: 1.45,
+              }}
+            >
+              {t("createBaseModalDesc")}
+            </p>
+
+            <form onSubmit={handleCreateBaseReport}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "10px",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsCreatingBase(false)}
+                  disabled={isSubmittingBase}
+                  className="b sec sm"
+                  style={{ height: "34px", padding: "0 14px" }}
+                >
+                  {t("cancel")}
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingBase}
+                  className="b pri sm"
+                  style={{
+                    height: "34px",
+                    padding: "0 14px",
+                    background: "#00603a",
+                    borderColor: "#00603a",
+                    color: "#ffffff",
+                  }}
+                >
+                  {isSubmittingBase ? (
+                    <Loader2
+                      style={{
+                        width: 14,
+                        height: 14,
+                        animation: "spin 1s linear infinite",
+                      }}
+                    />
+                  ) : (
+                    t("createBaseBtn")
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
-      {/* Base Reports Section */}
-      {baseReports.length > 0 && (
-        <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-              Reportes Base ({baseReports.length})
+      {/* ── Modal de Confirmación de Eliminación ───────────────────────── */}
+      {deleteTarget && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(8,9,10,0.45)",
+            backdropFilter: "blur(4px)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 50,
+            padding: "20px",
+          }}
+        >
+          <div
+            className="admin-card"
+            style={{
+              width: "100%",
+              maxWidth: "440px",
+              padding: "24px",
+              borderRadius: "12px",
+              background: "#ffffff",
+              boxShadow: "0 10px 30px -10px rgba(8,9,10,0.2)",
+            }}
+          >
+            <h3
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "18px",
+                fontWeight: 500,
+                color: "#08090a",
+                margin: "0 0 8px 0",
+              }}
+            >
+              {deleteTarget.type === "report"
+                ? t("deleteBaseTitle")
+                : t("deleteVersionTitle")}
             </h3>
-            <Button
-              onClick={handleCreateBaseReport}
-              variant="outline"
-              size="sm"
-              className="rounded-xl text-xs font-bold border-amber-600/30 text-amber-800 dark:text-amber-300"
+            <p
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "13.5px",
+                color: "#706f6f",
+                margin: "0 0 20px 0",
+                lineHeight: 1.45,
+              }}
             >
-              + Nuevo Reporte Base
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {baseReports.map((b) => (
-              <div
-                key={b.id}
-                className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-muted/20"
+              {deleteTarget.type === "report"
+                ? t("deleteBaseDesc")
+                : t("deleteVersionDesc")}
+            </p>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "10px",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={isDeleting}
+                className="b sec sm"
+                style={{ height: "34px", padding: "0 14px" }}
               >
-                <div>
-                  <div className="text-xs font-mono font-bold text-foreground">
-                    {b.slug}
-                  </div>
-                  <div className="text-[10px] text-muted-foreground font-mono">
-                    ID: {b.id}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Link href={`/admin/reports/new?reportId=${b.id}`}>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 px-2.5 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 gap-1"
-                    >
-                      <Plus className="size-3" />
-                      <span>Versión</span>
-                    </Button>
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() =>
-                      setDeleteTarget({
-                        type: "report",
-                        reportId: b.id,
-                      })
-                    }
-                    className="size-8 text-muted-foreground hover:text-destructive"
-                    title="Eliminar reporte base y todas sus versiones en cascada"
-                  >
-                    <Trash2 className="size-3.5" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+                {t("cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={() => void confirmDelete()}
+                disabled={isDeleting}
+                className="b pri sm"
+                style={{
+                  height: "34px",
+                  padding: "0 14px",
+                  background: "#b3261e",
+                  borderColor: "#b3261e",
+                }}
+              >
+                {isDeleting ? t("deleting") : t("deleteConfirm")}
+              </button>
+            </div>
           </div>
-        </Card>
+        </div>
       )}
-
-      {/* Quote Footer Card at Bottom */}
-      <Card className="border-l-4 border-amber-600/80 bg-muted/20 border-y border-r border-border/60 shadow-2xs rounded-2xl p-6">
-        <p className="text-xs text-muted-foreground leading-relaxed italic font-serif">
-          {t("quoteNote")}
-        </p>
-        <p className="text-[11px] font-mono text-amber-700 dark:text-amber-500 font-bold uppercase pt-2 tracking-wider">
-          — {t("quoteAuthor")}
-        </p>
-      </Card>
-
-      {/* Delete Confirmation Modal (Shadcn AlertDialog) */}
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-      >
-        <AlertDialogContent className="rounded-3xl p-6">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-lg font-bold text-foreground">
-              {deleteTarget?.type === "report"
-                ? t("deleteBaseModalTitle")
-                : t("deleteVersionModalTitle")}
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed pt-1">
-              {deleteTarget?.type === "report"
-                ? t("deleteBaseModalDesc")
-                : t("deleteVersionModalDesc")}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="pt-4 flex items-center justify-end gap-2">
-            <AlertDialogCancel className="rounded-xl border-border/60 text-xs font-semibold">
-              {t("deleteCancel")}
-            </AlertDialogCancel>
-            <Button
-              variant="destructive"
-              disabled={isDeleting}
-              onClick={confirmDelete}
-              className="rounded-xl px-4 text-xs font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isDeleting ? t("deleting") : t("deleteConfirm")}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
 
-export function ReportsManagementSkeleton() {
-  return (
-    <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-2">
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-36 rounded-md" />
-        <Skeleton className="h-8 w-64 rounded-md" />
-        <Skeleton className="h-4 w-96 rounded-md" />
-      </div>
-      <div className="grid grid-cols-3 gap-4">
-        <Skeleton className="h-20 w-full rounded-2xl" />
-        <Skeleton className="h-20 w-full rounded-2xl" />
-        <Skeleton className="h-20 w-full rounded-2xl" />
-      </div>
-      <Skeleton className="h-64 w-full rounded-2xl" />
-    </div>
-  );
-}
+export default ReportsManagement;

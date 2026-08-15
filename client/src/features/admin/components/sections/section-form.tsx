@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import {
-  createSectionSchema,
-  updateSectionSchema,
+  sectionFormSchema,
+  type SectionFormInput,
   type CreateSectionInput,
   type UpdateSectionInput,
   type SectionItem,
@@ -20,39 +20,26 @@ import {
 } from "../../actions/sections-actions";
 import { MDXEditorComponent } from "@/features/admin/components/ui/mdx/mdx-editor-component";
 import { MdxPreview } from "@/features/admin/components/ui/mdx/mdx-preview";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  Save,
-  CheckCircle2,
-  AlertCircle,
-  Settings,
-  Lightbulb,
-  Wand2,
-  Eye,
-  Trash2,
-  FolderPlus,
-  Copy,
-  BookMarked,
-  Pencil,
-} from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useVersion } from "@/context/version-context";
-import { getResourcesBySectionAction, deleteResourceAction } from "@/features/admin/actions/resources-actions";
+import {
+  getResourcesBySectionAction,
+  deleteResourceAction,
+} from "@/features/admin/actions/resources-actions";
 import { getReferencesAction } from "@/features/admin/actions/references-actions";
 import type { ResourceItem } from "@/features/admin/schemas/resource-schema";
 import type { ReferenceItem } from "@/features/admin/schemas/reference-schema";
+import {
+  Copy,
+  Pencil,
+  Trash2,
+  BookMarked,
+  FolderPlus,
+  Wand2,
+  Eye,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 
 interface SectionFormProps {
   initialData?: SectionItem;
@@ -65,10 +52,15 @@ export function SectionForm({
 }: SectionFormProps) {
   const t = useTranslations("AdminPage.sectionForm");
   const router = useRouter();
-  const { activeReportId, activeReport, activeReportVersion, version, contentLanguage } = useVersion();
+  const {
+    activeReportId,
+    activeReport,
+    activeReportVersion,
+    activeVersionId,
+    version,
+    contentLanguage,
+  } = useVersion();
 
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [feedback, setFeedback] = useState<{
@@ -76,19 +68,21 @@ export function SectionForm({
     message: string;
   } | null>(null);
 
-  // Associated section resources and report references state
+  // Recursos y referencias asociadas
   const [sectionResources, setSectionResources] = useState<ResourceItem[]>([]);
   const [sectionReferences, setSectionReferences] = useState<ReferenceItem[]>(
     [],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (initialData?.id) {
-      getResourcesBySectionAction(initialData.id).then(setSectionResources);
+      void getResourcesBySectionAction(initialData.id).then(
+        setSectionResources,
+      );
     }
     const repId = initialData?.report_id || activeReportId;
     if (repId) {
-      getReferencesAction(repId).then(setSectionReferences);
+      void getReferencesAction(repId).then(setSectionReferences);
     }
   }, [initialData?.id, initialData?.report_id, activeReportId]);
 
@@ -101,7 +95,9 @@ export function SectionForm({
     try {
       const res = await deleteResourceAction(resourceToDelete);
       if (res.success) {
-        setSectionResources((prev) => prev.filter((r) => r.id !== resourceToDelete));
+        setSectionResources((prev) =>
+          prev.filter((r) => r.id !== resourceToDelete),
+        );
         setResourceToDelete(null);
       }
     } catch (error) {
@@ -111,80 +107,71 @@ export function SectionForm({
     }
   };
 
-  // Tab state for content (Markdown editor vs Preview)
+  // Pestaña del contenido (Editor vs Vista previa)
   const [contentTab, setContentTab] = useState<"editor" | "preview">("editor");
-  const [autoOrder, setAutoOrder] = useState<boolean>(!initialData?.display_order);
+  const [autoOrder, setAutoOrder] = useState<boolean>(
+    !initialData?.display_order,
+  );
 
-  // Form setup using appropriate schema for create vs edit mode
+  // Formulario react-hook-form
+  const targetReportVersionId =
+    activeReportVersion?.id ||
+    activeVersionId ||
+    initialData?.report_id ||
+    activeReportId ||
+    "";
+
   const {
     control,
     register,
     handleSubmit,
     setValue,
-    formState: { errors },
-  } = useForm<CreateSectionInput>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(isEditMode ? updateSectionSchema : createSectionSchema) as any,
+    formState: { errors, isSubmitting },
+  } = useForm<SectionFormInput>({
+    resolver: zodResolver(sectionFormSchema),
     defaultValues: {
-      report_id: initialData?.report_id || activeReportId || "",
+      report_id: targetReportVersionId,
       title: initialData?.title || "",
       content: initialData?.content || "",
       display_order: initialData?.display_order ?? undefined,
+      status: initialData?.status || "DRAFT",
       published: initialData?.published ?? true,
     },
   });
 
-  const watchTitle = useWatch({
-    control,
-    name: "title",
-    defaultValue: initialData?.title || "",
-  });
+  const watchTitle = useWatch({ control, name: "title" });
+  const watchContent = useWatch({ control, name: "content" });
+  const watchDisplayOrder = useWatch({ control, name: "display_order" });
+  const watchPublished = useWatch({ control, name: "published" });
 
-  const watchContent = useWatch({
-    control,
-    name: "content",
-    defaultValue: initialData?.content || "",
-  });
-
-  const watchDisplayOrder = useWatch({
-    control,
-    name: "display_order",
-    defaultValue: initialData?.display_order,
-  });
-
-  const watchPublished = useWatch({
-    control,
-    name: "published",
-    defaultValue: initialData?.published ?? true,
-  });
-
-
-
-  // Keep report_id updated if activeReportId changes in creation mode
-  React.useEffect(() => {
-    if (!isEditMode && activeReportId) {
-      setValue("report_id", activeReportId, { shouldValidate: false });
+  useEffect(() => {
+    if (!isEditMode && targetReportVersionId) {
+      setValue("report_id", targetReportVersionId, { shouldValidate: false });
     }
-  }, [activeReportId, isEditMode, setValue]);
+  }, [targetReportVersionId, isEditMode, setValue]);
 
-  const onSubmit = async (values: CreateSectionInput) => {
-    setIsSubmitting(true);
+  const onSubmit = async (values: SectionFormInput) => {
     setFeedback(null);
 
     try {
-      const isPublished = values.published ?? (values.status === "PUBLISHED");
-      const statusVal = isPublished ? "PUBLISHED" : "DRAFT";
+      const isPub = values.published ?? values.status === "PUBLISHED";
+      const statusVal = isPub ? "PUBLISHED" : "DRAFT";
 
       if (isEditMode && initialData?.id) {
-        const targetReportId = initialData.report_id || activeReportId || "";
+        const targetReportId =
+          targetReportVersionId || initialData.report_id || "";
         const updateInput: UpdateSectionInput = {
           title: values.title,
           content: values.content,
-          display_order: autoOrder ? undefined : values.display_order,
+          display_order: autoOrder ? undefined : (values.display_order ?? undefined),
           status: statusVal,
-          published: isPublished,
+          published: isPub,
         };
-        const res = await updateSectionAction(initialData.id, updateInput, targetReportId);
+        const res = await updateSectionAction(
+          initialData.id,
+          updateInput,
+          targetReportId,
+        );
 
         if (res.success) {
           setFeedback({
@@ -198,27 +185,22 @@ export function SectionForm({
           });
         }
       } else {
-        const targetReportId = values.report_id || activeReportId || "";
-
-        if (!targetReportId) {
+        if (!targetReportVersionId) {
           setFeedback({
             type: "error",
-            message:
-              "No hay un reporte activo seleccionado en el contexto de versión. Por favor seleccione una versión con reporte.",
+            message: t("noActiveReportWarning"),
           });
-          setIsSubmitting(false);
           return;
         }
 
         const createInput: CreateSectionInput = {
-          report_id: targetReportId,
+          report_id: targetReportVersionId,
           title: values.title,
           content: values.content,
-          display_order: autoOrder ? undefined : values.display_order,
+          display_order: autoOrder ? undefined : (values.display_order ?? undefined),
           status: statusVal,
-          published: isPublished,
+          published: isPub,
         };
-
 
         const res = await createSectionAction(createInput);
         if (res.success) {
@@ -228,7 +210,7 @@ export function SectionForm({
           });
           setTimeout(() => {
             router.push("/admin/sections");
-          }, 1000);
+          }, 900);
         } else {
           setFeedback({
             type: "error",
@@ -239,23 +221,15 @@ export function SectionForm({
     } catch {
       setFeedback({
         type: "error",
-
         message: t("genericError"),
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
-  const onError = (formErrors: Record<string, { message?: string } | undefined>) => {
-    console.warn("Form validation errors:", formErrors);
-    if (formErrors.report_id) {
-      setFeedback({
-        type: "error",
-        message:
-          "No hay un reporte activo seleccionado para crear la sección. Seleccione una versión válida en la barra superior.",
-      });
-    } else if (formErrors.title) {
+  const onError = (
+    formErrors: Record<string, { message?: string } | undefined>,
+  ) => {
+    if (formErrors.title) {
       setFeedback({
         type: "error",
         message: formErrors.title.message ?? "El título es obligatorio.",
@@ -270,7 +244,7 @@ export function SectionForm({
     } else {
       setFeedback({
         type: "error",
-        message: "Por favor revise los campos obligatorios del formulario.",
+        message: t("genericError"),
       });
     }
   };
@@ -280,7 +254,8 @@ export function SectionForm({
 
     setIsDeleting(true);
     try {
-      const targetReportId = initialData.report_id || activeReportId || "";
+      const targetReportId =
+        targetReportVersionId || initialData.report_id || "";
       const res = await deleteSectionAction(initialData.id, targetReportId);
 
       if (res.success) {
@@ -305,203 +280,459 @@ export function SectionForm({
   };
 
   return (
-    <>
-      <form
-        onSubmit={handleSubmit(onSubmit, onError)}
-        className="flex flex-col gap-6 w-full max-w-6xl mx-auto"
-      >
-        {/* Breadcrumb Header */}
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-            <Link href="/admin/sections" className="hover:text-foreground">
-              {t("breadcrumbBase")}
-            </Link>
-            <span>›</span>
-            <span className="text-foreground">
-              {isEditMode ? t("breadcrumbEdit") : t("breadcrumbNew")}
-            </span>
+    <div>
+      <form onSubmit={handleSubmit(onSubmit, onError)} noValidate>
+        {/* ── Encabezado y Breadcrumb (.eyebrow del prototipo) ────────── */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+            fontSize: "11px",
+            letterSpacing: ".07em",
+            textTransform: "uppercase",
+            color: "#00603a",
+          }}
+        >
+          <span
+            style={{
+              width: "22px",
+              height: "1px",
+              background: "#00603a",
+              display: "inline-block",
+              flexShrink: 0,
+            }}
+          />
+          <span>{t("headerTag")}</span>
+          <span style={{ color: "#a8a8a8" }}>/</span>
+          <Link
+            href="/admin/sections"
+            style={{
+              color: "#6f6f6f",
+              textDecoration: "none",
+              transition: "color .16s",
+            }}
+          >
+            {t("breadcrumbBase")}
+          </Link>
+          <span style={{ color: "#a8a8a8" }}>/</span>
+          <span style={{ color: "#08090a", fontWeight: 500 }}>
+            {isEditMode ? t("breadcrumbEdit") : t("breadcrumbNew")}
+          </span>
+        </div>
+
+        {/* ── Título, Subtítulo y Botones de Acción (.mh del prototipo) ── */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: "20px",
+            margin: "16px 0 28px",
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <h1
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "34px",
+                fontWeight: 500,
+                lineHeight: 1.1,
+                letterSpacing: "-0.03em",
+                color: "#08090a",
+                margin: 0,
+              }}
+            >
+              {isEditMode
+                ? t("editTitle", {
+                    title: watchTitle || initialData?.title || "",
+                  })
+                : t("createTitle")}
+            </h1>
+            <p
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "15px",
+                color: "#706f6f",
+                marginTop: "8px",
+                maxWidth: "74ch",
+                lineHeight: 1.45,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              {isEditMode ? t("editSubtitle") : t("createSubtitle")}
+            </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                {isEditMode
-                  ? t("editTitle", {
-                      title: watchTitle || initialData?.title || "",
-                    })
-                  : t("createTitle")}
-              </h1>
-              <p className="text-xs text-muted-foreground mt-1">
-                {activeReportVersion || activeReport
-                  ? t("activeReportLabel", {
-                      title: activeReportVersion?.title || activeReport?.slug || "",
-                      version: `${version || "v1"} (${(activeReportVersion?.language || contentLanguage || "ES").toUpperCase()})`,
-                    })
-                  : t("currentVersionLabel", {
-                      version: `${version || "N/A"} (${(contentLanguage || "ES").toUpperCase()})`,
-                    })}
-              </p>
+          {/* Botones de acción superiores */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <Link href="/admin/sections" className="b sec">
+              {t("cancel")}
+            </Link>
 
-
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center gap-3">
-              <Link href="/admin/sections">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="rounded-xl px-4 border-border/60"
-                >
-                  {t("cancel")}
-                </Button>
-              </Link>
-
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="rounded-xl px-5 gap-2 shadow-xs bg-primary text-primary-foreground hover:bg-primary/90"
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="b pri"
+              style={{
+                background: "#00603a",
+                borderColor: "#00603a",
+                color: "#ffffff",
+              }}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                style={{
+                  width: 15,
+                  height: 15,
+                  stroke: "#ffffff",
+                  fill: "none",
+                  strokeWidth: 2,
+                }}
               >
-                <Save className="size-4" />
-                <span>
-                  {isSubmitting
-                    ? t("saving")
-                    : isEditMode
-                      ? t("saveChanges")
-                      : t("saveSection")}
-                </span>
-              </Button>
-            </div>
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+              </svg>
+              <span>
+                {isSubmitting
+                  ? t("saving")
+                  : isEditMode
+                    ? t("saveChanges")
+                    : t("saveSection")}
+              </span>
+            </button>
           </div>
         </div>
 
-        {/* Missing Active Report Warning when creating */}
-        {!isEditMode && !activeReportId && (
-          <div className="p-4 rounded-xl text-sm font-medium flex items-center gap-3 border bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300">
-            <AlertCircle className="size-5 shrink-0" />
-            <span>
-              {t("noActiveReportWarning")}
-            </span>
-          </div>
-        )}
-
-        {/* Feedback Banner */}
+        {/* ── Banner de Feedback ───────────────────────────────────── */}
         {feedback && (
           <div
-            className={`p-4 rounded-xl text-sm font-medium flex items-center gap-3 border ${
-              feedback.type === "success"
-                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
-                : "bg-destructive/10 border-destructive/30 text-destructive"
-            }`}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              padding: "14px 16px",
+              borderRadius: "8px",
+              marginBottom: "24px",
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "13.5px",
+              border:
+                feedback.type === "success"
+                  ? "1px solid rgba(0,96,58,.25)"
+                  : "1px solid rgba(179,38,30,.28)",
+              borderLeft:
+                feedback.type === "success"
+                  ? "3px solid #00603a"
+                  : "3px solid #b3261e",
+              background:
+                feedback.type === "success"
+                  ? "rgba(0,96,58,.04)"
+                  : "rgba(179,38,30,.04)",
+              color: feedback.type === "success" ? "#00603a" : "#b3261e",
+            }}
           >
             {feedback.type === "success" ? (
-              <CheckCircle2 className="size-5 shrink-0" />
+              <CheckCircle2
+                style={{
+                  width: 18,
+                  height: 18,
+                  stroke: "#00603a",
+                  flexShrink: 0,
+                }}
+              />
             ) : (
-              <AlertCircle className="size-5 shrink-0" />
+              <AlertCircle
+                style={{
+                  width: 18,
+                  height: 18,
+                  stroke: "#b3261e",
+                  flexShrink: 0,
+                }}
+              />
             )}
             <span>{feedback.message}</span>
           </div>
         )}
 
-        {/* Grid Layout: Main Form (8 cols) & Right Sidebar (4 cols) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Main Content Area (8 Cols) */}
-          <div className="lg:col-span-8 space-y-6">
-            {/* Card 01: Identificación y Datos Básicos */}
-            <Card className="border border-border/60 bg-card shadow-xs rounded-2xl p-6">
-              <CardHeader className="p-0 mb-6">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-md bg-muted text-muted-foreground">
-                    01
-                  </span>
-                  <CardTitle className="text-base font-semibold">
+        {/* ── Layout Principal: 2 Columnas (8 cols + 4 cols) ────────── */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(12, 1fr)",
+            gap: "24px",
+            alignItems: "start",
+          }}
+        >
+          {/* Columna Izquierda: Formulario y Editor (8 cols) */}
+          <div
+            style={{
+              gridColumn: "span 8",
+              display: "flex",
+              flexDirection: "column",
+              gap: "24px",
+            }}
+            className="col-span-12 lg:col-span-8"
+          >
+            {/* Card 01: Identificación y título */}
+            <div className="card admin-card" style={{ overflow: "hidden" }}>
+              <div
+                style={{
+                  padding: "15px 20px",
+                  borderBottom: "1px solid #ebebeb",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div>
+                  <h3
+                    style={{
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "17px",
+                      fontWeight: 500,
+                      color: "#08090a",
+                      margin: 0,
+                    }}
+                  >
                     {t("card01Title")}
-                  </CardTitle>
+                  </h3>
+                  <div
+                    style={{
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "12.5px",
+                      color: "#6f6f6f",
+                      marginTop: "2px",
+                    }}
+                  >
+                    {t("card01Desc")}
+                  </div>
                 </div>
-              </CardHeader>
+              </div>
 
-              <CardContent className="p-0 space-y-5">
-                {/* Title Input */}
-                <div className="space-y-2">
-                  <Label htmlFor="title" className="text-xs font-medium">
+              <div
+                style={{
+                  padding: "20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "18px",
+                }}
+              >
+                {/* Título de la sección */}
+                <div>
+                  <label
+                    htmlFor="title"
+                    style={{
+                      display: "block",
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      letterSpacing: "-0.01em",
+                      color: "#00603a",
+                      marginBottom: "6px",
+                    }}
+                  >
                     {t("sectionTitleLabel")}{" "}
-                    <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
+                    <span style={{ color: "#b3261e" }}>*</span>
+                  </label>
+                  <input
                     id="title"
                     {...register("title")}
                     placeholder={t("sectionTitlePlaceholder")}
-                    className="rounded-xl bg-background text-sm font-medium"
+                    style={{
+                      width: "100%",
+                      height: "40px",
+                      padding: "0 13px",
+                      border: errors.title
+                        ? "1px solid #b3261e"
+                        : "1px solid #ebebeb",
+                      borderRadius: "8px",
+                      background: "#ffffff",
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "14px",
+                      color: "#08090a",
+                      outline: "none",
+                      boxSizing: "border-box",
+                      transition: "border-color .16s, box-shadow .16s",
+                    }}
                   />
                   {errors.title && (
-                    <p className="text-xs text-destructive">
+                    <p
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "12px",
+                        color: "#b3261e",
+                        marginTop: "5px",
+                        margin: 0,
+                      }}
+                    >
                       {errors.title.message}
                     </p>
                   )}
                 </div>
 
-                {/* Slug (Read-only if edit mode or auto-generated) */}
+                {/* Slug generado */}
                 {isEditMode && initialData?.slug && (
-                  <div className="space-y-2">
-                    <Label
+                  <div>
+                    <label
                       htmlFor="slug-display"
-                      className="text-xs font-medium"
+                      style={{
+                        display: "block",
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        color: "#6f6f6f",
+                        marginBottom: "6px",
+                      }}
                     >
-                      {t("slugLabel")} — {t("slugAuto")}
-                    </Label>
-                    <Input
+                      {t("slugLabel")} —{" "}
+                      <span style={{ fontStyle: "italic", fontWeight: 400 }}>
+                        {t("slugAuto")}
+                      </span>
+                    </label>
+                    <input
                       id="slug-display"
                       value={initialData.slug}
                       disabled
-                      className="rounded-xl bg-muted/50 font-mono text-xs text-muted-foreground cursor-not-allowed"
+                      style={{
+                        width: "100%",
+                        height: "38px",
+                        padding: "0 13px",
+                        border: "1px solid #ebebeb",
+                        borderRadius: "8px",
+                        background: "#fafafa",
+                        fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                        fontSize: "12.5px",
+                        color: "#6f6f6f",
+                        boxSizing: "border-box",
+                        cursor: "not-allowed",
+                      }}
                     />
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Card 02: Contenido Markdown / MDX */}
-            <Card className="border border-border/60 bg-card shadow-xs rounded-2xl p-6 space-y-6">
-              <CardHeader className="p-0">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-md bg-muted text-muted-foreground">
-                      02
-                    </span>
-                    <CardTitle className="text-base font-semibold">
-                      {t("card02Title")}
-                    </CardTitle>
-                  </div>
-                  <div className="flex items-center gap-1 p-1 bg-muted rounded-xl border border-border/40 text-xs">
-                    <button
-                      type="button"
-                      onClick={() => setContentTab("editor")}
-                      className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all ${
-                        contentTab === "editor"
-                          ? "bg-background text-foreground font-medium shadow-xs"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      <Wand2 className="size-3.5" />
-                      <span>{t("tabEditor")}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setContentTab("preview")}
-                      className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all ${
-                        contentTab === "preview"
-                          ? "bg-background text-foreground font-medium shadow-xs"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      <Eye className="size-3.5" />
-                      <span>{t("tabPreview")}</span>
-                    </button>
+            <div className="card admin-card" style={{ overflow: "hidden" }}>
+              <div
+                style={{
+                  padding: "15px 20px",
+                  borderBottom: "1px solid #ebebeb",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: "12px",
+                }}
+              >
+                <div>
+                  <h3
+                    style={{
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "17px",
+                      fontWeight: 500,
+                      color: "#08090a",
+                      margin: 0,
+                    }}
+                  >
+                    {t("card02Title")}
+                  </h3>
+                  <div
+                    style={{
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "12.5px",
+                      color: "#6f6f6f",
+                      marginTop: "2px",
+                    }}
+                  >
+                    {t("card02Desc")}
                   </div>
                 </div>
-              </CardHeader>
 
-              <CardContent className="p-0 space-y-4">
+                {/* Selector de Pestaña: Editor / Vista previa */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "2px",
+                    background: "#f0f0f0",
+                    padding: "3px",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setContentTab("editor")}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "5px 12px",
+                      borderRadius: "6px",
+                      border: "none",
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "12.5px",
+                      fontWeight: contentTab === "editor" ? 500 : 400,
+                      background:
+                        contentTab === "editor" ? "#ffffff" : "transparent",
+                      color:
+                        contentTab === "editor" ? "#08090a" : "#6f6f6f",
+                      boxShadow:
+                        contentTab === "editor"
+                          ? "0 1px 3px rgba(0,0,0,0.08)"
+                          : "none",
+                      cursor: "pointer",
+                      transition: "all .16s",
+                    }}
+                  >
+                    <Wand2 style={{ width: 14, height: 14 }} />
+                    <span>{t("tabEditor")}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setContentTab("preview")}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "5px 12px",
+                      borderRadius: "6px",
+                      border: "none",
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "12.5px",
+                      fontWeight: contentTab === "preview" ? 500 : 400,
+                      background:
+                        contentTab === "preview" ? "#ffffff" : "transparent",
+                      color:
+                        contentTab === "preview" ? "#08090a" : "#6f6f6f",
+                      boxShadow:
+                        contentTab === "preview"
+                          ? "0 1px 3px rgba(0,0,0,0.08)"
+                          : "none",
+                      cursor: "pointer",
+                      transition: "all .16s",
+                    }}
+                  >
+                    <Eye style={{ width: 14, height: 14 }} />
+                    <span>{t("tabPreview")}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ padding: "20px" }}>
                 {contentTab === "editor" ? (
                   <MDXEditorComponent
                     markdown={watchContent || ""}
@@ -510,264 +741,580 @@ export function SectionForm({
                     }
                   />
                 ) : (
-                  <MdxPreview content={watchContent || ""} />
+                  <div
+                    style={{
+                      minHeight: "320px",
+                      padding: "20px",
+                      borderRadius: "8px",
+                      background: "#ffffff",
+                      border: "1px solid #ebebeb",
+                    }}
+                  >
+                    <MdxPreview content={watchContent || ""} />
+                  </div>
                 )}
                 {errors.content && (
-                  <p className="text-xs text-destructive">
+                  <p
+                    style={{
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "12px",
+                      color: "#b3261e",
+                      marginTop: "8px",
+                      margin: 0,
+                    }}
+                  >
                     {errors.content.message}
                   </p>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            {/* Card 03: Recursos Asociados */}
+            {/* Card 03: Recursos y Figuras Asociadas (solo en edición) */}
             {isEditMode ? (
-              <Card className="border border-border/60 bg-card shadow-xs rounded-2xl p-6">
-                <CardHeader className="p-0 mb-4 pb-3 border-b border-border/40 flex flex-row items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <FolderPlus className="size-4 text-emerald-700 dark:text-emerald-400" />
-                    <CardTitle className="text-base font-semibold">
+              <div className="card admin-card" style={{ overflow: "hidden" }}>
+                <div
+                  style={{
+                    padding: "15px 20px",
+                    borderBottom: "1px solid #ebebeb",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <FolderPlus style={{ width: 18, height: 18, color: "#00603a" }} />
+                    <h3
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "17px",
+                        fontWeight: 500,
+                        color: "#08090a",
+                        margin: 0,
+                      }}
+                    >
                       {t("resourcesTitle")}
-                    </CardTitle>
+                    </h3>
                   </div>
                   <Link
                     href={`/admin/resources/new?sectionId=${initialData?.id || ""}`}
+                    className="b sec sm"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      textDecoration: "none",
+                    }}
                   >
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="rounded-xl border-emerald-900/30 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/10 text-xs font-semibold gap-1.5 px-3 py-1"
-                    >
-                      <FolderPlus className="size-3.5" />
-                      <span>{t("addResourceBtn")}</span>
-                    </Button>
+                    <FolderPlus style={{ width: 13, height: 13 }} />
+                    <span>{t("addResourceBtn")}</span>
                   </Link>
-                </CardHeader>
+                </div>
 
-                <CardContent className="p-0">
+                <div style={{ padding: "16px 20px" }}>
                   {sectionResources.length === 0 ? (
-                    <div className="p-6 text-center border border-dashed border-border/60 rounded-xl bg-muted/20 text-xs text-muted-foreground">
+                    <div
+                      style={{
+                        padding: "28px 16px",
+                        textAlign: "center",
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "13px",
+                        color: "#6f6f6f",
+                        borderRadius: "8px",
+                        border: "1px dashed #ebebeb",
+                        background: "#fafafa",
+                      }}
+                    >
                       {t("noSectionResources")}
                     </div>
                   ) : (
-                    <div className="space-y-2.5">
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "8px",
+                      }}
+                    >
                       {sectionResources.map((res) => (
                         <div
                           key={res.id}
-                          className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-background/60"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            padding: "10px 14px",
+                            borderRadius: "8px",
+                            border: "1px solid #ebebeb",
+                            background: "#ffffff",
+                          }}
                         >
                           <div>
-                            <h5 className="text-xs font-bold text-foreground">
+                            <div
+                              style={{
+                                fontFamily:
+                                  "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                                fontSize: "13.5px",
+                                fontWeight: 500,
+                                color: "#08090a",
+                              }}
+                            >
                               {res.title}
-                            </h5>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                            </div>
+                            <div
+                              style={{
+                                fontFamily:
+                                  "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                                fontSize: "11.5px",
+                                color: "#6f6f6f",
+                                marginTop: "2px",
+                              }}
+                            >
                               {res.description || res.alt_text}
-                            </p>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <span className="text-[10px] font-mono font-semibold uppercase px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-900 dark:text-emerald-300 border border-emerald-500/20">
-                              {res.type}
-                            </span>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
+                            <span className="bg soft">{res.type}</span>
                             {res.file_url && (
-                              <Button
+                              <button
                                 type="button"
-                                variant="ghost"
-                                size="icon"
                                 title={t("copyFileUrl")}
                                 onClick={() => {
-                                  navigator.clipboard.writeText(
+                                  void navigator.clipboard.writeText(
                                     res.file_url || "",
                                   );
                                 }}
-                                className="size-7 text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-400"
+                                className="b icon ghost"
                               >
-                                <Copy className="size-3.5" />
-                              </Button>
+                                <Copy />
+                              </button>
                             )}
                             {res.id && (
-                              <Link href={`/admin/resources/${res.id}`}>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  title={t("editResource")}
-                                  className="size-7 text-muted-foreground hover:text-foreground"
-                                >
-                                  <Pencil className="size-3.5" />
-                                </Button>
+                              <Link
+                                href={`/admin/resources/${res.id}?sectionId=${initialData?.id || res.section_id || ""}`}
+                                title={t("editResource")}
+                                className="b icon ghost"
+                              >
+                                <Pencil />
                               </Link>
                             )}
                             {res.id && (
-                              <Button
+                              <button
                                 type="button"
-                                variant="ghost"
-                                size="icon"
                                 title={t("deleteResource")}
                                 onClick={() => setResourceToDelete(res.id!)}
-                                className="size-7 text-muted-foreground hover:text-destructive"
+                                className="b icon danger"
                               >
-                                <Trash2 className="size-3.5" />
-                              </Button>
+                                <Trash2 />
+                              </button>
                             )}
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="border border-border/60 bg-muted/20 shadow-xs rounded-2xl p-5">
-                <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                  <FolderPlus className="size-5 text-muted-foreground/60 shrink-0" />
-                  <p>
-                    <strong className="text-foreground">
-                      {t("resourcesTitle")}:
-                    </strong>{" "}
-                    {t("saveFirstResourcesHint")}
-                  </p>
                 </div>
-              </Card>
+              </div>
+            ) : (
+              <div
+                style={{
+                  padding: "16px 20px",
+                  borderRadius: "12px",
+                  border: "1px dashed #ebebeb",
+                  background: "rgba(255,255,255,0.6)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  fontFamily:
+                    "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                  fontSize: "13px",
+                  color: "#6f6f6f",
+                }}
+              >
+                <FolderPlus
+                  style={{
+                    width: 20,
+                    height: 20,
+                    color: "#00603a",
+                    flexShrink: 0,
+                  }}
+                />
+                <div>
+                  <strong style={{ color: "#08090a" }}>
+                    {t("resourcesTitle")}:
+                  </strong>{" "}
+                  {t("saveFirstResourcesHint")}
+                </div>
+              </div>
             )}
 
-            {/* Card 04: Referencias Bibliográficas */}
+            {/* Card 04: Referencias Bibliográficas Disponibles */}
             {isEditMode ? (
-              <Card className="border border-border/60 bg-card shadow-xs rounded-2xl p-6">
-                <CardHeader className="p-0 mb-4 pb-3 border-b border-border/40 flex flex-row items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <BookMarked className="size-4 text-emerald-700 dark:text-emerald-400" />
-                    <CardTitle className="text-base font-semibold">
+              <div className="card admin-card" style={{ overflow: "hidden" }}>
+                <div
+                  style={{
+                    padding: "15px 20px",
+                    borderBottom: "1px solid #ebebeb",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <BookMarked
+                      style={{ width: 18, height: 18, color: "#00603a" }}
+                    />
+                    <h3
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "17px",
+                        fontWeight: 500,
+                        color: "#08090a",
+                        margin: 0,
+                      }}
+                    >
                       {t("referencesTitle")}
-                    </CardTitle>
+                    </h3>
                   </div>
                   <Link
                     href={`/admin/references/new?reportId=${initialData?.report_id || activeReportId || ""}`}
+                    className="b sec sm"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      textDecoration: "none",
+                    }}
                   >
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="rounded-xl border-emerald-900/30 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/10 text-xs font-semibold gap-1.5 px-3 py-1"
-                    >
-                      <BookMarked className="size-3.5" />
-                      <span>{t("addReferenceBtn")}</span>
-                    </Button>
+                    <BookMarked style={{ width: 13, height: 13 }} />
+                    <span>{t("addReferenceBtn")}</span>
                   </Link>
-                </CardHeader>
+                </div>
 
-                <CardContent className="p-0">
+                <div style={{ padding: "16px 20px" }}>
                   {sectionReferences.length === 0 ? (
-                    <div className="p-6 text-center border border-dashed border-border/60 rounded-xl bg-muted/20 text-xs text-muted-foreground">
+                    <div
+                      style={{
+                        padding: "28px 16px",
+                        textAlign: "center",
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "13px",
+                        color: "#6f6f6f",
+                        borderRadius: "8px",
+                        border: "1px dashed #ebebeb",
+                        background: "#fafafa",
+                      }}
+                    >
                       {t("noSectionReferences")}
                     </div>
                   ) : (
-                    <div className="space-y-2.5">
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "8px",
+                      }}
+                    >
                       {sectionReferences.map((ref) => (
                         <div
                           key={ref.id}
-                          className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-background/60"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            padding: "10px 14px",
+                            borderRadius: "8px",
+                            border: "1px solid #ebebeb",
+                            background: "#ffffff",
+                          }}
                         >
                           <div>
-                            <h5 className="text-xs font-bold text-foreground">
+                            <div
+                              style={{
+                                fontFamily:
+                                  "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                                fontSize: "13px",
+                                fontWeight: 500,
+                                color: "#08090a",
+                              }}
+                            >
                               {ref.authors} ({ref.year})
-                            </h5>
-                            <p className="text-[11px] italic font-serif text-emerald-900 dark:text-emerald-300 mt-0.5">
+                            </div>
+                            <div
+                              style={{
+                                fontFamily:
+                                  "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                                fontSize: "11.5px",
+                                fontStyle: "italic",
+                                color: "#00603a",
+                                marginTop: "2px",
+                              }}
+                            >
                               {ref.title}
-                            </p>
+                            </div>
                           </div>
-                          <span className="text-[10px] font-mono font-semibold uppercase px-2 py-0.5 rounded-md bg-muted/60 text-muted-foreground border border-border/40">
+                          <span
+                            style={{
+                              fontFamily:
+                                "var(--m, 'IBM Plex Mono', monospace)",
+                              fontSize: "11px",
+                              padding: "2px 8px",
+                              borderRadius: "4px",
+                              background: "#f0f0f0",
+                              color: "#6f6f6f",
+                            }}
+                          >
                             {ref.source}
                           </span>
                         </div>
                       ))}
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="border border-border/60 bg-muted/20 shadow-xs rounded-2xl p-5">
-                <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                  <BookMarked className="size-5 text-muted-foreground/60 shrink-0" />
-                  <p>
-                    <strong className="text-foreground">
-                      {t("referencesTitle")}:
-                    </strong>{" "}
-                    {t("saveFirstReferencesHint")}
-                  </p>
                 </div>
-              </Card>
-            )}
+              </div>
+            ) : null}
           </div>
 
-          {/* Right Sidebar Area (4 Cols) */}
-          <div className="lg:col-span-4 space-y-6">
-            {/* Card: Atributos de Configuración */}
-            <Card className="border border-border/60 bg-card shadow-xs rounded-2xl p-6">
-              <CardHeader className="p-0 mb-5 pb-3 border-b border-border/40">
-                <div className="flex items-center gap-2">
-                  <Settings className="size-4 text-muted-foreground" />
-                  <CardTitle className="text-sm font-semibold">
-                    {t("configTitle")}
-                  </CardTitle>
-                </div>
-              </CardHeader>
+          {/* Columna Derecha: Configuración Lateral (4 cols) */}
+          <div
+            style={{
+              gridColumn: "span 4",
+              display: "flex",
+              flexDirection: "column",
+              gap: "20px",
+            }}
+            className="col-span-12 lg:col-span-4"
+          >
+            {/* Card: Configuración de Publicación y Estado */}
+            <div className="card admin-card" style={{ overflow: "hidden" }}>
+              <div
+                style={{
+                  padding: "15px 18px",
+                  borderBottom: "1px solid #ebebeb",
+                }}
+              >
+                <h3
+                  style={{
+                    fontFamily:
+                      "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                    fontSize: "16px",
+                    fontWeight: 500,
+                    color: "#08090a",
+                    margin: 0,
+                  }}
+                >
+                  {t("configTitle")}
+                </h3>
+              </div>
 
-              <CardContent className="p-0 space-y-5 text-xs">
-                {/* Orden de visualización */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="auto-order-switch" className="text-xs text-muted-foreground font-medium">
+              <div
+                style={{
+                  padding: "18px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "18px",
+                }}
+              >
+                {/* Switch Estado de Publicación */}
+                <div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    <label
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        color: "#08090a",
+                      }}
+                    >
+                      {t("publicationLabel")}
+                    </label>
+                    <span className={watchPublished ? "bg pub" : "bg draft"}>
+                      {watchPublished ? t("published") : t("draft")}
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "10px 12px",
+                      borderRadius: "8px",
+                      background: "#fafafa",
+                      border: "1px solid #ebebeb",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "12.5px",
+                        color: "#6f6f6f",
+                      }}
+                    >
+                      {watchPublished ? t("published") : t("draft")}
+                    </span>
+                    <Switch
+                      checked={watchPublished ?? false}
+                      onCheckedChange={(checked) =>
+                        setValue("published", checked, {
+                          shouldValidate: true,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div style={{ height: "1px", background: "#ebebeb" }} />
+
+                {/* Orden en el informe */}
+                <div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    <label
+                      htmlFor="auto-order-switch"
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        color: "#08090a",
+                      }}
+                    >
                       {t("autoOrderLabel")}
-                    </Label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-medium text-foreground">
-                        {autoOrder ? t("autoOrderToggle") : t("customOrderToggle")}
-                      </span>
-                      <Switch
-                        id="auto-order-switch"
-                        checked={autoOrder}
-                        onCheckedChange={(checked) => {
-                          setAutoOrder(checked);
-                          if (checked) {
-                            setValue("display_order", undefined, { shouldValidate: true });
-                          } else {
-                            setValue("display_order", initialData?.display_order || 1, { shouldValidate: true });
-                          }
-                        }}
-                      />
-                    </div>
+                    </label>
+                    <Switch
+                      id="auto-order-switch"
+                      checked={autoOrder}
+                      onCheckedChange={(checked) => {
+                        setAutoOrder(checked);
+                        if (checked) {
+                          setValue("display_order", undefined, {
+                            shouldValidate: true,
+                          });
+                        } else {
+                          setValue(
+                            "display_order",
+                            initialData?.display_order || 1,
+                            { shouldValidate: true },
+                          );
+                        }
+                      }}
+                    />
                   </div>
 
                   {autoOrder ? (
-                    <div className="p-3 rounded-xl border border-dashed border-amber-500/30 bg-amber-500/10 text-[11px] text-amber-800 dark:text-amber-300 font-medium leading-relaxed">
+                    <div
+                      style={{
+                        padding: "10px 12px",
+                        borderRadius: "8px",
+                        background: "rgba(122,102,48,.06)",
+                        border: "1px solid rgba(122,102,48,.18)",
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "12px",
+                        color: "#7a6630",
+                        lineHeight: 1.4,
+                      }}
+                    >
                       {t("autoOrderNotice")}
                     </div>
                   ) : (
-                    <div className="space-y-1.5 pt-1">
-                      <Label
+                    <div style={{ marginTop: "10px" }}>
+                      <label
                         htmlFor="order"
-                        className="text-xs text-muted-foreground font-medium"
+                        style={{
+                          display: "block",
+                          fontFamily:
+                            "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                          fontSize: "12px",
+                          color: "#6f6f6f",
+                          marginBottom: "4px",
+                        }}
                       >
                         {t("orderLabel")}
-                      </Label>
-                      <div className="flex items-center gap-3">
-                        <Input
+                      </label>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                        }}
+                      >
+                        <input
                           id="order"
-                          type="number"
-                          min={1}
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           value={watchDisplayOrder ?? 1}
-                          onChange={(e) => {
-                            const val = parseInt(e.target.value);
-                            setValue(
-                              "display_order",
-                              isNaN(val) ? undefined : val,
-                              { shouldValidate: true },
-                            );
+                          onKeyDown={(e) => {
+                            if (["e", "E", "+", "-", ".", ","].includes(e.key)) {
+                              e.preventDefault();
+                            }
                           }}
-                          className="w-20 rounded-xl bg-background font-mono font-semibold text-center h-9 text-xs"
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/[^0-9]/g, "");
+                            const val = raw ? parseInt(raw, 10) : undefined;
+                            setValue("display_order", val, {
+                              shouldValidate: true,
+                            });
+                          }}
+                          style={{
+                            width: "70px",
+                            height: "36px",
+                            textAlign: "center",
+                            borderRadius: "8px",
+                            border: "1px solid #ebebeb",
+                            background: "#ffffff",
+                            fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "#08090a",
+                            outline: "none",
+                          }}
                         />
-                        <span className="text-[11px] text-muted-foreground">
+                        <span
+                          style={{
+                            fontFamily:
+                              "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                            fontSize: "12px",
+                            color: "#6f6f6f",
+                          }}
+                        >
                           {t("orderHelper")}
                         </span>
                       </div>
@@ -775,113 +1322,289 @@ export function SectionForm({
                   )}
                 </div>
 
-                <div className="h-px bg-border/40" />
+                <div style={{ height: "1px", background: "#ebebeb" }} />
 
-                {/* Estado de sección (Publicada / Borrador) */}
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground font-medium">
-                    {t("publicationLabel")}
-                  </Label>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-foreground">
-                      {watchPublished ? t("published") : t("draft")}
-                    </span>
-                    <Switch
-                      checked={watchPublished ?? false}
-                      onCheckedChange={(checked) =>
-                        setValue("published", checked, { shouldValidate: true })
-                      }
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Card: Guía de Estilo */}
-            <Card className="border border-dashed border-border/70 bg-card/60 shadow-xs rounded-2xl p-5">
-              <div className="flex items-start gap-3">
-                <Lightbulb className="size-4 text-amber-500 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <h4 className="text-xs font-bold text-foreground">
-                    {t("styleGuideTitle")}
-                  </h4>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    {t("styleGuideHint")}
-                  </p>
+                {/* Informe y versión de destino */}
+                <div
+                  style={{
+                    fontFamily:
+                      "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                    fontSize: "12px",
+                    color: "#6f6f6f",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  <strong style={{ color: "#08090a", display: "block" }}>
+                    {activeReportVersion || activeReport
+                      ? t("activeReportLabel", {
+                          title:
+                            activeReportVersion?.title ||
+                            activeReport?.slug ||
+                            "",
+                          version: `v${version || "1"} (${(activeReportVersion?.language || contentLanguage || "ES").toUpperCase()})`,
+                        })
+                      : t("currentVersionLabel", {
+                          version: `v${version || "1"} (${(contentLanguage || "ES").toUpperCase()})`,
+                        })}
+                  </strong>
                 </div>
               </div>
-            </Card>
+            </div>
 
-            {/* Delete Action Button (Visible only in edit mode) */}
-            {isEditMode && initialData?.id && (
-              <Button
-                type="button"
-                variant="destructive"
-                disabled={isDeleting}
-                onClick={() => setShowDeleteDialog(true)}
-                className="w-full"
+            {/* Card: Guía de Redacción Editorial (.quote del prototipo) */}
+            <div
+              style={{
+                borderLeft: "2px solid #00603a",
+                padding: "2px 0 2px 14px",
+                margin: "4px 0",
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                  fontSize: "11px",
+                  letterSpacing: ".07em",
+                  textTransform: "uppercase",
+                  color: "#00603a",
+                  marginBottom: "4px",
+                }}
               >
-                <Trash2 className="size-4" />
-                <span>{isDeleting ? t("deleting") : t("deleteSection")}</span>
-              </Button>
+                {t("styleGuideTitle")}
+              </div>
+              <p
+                style={{
+                  fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                  fontSize: "12.5px",
+                  color: "#6f6f6f",
+                  lineHeight: 1.45,
+                  margin: 0,
+                }}
+              >
+                {t("styleGuideHint")}
+              </p>
+            </div>
+
+            {/* Botón de Eliminar en Modo Edición */}
+            {isEditMode && initialData?.id && (
+              <div
+                style={{
+                  padding: "16px",
+                  borderRadius: "12px",
+                  border: "1px solid rgba(179,38,30,.20)",
+                  background: "rgba(179,38,30,.03)",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily:
+                      "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                    fontSize: "13px",
+                    fontWeight: 500,
+                    color: "#b3261e",
+                    marginBottom: "4px",
+                  }}
+                >
+                  {t("dangerZoneTitle")}
+                </div>
+                <p
+                  style={{
+                    fontFamily:
+                      "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                    fontSize: "12px",
+                    color: "#6f6f6f",
+                    marginBottom: "12px",
+                    lineHeight: 1.4,
+                    margin: "0 0 12px 0",
+                  }}
+                >
+                  {t("dangerZoneDesc")}
+                </p>
+                <button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="b danger sm"
+                  style={{
+                    width: "100%",
+                    background: "rgba(179,38,30,.08)",
+                    color: "#b3261e",
+                    border: "1px solid rgba(179,38,30,.25)",
+                    height: "34px",
+                  }}
+                >
+                  <Trash2 style={{ width: 14, height: 14 }} />
+                  <span>{isDeleting ? t("deleting") : t("deleteSection")}</span>
+                </button>
+              </div>
             )}
           </div>
         </div>
       </form>
 
-      {/* Modal de confirmación para eliminar la sección */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="rounded-3xl p-6">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-lg font-bold text-foreground">
-              {t("deleteConfirmTitle") || "¿Eliminar esta sección?"}
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed pt-1">
-              {t("deleteConfirmDesc") ||
-                "Esta acción no se puede deshacer. Se eliminará permanentemente la sección y todo su contenido del sistema."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="pt-4 flex items-center justify-end gap-2">
-            <AlertDialogCancel className="rounded-xl border-border/60 text-xs font-semibold">
-              {t("cancel") || "Cancelar"}
-            </AlertDialogCancel>
-            <Button
-              variant="destructive"
-              disabled={isDeleting}
-              onClick={handleDelete}
+      {/* ── Modal de Confirmación para Eliminar Sección ─────────────── */}
+      {showDeleteDialog && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(8,9,10,0.45)",
+            backdropFilter: "blur(4px)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 50,
+            padding: "20px",
+          }}
+        >
+          <div
+            className="admin-card"
+            style={{
+              width: "100%",
+              maxWidth: "420px",
+              padding: "24px",
+              borderRadius: "12px",
+              background: "#ffffff",
+              boxShadow: "0 10px 30px -10px rgba(8,9,10,0.2)",
+            }}
+          >
+            <h3
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "18px",
+                fontWeight: 500,
+                color: "#08090a",
+                margin: "0 0 8px 0",
+              }}
             >
-              {isDeleting ? t("deleting") : t("deleteSection")}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      {/* Modal de confirmación para eliminar recurso */}
-      <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => { if (!open) setResourceToDelete(null); }}>
-        <AlertDialogContent className="rounded-3xl p-6">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-lg font-bold text-foreground">
+              {t("deleteConfirmTitle")}
+            </h3>
+            <p
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "13.5px",
+                color: "#706f6f",
+                margin: "0 0 20px 0",
+                lineHeight: 1.45,
+              }}
+            >
+              {t("deleteConfirmDesc")}
+            </p>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "10px",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setShowDeleteDialog(false)}
+                disabled={isDeleting}
+                className="b sec sm"
+                style={{ height: "34px", padding: "0 14px" }}
+              >
+                {t("cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleDelete()}
+                disabled={isDeleting}
+                className="b pri sm"
+                style={{
+                  height: "34px",
+                  padding: "0 14px",
+                  background: "#b3261e",
+                  borderColor: "#b3261e",
+                }}
+              >
+                {isDeleting ? t("deleting") : t("deleteConfirmBtn")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal de Confirmación para Eliminar Recurso ──────────────── */}
+      {resourceToDelete && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(8,9,10,0.45)",
+            backdropFilter: "blur(4px)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 50,
+            padding: "20px",
+          }}
+        >
+          <div
+            className="admin-card"
+            style={{
+              width: "100%",
+              maxWidth: "420px",
+              padding: "24px",
+              borderRadius: "12px",
+              background: "#ffffff",
+              boxShadow: "0 10px 30px -10px rgba(8,9,10,0.2)",
+            }}
+          >
+            <h3
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "18px",
+                fontWeight: 500,
+                color: "#08090a",
+                margin: "0 0 8px 0",
+              }}
+            >
               {t("deleteResourceModalTitle")}
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed pt-1">
-              {t("deleteResourceModalDesc")}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="pt-4 flex items-center justify-end gap-2">
-            <AlertDialogCancel className="rounded-xl border-border/60 text-xs font-semibold">
-              {t("cancel")}
-            </AlertDialogCancel>
-            <Button
-              variant="destructive"
-              disabled={isDeletingResource}
-              onClick={confirmDeleteResource}
-              className="rounded-xl px-4 text-xs font-semibold"
+            </h3>
+            <p
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "13.5px",
+                color: "#706f6f",
+                margin: "0 0 20px 0",
+                lineHeight: 1.45,
+              }}
             >
-              {isDeletingResource ? t("deleting") : t("deleteResourceConfirm")}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+              {t("deleteResourceModalDesc")}
+            </p>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "10px",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setResourceToDelete(null)}
+                disabled={isDeletingResource}
+                className="b sec sm"
+                style={{ height: "34px", padding: "0 14px" }}
+              >
+                {t("cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={() => void confirmDeleteResource()}
+                disabled={isDeletingResource}
+                className="b pri sm"
+                style={{
+                  height: "34px",
+                  padding: "0 14px",
+                  background: "#b3261e",
+                  borderColor: "#b3261e",
+                }}
+              >
+                {isDeletingResource ? "..." : t("deleteResourceConfirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

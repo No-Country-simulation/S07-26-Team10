@@ -3,281 +3,982 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  Info,
-  BookOpen,
-  PlusCircle,
-  Pencil,
-  Trash2,
-  AlertCircle,
-  ExternalLink,
-} from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { getReferencesAction, deleteReferenceAction } from "../../actions/references-actions";
+  getReferencesAction,
+  deleteReferenceAction,
+} from "../../actions/references-actions";
+import { getSectionsAction } from "../../actions/sections-actions";
 import type { ReferenceItem } from "../../schemas/reference-schema";
+import type { SectionItem } from "../../schemas/section-schema";
 import { useVersion } from "@/context/version-context";
+import { BookOpen, ExternalLink } from "lucide-react";
+
+export function ReferencesManagementSkeleton() {
+  return (
+    <div>
+      {/* ── Encabezado y Breadcrumb ────────────────────────────────── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+          fontSize: "11px",
+          letterSpacing: ".07em",
+          textTransform: "uppercase",
+          color: "#00603a",
+        }}
+      >
+        <span
+          style={{
+            width: "22px",
+            height: "1px",
+            background: "#00603a",
+            display: "inline-block",
+          }}
+        />
+        <span>Módulo de citación</span>
+      </div>
+
+      {/* ── Título Principal, Subtítulo y Botón ─────────────────────── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: "20px",
+          margin: "16px 0 28px",
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <h1
+            style={{
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "34px",
+              fontWeight: 500,
+              lineHeight: 1.1,
+              letterSpacing: "-0.03em",
+              color: "#08090a",
+              margin: 0,
+            }}
+          >
+            Administrar referencias
+          </h1>
+          <p
+            style={{
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "15px",
+              color: "#706f6f",
+              marginTop: "8px",
+              maxWidth: "74ch",
+              lineHeight: 1.45,
+              letterSpacing: "-0.01em",
+            }}
+          >
+            Las fuentes bibliográficas del informe. Garantizan la trazabilidad de
+            todo lo que se afirma.
+          </p>
+        </div>
+
+        <div className="b pri" style={{ opacity: 0.6, cursor: "default" }}>
+          <svg
+            viewBox="0 0 24 24"
+            style={{
+              width: 15,
+              height: 15,
+              stroke: "#ffffff",
+              fill: "none",
+              strokeWidth: 2,
+            }}
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          <span>Nueva referencia</span>
+        </div>
+      </div>
+
+      {/* ── Dos Tarjetas Superiores (.two) ──────────────────────────── */}
+      <div
+        className="two"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gap: "20px",
+          marginBottom: "28px",
+        }}
+      >
+        <div className="card admin-card" style={{ overflow: "hidden" }}>
+          <div
+            style={{
+              padding: "16px 20px",
+              borderBottom: "1px solid #ebebeb",
+            }}
+          >
+            <h3
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "17px",
+                fontWeight: 500,
+                color: "#08090a",
+                margin: 0,
+              }}
+            >
+              Formato
+            </h3>
+          </div>
+          <div style={{ padding: "20px" }}>
+            <p
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "14px",
+                color: "#6f6f6f",
+                margin: 0,
+                lineHeight: 1.5,
+              }}
+            >
+              APA 7. El sistema genera las citas en el texto según el orden de
+              esta tabla.
+            </p>
+          </div>
+        </div>
+
+        <div className="card admin-card" style={{ overflow: "hidden" }}>
+          <div
+            style={{
+              padding: "16px 20px",
+              borderBottom: "1px solid #ebebeb",
+            }}
+          >
+            <h3
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "17px",
+                fontWeight: 500,
+                color: "#08090a",
+                margin: 0,
+              }}
+            >
+              Cobertura
+            </h3>
+          </div>
+          <div
+            style={{
+              padding: "16px 20px",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "8px 0",
+                borderBottom: "1px solid #ebebeb",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                  fontSize: "14px",
+                  color: "#08090a",
+                }}
+              >
+                Entradas que citan una fuente
+              </span>
+              <Skeleton className="h-4 w-12 rounded-sm" />
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "8px 0",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                  fontSize: "14px",
+                  color: "#08090a",
+                }}
+              >
+                Fuentes de contexto
+              </span>
+              <Skeleton className="h-4 w-8 rounded-sm" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Tabla de Referencias Skeleton ───────────────────────────── */}
+      <div className="card admin-card" style={{ overflow: "hidden" }}>
+        <div style={{ width: "100%", overflowX: "auto" }}>
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th style={{ width: "70px", textAlign: "left" }}>Orden</th>
+                <th style={{ textAlign: "left" }}>Referencia</th>
+                <th style={{ width: "170px", textAlign: "left" }}>
+                  Organización / Fuente
+                </th>
+                <th style={{ width: "85px", textAlign: "left" }}>Año</th>
+                <th
+                  style={{
+                    width: "92px",
+                    textAlign: "right",
+                    paddingRight: "20px",
+                  }}
+                >
+                  Acciones
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {[1, 2, 3, 4].map((i) => (
+                <tr key={i}>
+                  <td className="mono">
+                    <Skeleton className="h-4 w-6 rounded-sm" />
+                  </td>
+                  <td>
+                    <Skeleton className="h-4 w-48 rounded-sm mb-1.5" />
+                    <Skeleton className="h-3 w-32 rounded-sm" />
+                  </td>
+                  <td>
+                    <Skeleton className="h-4 w-20 rounded-sm" />
+                  </td>
+                  <td>
+                    <Skeleton className="h-4 w-10 rounded-sm" />
+                  </td>
+                  <td
+                    className="act"
+                    style={{ paddingRight: "20px", textAlign: "right" }}
+                  >
+                    <div
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      <Skeleton className="h-7 w-7 rounded-md" />
+                      <Skeleton className="h-7 w-7 rounded-md" />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function ReferencesManagement() {
   const t = useTranslations("AdminPage.references");
-  const { activeReportId } = useVersion();
+  const { activeReportId, activeVersionId, activeReportVersion } = useVersion();
+  const targetVersionId =
+    activeReportVersion?.id || activeVersionId || activeReportId;
 
   const [references, setReferences] = useState<ReferenceItem[]>([]);
+  const [sections, setSections] = useState<SectionItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [referenceToDelete, setReferenceToDelete] = useState<string | null>(null);
+  const [referenceToDelete, setReferenceToDelete] = useState<string | null>(
+    null,
+  );
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
-      if (!activeReportId) {
+      if (!targetVersionId) {
         setReferences([]);
+        setSections([]);
         setLoading(false);
         return;
       }
       setLoading(true);
       try {
-        const refData = await getReferencesAction(activeReportId);
-        setReferences(refData);
+        const [refData, sectionsData] = await Promise.all([
+          getReferencesAction(targetVersionId),
+          getSectionsAction(targetVersionId),
+        ]);
+        const sortedRefs = [...refData].sort(
+          (a, b) => (a.display_order ?? 0) - (b.display_order ?? 0),
+        );
+        setReferences(sortedRefs);
+        setSections(sectionsData);
       } catch (err) {
         console.error("Failed to load references data", err);
       } finally {
         setLoading(false);
       }
     }
-    loadData();
-  }, [activeReportId]);
+    void loadData();
+  }, [targetVersionId]);
 
   const confirmDelete = async () => {
     if (!referenceToDelete) return;
     setIsDeleting(true);
+    setDeleteError(null);
     try {
       const targetRef = references.find((r) => r.id === referenceToDelete);
-      const targetVersionId = targetRef?.report_version_id || targetRef?.report_id || activeReportId || undefined;
-      const res = await deleteReferenceAction(referenceToDelete, targetVersionId);
+      const versionId =
+        targetRef?.report_version_id ||
+        targetRef?.report_id ||
+        targetVersionId ||
+        undefined;
+      const res = await deleteReferenceAction(referenceToDelete, versionId);
       if (res.success) {
-        setReferences((prev) => prev.filter((r) => r.id !== referenceToDelete));
+        setReferences((prev) =>
+          prev.filter((r) => r.id !== referenceToDelete),
+        );
         setReferenceToDelete(null);
+      } else {
+        setDeleteError(res.message || "Error al eliminar la referencia.");
       }
     } catch (err) {
       console.error("Failed to delete reference", err);
+      setDeleteError("Error al eliminar la referencia.");
     } finally {
       setIsDeleting(false);
     }
   };
 
-  return (
-    <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-2">
-      {/* Header section matching mockup */}
-      <div className="space-y-1">
-        <div className="flex items-center gap-2 text-xs font-mono font-semibold text-amber-700 dark:text-amber-500 uppercase tracking-widest">
-          <span className="w-6 h-[2px] bg-amber-600/70 inline-block" />
-          <span>{t("headerTag")}</span>
-        </div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-              {t("title")}
-            </h1>
-            <p className="text-sm text-muted-foreground max-w-3xl pt-1 leading-relaxed">
-              {t("subtitle")}
-            </p>
-          </div>
+  // Cobertura: Entradas que citan fuentes vs Total de secciones
+  const totalSections = sections.length;
+  const citedCount = Math.min(references.length, totalSections);
 
-          <Link href={`/admin/references/new${activeReportId ? `?reportId=${activeReportId}` : ""}`}>
-            <Button className="rounded-xl px-5 gap-2 shadow-xs bg-emerald-950 text-emerald-100 hover:bg-emerald-900 dark:bg-emerald-700 dark:hover:bg-emerald-600">
-              <PlusCircle className="size-4" />
-              <span>{t("newReferenceBtn")}</span>
-            </Button>
-          </Link>
-        </div>
+  return (
+    <div>
+      {/* ── Encabezado y Breadcrumb (.eyebrow del prototipo) ────────── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+          fontSize: "11px",
+          letterSpacing: ".07em",
+          textTransform: "uppercase",
+          color: "#00603a",
+        }}
+      >
+        <span
+          style={{
+            width: "22px",
+            height: "1px",
+            background: "#00603a",
+            display: "inline-block",
+            flexShrink: 0,
+          }}
+        />
+        <span>{t("headerTag")}</span>
       </div>
 
-      {/* Warning banner if no report is active */}
-      {!activeReportId && (
-        <div className="p-4 rounded-xl text-sm font-medium flex items-center gap-3 border bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300">
-          <AlertCircle className="size-5 shrink-0" />
-          <span>{t("noActiveReportWarning")}</span>
+      {/* ── Título Principal, Subtítulo y Botón Nueva Referencia (.mh) ── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: "20px",
+          margin: "16px 0 28px",
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <h1
+            style={{
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "34px",
+              fontWeight: 500,
+              lineHeight: 1.1,
+              letterSpacing: "-0.03em",
+              color: "#08090a",
+              margin: 0,
+            }}
+          >
+            {t("title")}
+          </h1>
+          <p
+            style={{
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "15px",
+              color: "#706f6f",
+              marginTop: "8px",
+              maxWidth: "74ch",
+              lineHeight: 1.45,
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {t("subtitle")}
+          </p>
+        </div>
+
+        <Link
+          href={`/admin/references/new${
+            targetVersionId ? `?reportId=${targetVersionId}` : ""
+          }`}
+          className="b pri"
+          style={{ textDecoration: "none" }}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            style={{
+              width: 15,
+              height: 15,
+              stroke: "#ffffff",
+              fill: "none",
+              strokeWidth: 2,
+            }}
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          <span>{t("newReferenceBtn")}</span>
+        </Link>
+      </div>
+
+      {/* ── Banner de Error al Eliminar ────────────────────────────── */}
+      {deleteError && (
+        <div
+          style={{
+            padding: "12px 16px",
+            borderRadius: "8px",
+            marginBottom: "20px",
+            fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+            fontSize: "13.5px",
+            border: "1px solid rgba(179,38,30,.25)",
+            borderLeft: "3px solid #b3261e",
+            background: "rgba(179,38,30,.04)",
+            color: "#b3261e",
+          }}
+        >
+          {deleteError}
         </div>
       )}
 
-      {/* Main 2-column Layout: Left Control Panel & Right References Table */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Sidebar Control Panel (4 Cols) */}
-        <div className="lg:col-span-4 space-y-4">
-          {/* Style Guide Card */}
-          <Card className="border border-border/60 bg-muted/20 shadow-2xs rounded-2xl p-5 space-y-3">
-            <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-              <Info className="size-4 text-amber-700 dark:text-amber-500" />
-              <span>{t("styleGuideTitle")}</span>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed font-mono">
-              {t("styleGuideDesc")}
+      {/* ── Dos Tarjetas Superiores: Formato y Cobertura (.two) ──────── */}
+      <div
+        className="two"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gap: "20px",
+          marginBottom: "28px",
+        }}
+      >
+        {/* Tarjeta 1: Formato (Texto 100% estático) */}
+        <div className="card admin-card" style={{ overflow: "hidden" }}>
+          <div
+            style={{
+              padding: "16px 20px",
+              borderBottom: "1px solid #ebebeb",
+            }}
+          >
+            <h3
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "17px",
+                fontWeight: 500,
+                color: "#08090a",
+                margin: 0,
+              }}
+            >
+              {t("formatTitle")}
+            </h3>
+          </div>
+          <div style={{ padding: "20px" }}>
+            <p
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "14px",
+                color: "#6f6f6f",
+                margin: 0,
+                lineHeight: 1.5,
+              }}
+            >
+              {t("formatDesc")}
             </p>
-          </Card>
-
-          {/* Decorative Image Card */}
-          <div className="rounded-2xl border border-border/40 bg-emerald-950/90 text-emerald-100 p-6 flex flex-col items-center justify-center text-center shadow-md relative overflow-hidden min-h-[160px]">
-            <BookOpen className="size-12 text-emerald-400/30 mb-2" />
-            <span className="text-[10px] font-mono tracking-widest text-emerald-400 uppercase font-semibold">
-              BIBLIOGRAFÍA APA 7
-            </span>
           </div>
         </div>
 
-        {/* Right Area: References Table (8 Cols) */}
-        <div className="lg:col-span-8 space-y-6">
-          {loading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-64 w-full rounded-2xl" />
+        {/* Tarjeta 2: Cobertura (Labels estáticos + datos dinámicos) */}
+        <div className="card admin-card" style={{ overflow: "hidden" }}>
+          <div
+            style={{
+              padding: "16px 20px",
+              borderBottom: "1px solid #ebebeb",
+            }}
+          >
+            <h3
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "17px",
+                fontWeight: 500,
+                color: "#08090a",
+                margin: 0,
+              }}
+            >
+              {t("coverageTitle")}
+            </h3>
+          </div>
+          <div
+            style={{
+              padding: "16px 20px",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "8px 0",
+                borderBottom: "1px solid #ebebeb",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                  fontSize: "14px",
+                  color: "#08090a",
+                }}
+              >
+                {t("coverageCitingEntries")}
+              </span>
+              {loading ? (
+                <Skeleton className="h-4 w-14 rounded-sm" />
+              ) : (
+                <span
+                  className="mono"
+                  style={{
+                    fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                    fontSize: "13px",
+                    color: "#00603a",
+                    fontWeight: 500,
+                  }}
+                >
+                  {citedCount} {t("of")} {totalSections}
+                </span>
+              )}
             </div>
-          ) : (
-            <Card className="border border-border/60 bg-card shadow-2xs rounded-2xl overflow-hidden">
-              <Table>
-                <TableHeader className="bg-muted/30">
-                  <TableRow className="border-b border-border/50">
-                    <TableHead className="font-bold text-xs text-foreground/80 py-3 text-center w-16">{t("colOrder")}</TableHead>
-                    <TableHead className="font-bold text-xs text-foreground/80 py-3">{t("colAuthorsTitle")}</TableHead>
-                    <TableHead className="font-bold text-xs text-foreground/80 py-3 text-center w-20">{t("colYear")}</TableHead>
-                    <TableHead className="font-bold text-xs text-foreground/80 py-3 text-center w-36">{t("colSource")}</TableHead>
-                    <TableHead className="font-bold text-xs text-foreground/80 py-3 text-right w-20">{t("colActions")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {references.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8 text-xs text-muted-foreground italic">
-                        {t("noReferences")}
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    references.map((item) => (
-                      <TableRow key={item.id} className="border-b border-border/40 hover:bg-muted/20">
-                        <TableCell className="text-center py-3">
-                          <span className="text-xs font-mono font-bold text-emerald-800 dark:text-emerald-400">
-                            {String(item.display_order ?? 0).padStart(2, "0")}
-                          </span>
-                        </TableCell>
 
-                        <TableCell className="py-3">
-                          <div className="space-y-0.5">
-                            <div className="text-xs font-bold text-foreground">{item.authors}</div>
-                            <div className="text-xs italic font-serif text-emerald-900 dark:text-emerald-300">
-                              {item.title}
-                            </div>
-                            {item.citation_url && (
-                              <a
-                                href={item.citation_url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-1 text-[11px] font-mono text-muted-foreground hover:text-emerald-600 truncate max-w-xs"
-                              >
-                                <ExternalLink className="size-3 shrink-0" />
-                                <span className="truncate">{item.citation_url}</span>
-                              </a>
-                            )}
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="text-center font-mono text-xs text-muted-foreground py-3">
-                          {item.year}
-                        </TableCell>
-
-                        <TableCell className="text-center py-3">
-                          <Badge variant="outline" className="bg-muted/40 font-mono text-[10px] text-muted-foreground font-semibold uppercase px-2 py-0.5 rounded-md border-border/60">
-                            {item.source}
-                          </Badge>
-                        </TableCell>
-
-                        <TableCell className="text-right py-3">
-                          <div className="flex items-center justify-end gap-1">
-                            <Link href={`/admin/references/${item.id}`}>
-                              <Button variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-foreground">
-                                <Pencil className="size-3.5" />
-                              </Button>
-                            </Link>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setReferenceToDelete(item.id)}
-                              className="size-7 text-muted-foreground hover:text-destructive"
-                            >
-                              <Trash2 className="size-3.5" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </Card>
-          )}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "8px 0",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                  fontSize: "14px",
+                  color: "#08090a",
+                }}
+              >
+                {t("coverageContextSources")}
+              </span>
+              {loading ? (
+                <Skeleton className="h-4 w-8 rounded-sm" />
+              ) : (
+                <span
+                  className="mono"
+                  style={{
+                    fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                    fontSize: "13px",
+                    color: "#08090a",
+                    fontWeight: 500,
+                  }}
+                >
+                  {references.length}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Quote Footer Card at Bottom */}
-      <Card className="border-l-4 border-amber-600/80 bg-muted/20 border-y border-r border-border/60 shadow-2xs rounded-2xl p-6">
-        <p className="text-xs text-muted-foreground leading-relaxed italic font-serif">
+      {/* ── Tabla Principal de Referencias (.card + .tbl) ───────────── */}
+      {!targetVersionId && !loading ? (
+        <div
+          className="card admin-card"
+          style={{
+            padding: "56px 24px",
+            textAlign: "center",
+          }}
+        >
+          <div
+            style={{
+              width: "48px",
+              height: "48px",
+              borderRadius: "50%",
+              background: "rgba(0,96,58,.08)",
+              display: "grid",
+              placeItems: "center",
+              margin: "0 auto 14px",
+              color: "#00603a",
+            }}
+          >
+            <BookOpen style={{ width: 24, height: 24 }} />
+          </div>
+          <p
+            style={{
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "16px",
+              fontWeight: 500,
+              color: "#08090a",
+              margin: 0,
+            }}
+          >
+            {t("noActiveReport")}
+          </p>
+        </div>
+      ) : (
+        <div className="card admin-card" style={{ overflow: "hidden" }}>
+          <div style={{ width: "100%", overflowX: "auto" }}>
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th style={{ width: "70px", textAlign: "left" }}>
+                    {t("colOrder")}
+                  </th>
+                  <th style={{ textAlign: "left" }}>{t("colReference")}</th>
+                  <th style={{ width: "170px", textAlign: "left" }}>
+                    {t("colOrganisation")}
+                  </th>
+                  <th style={{ width: "85px", textAlign: "left" }}>
+                    {t("colYear")}
+                  </th>
+                  <th
+                    style={{
+                      width: "92px",
+                      textAlign: "right",
+                      paddingRight: "20px",
+                    }}
+                  >
+                    {t("colActions")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  [1, 2, 3, 4].map((i) => (
+                    <tr key={i}>
+                      <td className="mono">
+                        <Skeleton className="h-4 w-6 rounded-sm" />
+                      </td>
+                      <td>
+                        <Skeleton className="h-4 w-44 rounded-sm mb-1.5" />
+                        <Skeleton className="h-3 w-28 rounded-sm" />
+                      </td>
+                      <td>
+                        <Skeleton className="h-4 w-20 rounded-sm" />
+                      </td>
+                      <td>
+                        <Skeleton className="h-4 w-10 rounded-sm" />
+                      </td>
+                      <td
+                        className="act"
+                        style={{ paddingRight: "20px", textAlign: "right" }}
+                      >
+                        <div
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          <Skeleton className="h-7 w-7 rounded-md" />
+                          <Skeleton className="h-7 w-7 rounded-md" />
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : references.length === 0 ? (
+                  <tr>
+                    <td colSpan={5}>
+                      <div
+                        style={{
+                          padding: "36px 24px",
+                          textAlign: "center",
+                          fontFamily:
+                            "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                          fontSize: "13.5px",
+                          color: "#6f6f6f",
+                        }}
+                      >
+                        {t("noReferences")}
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  references.map((ref, idx) => {
+                    const formattedOrder = String(
+                      ref.display_order ?? idx + 1,
+                    ).padStart(2, "0");
+                    const subtitle =
+                      ref.citation_url || ref.authors || "—";
+
+                    return (
+                      <tr key={ref.id}>
+                        {/* Orden 2 dígitos en mono */}
+                        <td
+                          className="mono"
+                          style={{
+                            color: "#6f6f6f",
+                            fontWeight: 500,
+                            letterSpacing: ".04em",
+                          }}
+                        >
+                          {formattedOrder}
+                        </td>
+
+                        {/* Nombre y URL/Autores */}
+                        <td>
+                          <div
+                            style={{
+                              fontFamily:
+                                "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                              fontSize: "15px",
+                              fontWeight: 500,
+                              color: "#08090a",
+                              letterSpacing: "-0.01em",
+                            }}
+                          >
+                            {ref.title}
+                          </div>
+                          <div
+                            style={{
+                              fontFamily:
+                                "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                              fontSize: "12.5px",
+                              color: "#6f6f6f",
+                              marginTop: "2px",
+                              letterSpacing: "-0.01em",
+                            }}
+                          >
+                            {subtitle}
+                          </div>
+                        </td>
+
+                        {/* Organización / Fuente */}
+                        <td
+                          className="mono"
+                          style={{
+                            color: "#08090a",
+                            fontSize: "13px",
+                          }}
+                        >
+                          {ref.source || "—"}
+                        </td>
+
+                        {/* Año */}
+                        <td
+                          className="mono"
+                          style={{
+                            color: "#08090a",
+                            fontSize: "13px",
+                          }}
+                        >
+                          {ref.year || "—"}
+                        </td>
+
+                        {/* Acciones: Estáticas y listas para click */}
+                        <td
+                          className="act"
+                          style={{
+                            paddingRight: "20px",
+                            textAlign: "right",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
+                          >
+                            {ref.citation_url && (
+                              <a
+                                href={ref.citation_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="b icon ghost"
+                                title={ref.citation_url}
+                              >
+                                <ExternalLink
+                                  style={{ width: 14, height: 14 }}
+                                />
+                              </a>
+                            )}
+                            <Link
+                              href={`/admin/references/${ref.id}`}
+                              className="b icon ghost"
+                              title={t("editTooltip")}
+                            >
+                              <svg viewBox="0 0 24 24">
+                                <path d="M4 20h4l10-10-4-4L4 16z" />
+                              </svg>
+                            </Link>
+                            <button
+                              type="button"
+                              onClick={() => setReferenceToDelete(ref.id || null)}
+                              className="b icon danger"
+                              title={t("deleteTooltip")}
+                            >
+                              <svg viewBox="0 0 24 24">
+                                <path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13" />
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── Nota Editorial (.quote del prototipo) ───────────────────── */}
+      <div
+        style={{
+          borderLeft: "2px solid #00603a",
+          padding: "4px 0 4px 16px",
+          marginTop: "28px",
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+            fontSize: "11px",
+            letterSpacing: ".07em",
+            textTransform: "uppercase",
+            color: "#00603a",
+            display: "block",
+            marginBottom: "4px",
+          }}
+        >
+          {t("quoteTag")}
+        </span>
+        <p
+          style={{
+            fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+            fontSize: "13.5px",
+            color: "#404040",
+            lineHeight: 1.5,
+            margin: "0 0 4px 0",
+          }}
+        >
           {t("quoteNote")}
         </p>
-        <p className="text-[11px] font-mono text-amber-700 dark:text-amber-500 font-bold uppercase pt-2 tracking-wider">
-          — {t("quoteAuthor")}
-        </p>
-      </Card>
+        <cite
+          style={{
+            fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+            fontStyle: "normal",
+            fontSize: "11.5px",
+            color: "#6f6f6f",
+            letterSpacing: ".04em",
+            textTransform: "uppercase",
+          }}
+        >
+          {t("quoteAuthor")}
+        </cite>
+      </div>
 
-      {/* Modal de confirmación para eliminar referencia */}
-      <AlertDialog open={!!referenceToDelete} onOpenChange={(open) => { if (!open) setReferenceToDelete(null); }}>
-        <AlertDialogContent className="rounded-3xl p-6">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-lg font-bold text-foreground">
-              {t("deleteModalTitle")}
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed pt-1">
-              {t("deleteModalDesc")}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="pt-4 flex items-center justify-end gap-2">
-            <AlertDialogCancel className="rounded-xl border-border/60 text-xs font-semibold">
-              {t("cancel")}
-            </AlertDialogCancel>
-            <Button
-              variant="destructive"
-              disabled={isDeleting}
-              onClick={confirmDelete}
+      {/* ── Modal de Confirmación para Eliminar Referencia ─────────── */}
+      {referenceToDelete && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(8,9,10,0.45)",
+            backdropFilter: "blur(4px)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 50,
+            padding: "20px",
+          }}
+        >
+          <div
+            className="admin-card"
+            style={{
+              width: "100%",
+              maxWidth: "440px",
+              padding: "24px",
+              borderRadius: "12px",
+              background: "#ffffff",
+              boxShadow: "0 10px 30px -10px rgba(8,9,10,0.2)",
+            }}
+          >
+            <h3
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "18px",
+                fontWeight: 500,
+                color: "#08090a",
+                margin: "0 0 8px 0",
+              }}
             >
-              {isDeleting ? t("deleting") : t("deleteConfirm")}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              {t("deleteModalTitle")}
+            </h3>
+            <p
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "13.5px",
+                color: "#706f6f",
+                margin: "0 0 20px 0",
+                lineHeight: 1.45,
+              }}
+            >
+              {t("deleteModalDesc")}
+            </p>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "10px",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setReferenceToDelete(null)}
+                disabled={isDeleting}
+                className="b sec sm"
+                style={{ height: "34px", padding: "0 14px" }}
+              >
+                {t("cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={() => void confirmDelete()}
+                disabled={isDeleting}
+                className="b pri sm"
+                style={{
+                  height: "34px",
+                  padding: "0 14px",
+                  background: "#b3261e",
+                  borderColor: "#b3261e",
+                }}
+              >
+                {isDeleting ? t("deleting") : t("deleteConfirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-export function ReferencesManagementSkeleton() {
-  return (
-    <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-2">
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-36 rounded-md" />
-        <Skeleton className="h-8 w-64 rounded-md" />
-        <Skeleton className="h-4 w-96 rounded-md" />
-      </div>
-      <div className="grid grid-cols-12 gap-6">
-        <Skeleton className="col-span-4 h-64 rounded-2xl" />
-        <Skeleton className="col-span-8 h-96 rounded-2xl" />
-      </div>
-    </div>
-  );
-}
+export default ReferencesManagement;

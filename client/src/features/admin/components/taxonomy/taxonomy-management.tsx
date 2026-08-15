@@ -3,28 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { cn } from "@/lib/utils";
-import {
-  Zap,
-  Server,
-  Network,
-  PlusCircle,
-  Pencil,
-  Trash2,
-  Layers,
-} from "lucide-react";
 import {
   getCategoriesAction,
   getCategoriesWithConceptsAction,
@@ -33,25 +12,45 @@ import {
 } from "../../actions/taxonomy-actions";
 import type { CategoryItem } from "../../schemas/taxonomy-schema";
 import { useVersion } from "@/context/version-context";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Layers } from "lucide-react";
+
+export function TaxonomyManagementSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-36" />
+        <Skeleton className="h-9 w-64" />
+        <Skeleton className="h-4 w-96" />
+      </div>
+      <div className="space-y-3">
+        <Skeleton className="h-10 w-full rounded-md" />
+        <Skeleton className="h-14 w-full rounded-md" />
+        <Skeleton className="h-14 w-full rounded-md" />
+      </div>
+      <div className="space-y-4">
+        <Skeleton className="h-36 w-full rounded-xl" />
+        <Skeleton className="h-36 w-full rounded-xl" />
+      </div>
+    </div>
+  );
+}
 
 export function TaxonomyManagement() {
   const t = useTranslations("AdminPage.taxonomy");
   const { activeReportId, activeVersionId, activeReportVersion } = useVersion();
-  const targetVersionId = activeReportVersion?.id || activeVersionId || activeReportId;
+  const targetVersionId =
+    activeReportVersion?.id || activeVersionId || activeReportId;
 
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [categoryToDelete, setCategoryToDelete] = useState<CategoryItem | null>(null);
-  const [conceptToDelete, setConceptToDelete] = useState<{ id: string; categoryId: string; name: string } | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<CategoryItem | null>(
+    null,
+  );
+  const [conceptToDelete, setConceptToDelete] = useState<{
+    id: string;
+    categoryId: string;
+    name: string;
+  } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -60,7 +59,10 @@ export function TaxonomyManagement() {
     setIsDeleting(true);
     setDeleteError(null);
     try {
-      const res = await deleteCategoryAction(categoryToDelete.id, targetVersionId || undefined);
+      const res = await deleteCategoryAction(
+        categoryToDelete.id,
+        targetVersionId || undefined,
+      );
       if (res.success) {
         setCategories((prev) =>
           prev.filter((c) => c.id !== categoryToDelete.id),
@@ -82,14 +84,22 @@ export function TaxonomyManagement() {
     setIsDeleting(true);
     setDeleteError(null);
     try {
-      const res = await deleteConceptAction(conceptToDelete.id, conceptToDelete.categoryId);
+      const res = await deleteConceptAction(
+        conceptToDelete.id,
+        conceptToDelete.categoryId,
+      );
       if (res.success) {
         setCategories((prev) =>
           prev.map((c) =>
             c.id === conceptToDelete.categoryId
-              ? { ...c, concepts: c.concepts.filter((cn) => cn.id !== conceptToDelete.id) }
-              : c
-          )
+              ? {
+                  ...c,
+                  concepts: (c.concepts || []).filter(
+                    (cn) => cn.id !== conceptToDelete.id,
+                  ),
+                }
+              : c,
+          ),
         );
         setConceptToDelete(null);
       } else {
@@ -97,437 +107,947 @@ export function TaxonomyManagement() {
       }
     } catch (err) {
       console.error("Failed to delete concept:", err);
-      setDeleteError("Error de conexión al eliminar el concepto.");
+      setDeleteError("Error al eliminar el concepto.");
     } finally {
       setIsDeleting(false);
     }
   };
 
   useEffect(() => {
+    let isMounted = true;
     async function loadData() {
       try {
         setLoading(true);
         if (targetVersionId) {
-          // Una sola request: GET /report-versions/{id}/categories/admin/with-concepts
           const data = await getCategoriesWithConceptsAction(targetVersionId);
-          setCategories(data);
+          if (isMounted) {
+            const sorted = [...data].sort(
+              (a, b) => (a.display_order ?? 0) - (b.display_order ?? 0),
+            );
+            setCategories(sorted);
+          }
         } else {
-          // Fallback sin version_id (conceptos ya vienen en cat.concepts si la API los incluye)
           const data = await getCategoriesAction(undefined);
-          setCategories(data);
+          if (isMounted) {
+            const sorted = [...data].sort(
+              (a, b) => (a.display_order ?? 0) - (b.display_order ?? 0),
+            );
+            setCategories(sorted);
+          }
         }
       } catch (err) {
         console.error("Failed to load taxonomy categories", err);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     }
-    loadData();
-  }, [activeReportId, targetVersionId]);
+    void loadData();
+    return () => {
+      isMounted = false;
+    };
+  }, [targetVersionId]);
 
-  const getCategoryIcon = (catName: string) => {
-    const lower = catName.toLowerCase();
-    if (lower.includes("facility")) {
-      return <Zap className="size-4 text-emerald-700 dark:text-emerald-400" />;
-    }
-    if (lower.includes("it")) {
-      return (
-        <Server className="size-4 text-emerald-700 dark:text-emerald-400" />
-      );
-    }
-    if (lower.includes("workload")) {
-      return (
-        <Network className="size-4 text-emerald-700 dark:text-emerald-400" />
-      );
-    }
-    return <Layers className="size-4 text-emerald-700 dark:text-emerald-400" />;
+  // Formateador de orden a 2 dígitos (00, 01, 02)
+  const formatOrder = (order?: number | null, index?: number) => {
+    const val =
+      order !== undefined && order !== null && !isNaN(order)
+        ? order
+        : (index ?? 0);
+    return String(val).padStart(2, "0");
+  };
+
+  // Generador de código para conceptos (ej. FAC-01, IT-02)
+  const formatConceptCode = (cat: CategoryItem, index: number) => {
+    const prefix = cat.name
+      ? cat.name
+          .substring(0, 3)
+          .toUpperCase()
+          .replace(/[^A-Z]/g, "") || "TAX"
+      : "TAX";
+    return `${prefix}-${String(index + 1).padStart(2, "0")}`;
   };
 
   return (
-    <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-2">
-      {/* Header section matching mockup */}
-      <div className="space-y-1">
-        <div className="flex items-center gap-2 text-xs font-mono font-semibold text-amber-700 dark:text-amber-500 uppercase tracking-widest">
-          <span className="w-6 h-[2px] bg-amber-600/70 inline-block" />
-          <span>{t("headerTag")}</span>
-        </div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-          {t("title")}
-        </h1>
-        <p className="text-sm text-muted-foreground max-w-3xl pt-1 leading-relaxed">
-          {t("subtitle")}
-        </p>
+    <div>
+      {/* ── Encabezado y Breadcrumb (.eyebrow del prototipo) ────────── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+          fontSize: "11px",
+          letterSpacing: ".07em",
+          textTransform: "uppercase",
+          color: "#00603a",
+        }}
+      >
+        <span
+          style={{
+            width: "22px",
+            height: "1px",
+            background: "#00603a",
+            display: "inline-block",
+            flexShrink: 0,
+          }}
+        />
+        <span>{t("headerTag")}</span>
       </div>
 
-      {/* Section 1: Categorías principales */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-3">
-          <div>
-            <h2 className="text-xl font-bold text-foreground tracking-tight">
-              {t("mainCategoriesTitle")}
-            </h2>
-            <p className="text-xs text-muted-foreground italic font-serif">
-              {t("mainCategoriesSubtitle")}
-            </p>
-          </div>
-          <Link href="/admin/taxonomy/categories/new">
-            <Button className="bg-emerald-950 text-emerald-100 hover:bg-emerald-900 rounded-lg text-xs font-semibold tracking-wider px-4 py-2 shadow-sm gap-1.5 uppercase">
-              {t("newCategoryBtn")}
-            </Button>
-          </Link>
-        </div>
-
-        {/* Categories Table */}
-        <Card className="border border-border/60 bg-card shadow-xs rounded-2xl overflow-hidden">
-          <Table>
-            <TableHeader className="bg-muted/40">
-              <TableRow className="border-b border-border/50">
-                <TableHead className="font-bold text-xs text-foreground/80 py-3">
-                  {t("colCategory")}
-                </TableHead>
-                <TableHead className="font-bold text-xs text-foreground/80 py-3">
-                  {t("colDescription")}
-                </TableHead>
-                <TableHead className="font-bold text-xs text-foreground/80 py-3 text-center w-24">
-                  {t("colOrder")}
-                </TableHead>
-                <TableHead className="font-bold text-xs text-foreground/80 py-3 text-center w-28">
-                  {t("colStatus")}
-                </TableHead>
-                <TableHead className="font-bold text-xs text-foreground/80 py-3 text-right w-24">
-                  {t("colActions")}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="p-4">
-                    <Skeleton className="h-12 w-full rounded-xl" />
-                  </TableCell>
-                </TableRow>
-              ) : (
-                categories.map((cat) => (
-                  <TableRow
-                    key={cat.id}
-                    className="border-b border-border/40 hover:bg-muted/20"
-                  >
-                    <TableCell className="font-semibold text-sm text-foreground py-3">
-                      <div className="flex items-center gap-2.5">
-                        <span className="size-2 rounded-full bg-emerald-900 dark:bg-emerald-400" />
-                        <span>{cat.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground py-3 max-w-xs">
-                      <span
-                        className="block truncate"
-                        title={cat.description || ""}
-                      >
-                        {cat.description || "—"}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-xs font-mono font-semibold text-center py-3">
-                      {cat.display_order.toString().padStart(2, "0")}
-                    </TableCell>
-                    <TableCell className="text-center py-3">
-                      {(() => {
-                        const isPublished =
-                          cat.status === "PUBLISHED" || cat.published || cat.active;
-                        return (
-                          <Badge
-                            className={cn(
-                              "font-bold text-[10px] tracking-wider uppercase px-2.5 py-0.5 rounded-full border-0",
-                              isPublished
-                                ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
-                                : "bg-amber-500/15 text-amber-700 dark:text-amber-400",
-                            )}
-                          >
-                            {isPublished ? "PUBLISHED" : "DRAFT"}
-                          </Badge>
-                        );
-                      })()}
-                    </TableCell>
-                    <TableCell className="text-right py-3">
-                      <div className="flex items-center justify-end gap-1">
-                        <Link href={`/admin/taxonomy/categories/${cat.id}`}>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-8 text-muted-foreground hover:text-foreground"
-                          >
-                            <Pencil className="size-3.5" />
-                          </Button>
-                        </Link>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            setDeleteError(null);
-                            setCategoryToDelete(cat);
-                          }}
-                          className="size-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </Card>
-      </div>
-
-      {/* Section 2: Conceptos por categoría */}
-      <div className="space-y-5 pt-2">
+      {/* ── Título Principal y Subtítulo (.mh del prototipo) ────────── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: "20px",
+          margin: "16px 0 28px",
+          flexWrap: "wrap",
+        }}
+      >
         <div>
-          <h2 className="text-xl font-bold text-foreground tracking-tight">
-            {t("conceptsTitle")}
+          <h1
+            style={{
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "34px",
+              fontWeight: 500,
+              lineHeight: 1.1,
+              letterSpacing: "-0.03em",
+              color: "#08090a",
+              margin: 0,
+            }}
+          >
+            {t("title")}
+          </h1>
+          <p
+            style={{
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "15px",
+              color: "#706f6f",
+              marginTop: "8px",
+              maxWidth: "74ch",
+              lineHeight: 1.45,
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {t("subtitle")}
+          </p>
+        </div>
+      </div>
+
+      {/* ── Banner de Error en Borrado ─────────────────────────────── */}
+      {deleteError && (
+        <div
+          style={{
+            padding: "12px 16px",
+            borderRadius: "8px",
+            marginBottom: "20px",
+            fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+            fontSize: "13.5px",
+            border: "1px solid rgba(179,38,30,.25)",
+            borderLeft: "3px solid #b3261e",
+            background: "rgba(179,38,30,.04)",
+            color: "#b3261e",
+          }}
+        >
+          {deleteError}
+        </div>
+      )}
+
+      {/* ── Sección 1: Categorías Principales (.sec-h) ──────────────── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "16px",
+          margin: "24px 0 14px",
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <h2
+            style={{
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "20px",
+              fontWeight: 500,
+              color: "#08090a",
+              margin: 0,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            {t("mainCategoriesTitle")}
           </h2>
-          <p className="text-xs text-muted-foreground italic font-serif">
-            {t("conceptsSubtitle")}
+          <p
+            style={{
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "13px",
+              color: "#6f6f6f",
+              margin: "3px 0 0",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {t("mainCategoriesSubtitle")}
           </p>
         </div>
 
-        {/* Category Cards with concepts */}
+        <Link
+          href="/admin/taxonomy/categories/new"
+          className="b pri"
+          style={{ textDecoration: "none" }}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            style={{
+              width: 15,
+              height: 15,
+              stroke: "#ffffff",
+              fill: "none",
+              strokeWidth: 2,
+            }}
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          <span>{t("newCategoryBtn")}</span>
+        </Link>
+      </div>
+
+      {/* ── Card de Categorías (.card.admin-card con tabla .tbl) ────── */}
+      <div
+        className="card admin-card"
+        style={{ overflow: "hidden", marginBottom: "36px" }}
+      >
         {loading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-36 w-full rounded-2xl" />
-            <Skeleton className="h-36 w-full rounded-2xl" />
+          <div style={{ width: "100%", overflowX: "auto" }}>
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th style={{ width: "70px", textAlign: "left" }}>
+                    {t("colOrder")}
+                  </th>
+                  <th style={{ textAlign: "left" }}>{t("colCategory")}</th>
+                  <th style={{ textAlign: "left" }}>{t("colDescription")}</th>
+                  <th style={{ width: "120px", textAlign: "left" }}>
+                    {t("colStatus")}
+                  </th>
+                  <th
+                    style={{
+                      width: "92px",
+                      textAlign: "right",
+                      paddingRight: "20px",
+                    }}
+                  >
+                    {t("colActions")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {[1, 2, 3].map((i) => (
+                  <tr key={i}>
+                    <td>
+                      <Skeleton className="h-4 w-6 rounded-sm" />
+                    </td>
+                    <td>
+                      <Skeleton className="h-4 w-36 rounded-sm mb-1" />
+                      <Skeleton className="h-3 w-20 rounded-sm" />
+                    </td>
+                    <td>
+                      <Skeleton className="h-4 w-52 rounded-sm" />
+                    </td>
+                    <td>
+                      <Skeleton className="h-5 w-16 rounded-full" />
+                    </td>
+                    <td
+                      className="act"
+                      style={{ paddingRight: "20px", textAlign: "right" }}
+                    >
+                      <div
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <Skeleton className="h-7 w-7 rounded-md" />
+                        <Skeleton className="h-7 w-7 rounded-md" />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : categories.length === 0 ? (
+          <div
+            style={{
+              padding: "48px 24px",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                width: "44px",
+                height: "44px",
+                borderRadius: "50%",
+                background: "rgba(0,96,58,.08)",
+                display: "grid",
+                placeItems: "center",
+                margin: "0 auto 12px",
+                color: "#00603a",
+              }}
+            >
+              <Layers style={{ width: 22, height: 22 }} />
+            </div>
+            <p
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "15px",
+                fontWeight: 500,
+                color: "#08090a",
+                margin: "0 0 4px 0",
+              }}
+            >
+              {t("noCategories")}
+            </p>
+            <p
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "13px",
+                color: "#6f6f6f",
+                margin: "0 0 16px 0",
+              }}
+            >
+              {t("mainCategoriesSubtitle")}
+            </p>
+            <Link
+              href="/admin/taxonomy/categories/new"
+              className="b pri sm"
+              style={{ display: "inline-flex", textDecoration: "none" }}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                style={{
+                  width: 14,
+                  height: 14,
+                  stroke: "#ffffff",
+                  fill: "none",
+                  strokeWidth: 2,
+                }}
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>{t("newCategoryBtn")}</span>
+            </Link>
           </div>
         ) : (
-          categories.map((cat) => (
-            <Card
-              key={`cat-card-${cat.id}`}
-              className="border border-border/60 bg-card shadow-xs rounded-2xl p-6 relative overflow-hidden"
-            >
-              {/* Subtle background icon decoration */}
-              <div className="absolute right-4 top-4 opacity-5 pointer-events-none">
-                {getCategoryIcon(cat.name)}
-              </div>
-
-              {/* Card Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
-                <div className="flex items-center gap-3">
-                  <div className="size-10 rounded-xl bg-emerald-950/10 dark:bg-emerald-400/10 text-emerald-900 dark:text-emerald-400 flex items-center justify-center border border-emerald-900/20">
-                    {getCategoryIcon(cat.name)}
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold text-foreground">
-                      {cat.name}
-                    </h3>
-                    <p className="text-[11px] font-mono font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-500">
-                      {t("conceptsCount", { count: cat.concepts.length })}
-                    </p>
-                  </div>
-                </div>
-
-                <Link href="/admin/taxonomy/concepts/new">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-xl border-amber-700/30 text-amber-800 dark:text-amber-400 hover:bg-amber-500/10 text-xs font-semibold tracking-wider gap-1.5 px-3 py-1.5 uppercase"
+          <div style={{ width: "100%", overflowX: "auto" }}>
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th style={{ textAlign: "left" }}>{t("colCategory")}</th>
+                  <th style={{ width: "220px", textAlign: "left" }}>
+                    {t("colDescription")}
+                  </th>
+                  <th style={{ width: "80px", textAlign: "left" }}>
+                    {t("colOrder")}
+                  </th>
+                  <th style={{ width: "120px", textAlign: "left" }}>
+                    {t("colStatus")}
+                  </th>
+                  <th
+                    style={{
+                      width: "92px",
+                      textAlign: "right",
+                      paddingRight: "20px",
+                    }}
                   >
-                    <PlusCircle className="size-3.5" />
-                    <span>{t("newConceptBtn")}</span>
-                  </Button>
-                </Link>
-              </div>
+                    {t("colActions")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {categories.map((cat, idx) => {
+                  const isActive =
+                    cat.status === "PUBLISHED" ||
+                    cat.active === true ||
+                    cat.published === true ||
+                    cat.status !== "DRAFT";
+                  const dotColor = isActive ? "#00603a" : "#7a6630";
+                  const conceptsCount = cat.concepts?.length || 0;
 
-              {/* Concepts List or Empty State */}
-              {cat.concepts.length === 0 ? (
-                <div className="border border-dashed border-border/70 rounded-xl p-8 text-center flex flex-col items-center justify-center gap-2 bg-muted/20">
-                  <div className="text-muted-foreground/40 font-mono text-lg font-bold">
-                    [ ]
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {t("emptyConceptsText")}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {cat.concepts.map((concept) => {
-                    const sectionTitleMap: Record<string, string> = {
-                      "sec-001-intro": "INTRODUCCIÓN",
-                      "sec-002-tax": "TAXONOMÍA",
-                      "sec-003-meth": "METODOLOGÍA",
-                    };
-                    const secId = concept.section_id || "";
-                    const sectionName = sectionTitleMap[secId] || secId;
+                  return (
+                    <tr key={cat.id}>
+                      {/* Categoría con punto alineado */}
+                      <td>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "9px",
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: "7px",
+                              height: "7px",
+                              borderRadius: "50%",
+                              background: dotColor,
+                              display: "inline-block",
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span
+                            style={{
+                              fontFamily:
+                                "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                              fontSize: "15px",
+                              fontWeight: 500,
+                              color: "#08090a",
+                              letterSpacing: "-0.01em",
+                            }}
+                          >
+                            {cat.name}
+                          </span>
+                        </div>
+                      </td>
 
-                    return (
-                      <div
-                        key={concept.id}
-                        className="flex items-center justify-between p-3.5 rounded-xl border border-border/50 bg-background/80 hover:border-border transition-all shadow-2xs"
+                      {/* Descripción / Conteo de entradas */}
+                      <td className="mono" style={{ color: "#6f6f6f" }}>
+                        {cat.description ||
+                          t("entriesCount", { count: conceptsCount })}
+                      </td>
+
+                      {/* Orden en 2 dígitos con IBM Plex Mono */}
+                      <td className="mono" style={{ color: "#08090a" }}>
+                        {formatOrder(cat.display_order, idx)}
+                      </td>
+
+                      {/* Badge de Estado */}
+                      <td>
+                        <span className={isActive ? "bg pub" : "bg draft"}>
+                          {isActive ? t("statusPublished") : t("statusDraft")}
+                        </span>
+                      </td>
+
+                      {/* Botones de Acción (estáticos, listos para click) */}
+                      <td
+                        className="act"
+                        style={{ paddingRight: "20px", textAlign: "right" }}
                       >
-                        <div className="min-w-0">
-                          <h4 className="text-xs font-bold text-foreground">
-                            {concept.name}
-                          </h4>
-                          {concept.description && (
-                            <p
-                              className="text-[10px] text-muted-foreground mt-0.5 max-w-xs truncate"
-                              title={concept.description}
-                            >
-                              {concept.description}
-                            </p>
-                          )}
-                          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mt-0.5">
-                            {sectionName
-                              ? `${t("sectionPrefix")} ${sectionName} · `
-                              : ""}
-                            {t("orderPrefix")} {concept.display_order}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-1.5 text-muted-foreground">
-                          <Link href={`/admin/taxonomy/concepts/${concept.id}?category_id=${cat.id || concept.category_id || ""}`}>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              title="Editar concepto"
-                              className="size-7 text-muted-foreground/70 hover:text-foreground"
-                            >
-                              <Pencil className="size-3.5" />
-                            </Button>
+                        <div
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          <Link
+                            href={`/admin/taxonomy/categories/${cat.id}`}
+                            className="b icon ghost"
+                            title={t("editCategoryTooltip")}
+                          >
+                            <svg viewBox="0 0 24 24">
+                              <path d="M4 20h4l10-10-4-4L4 16z" />
+                            </svg>
                           </Link>
-                          {concept.id && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              title="Eliminar concepto"
-                              onClick={() => {
-                                setDeleteError(null);
-                                setConceptToDelete({ id: concept.id!, categoryId: cat.id || "", name: concept.name });
-                              }}
-                              className="size-7 text-muted-foreground/70 hover:text-destructive hover:bg-destructive/10"
-                            >
-                              <Trash2 className="size-3.5" />
-                            </Button>
-                          )}
+                          <button
+                            type="button"
+                            onClick={() => setCategoryToDelete(cat)}
+                            className="b icon danger"
+                            title={t("deleteCategoryTooltip")}
+                          >
+                            <svg viewBox="0 0 24 24">
+                              <path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13" />
+                            </svg>
+                          </button>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </Card>
-          ))
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
-      {/* Delete Category Confirmation Modal */}
-      <AlertDialog
-        open={!!categoryToDelete}
-        onOpenChange={(open) => {
-          if (!open) {
-            setCategoryToDelete(null);
-            setDeleteError(null);
-          }
+      {/* ── Sección 2: Conceptos por Categoría (.sec-h) ─────────────── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "16px",
+          margin: "36px 0 16px",
+          flexWrap: "wrap",
         }}
       >
-        <AlertDialogContent className="max-w-md rounded-2xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-lg font-bold">
-              {t("deleteCategoryTitle")}
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-sm text-muted-foreground pt-1">
-              {t("deleteCategoryConfirm", {
-                name: categoryToDelete?.name || "",
-              })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          {deleteError && (
-            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium">
-              {deleteError}
-            </div>
-          )}
-
-          <AlertDialogFooter className="pt-2">
-            <AlertDialogCancel
-              onClick={() => {
-                setCategoryToDelete(null);
-                setDeleteError(null);
-              }}
-              disabled={isDeleting}
-              className="rounded-xl"
-            >
-              {t("categoryForm.cancel")}
-            </AlertDialogCancel>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteCategory}
-              disabled={isDeleting}
-            >
-              {isDeleting ? t("deleting") : t("deleteCategoryBtn")}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Delete Concept Confirmation Modal */}
-      <AlertDialog
-        open={!!conceptToDelete}
-        onOpenChange={(open) => {
-          if (!open) {
-            setConceptToDelete(null);
-            setDeleteError(null);
-          }
-        }}
-      >
-        <AlertDialogContent className="max-w-md rounded-2xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-lg font-bold">
-              ¿Eliminar concepto?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-sm text-muted-foreground pt-1">
-              Esta acción eliminará el concepto &quot;{conceptToDelete?.name}&quot; permanentemente.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          {deleteError && (
-            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium">
-              {deleteError}
-            </div>
-          )}
-
-          <AlertDialogFooter className="pt-2">
-            <AlertDialogCancel
-              onClick={() => {
-                setConceptToDelete(null);
-                setDeleteError(null);
-              }}
-              disabled={isDeleting}
-              className="rounded-xl"
-            >
-              {t("categoryForm.cancel")}
-            </AlertDialogCancel>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteConcept}
-              disabled={isDeleting}
-            >
-              {isDeleting ? t("deleting") : "Eliminar Concepto"}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  );
-}
-
-export function TaxonomyManagementSkeleton() {
-  return (
-    <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-2">
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-36 rounded-md" />
-        <Skeleton className="h-8 w-64 rounded-md" />
-        <Skeleton className="h-4 w-96 rounded-md" />
+        <div>
+          <h2
+            style={{
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "20px",
+              fontWeight: 500,
+              color: "#08090a",
+              margin: 0,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            {t("conceptsTitle")}
+          </h2>
+          <p
+            style={{
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "13px",
+              color: "#6f6f6f",
+              margin: "3px 0 0",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {t("conceptsSubtitle")}
+          </p>
+        </div>
       </div>
-      <Skeleton className="h-64 w-full rounded-2xl" />
-      <Skeleton className="h-48 w-full rounded-2xl" />
+
+      {/* ── Cards de Conceptos por cada Categoría ───────────────────── */}
+      {loading ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+          {[1, 2].map((i) => (
+            <div
+              key={i}
+              className="card admin-card"
+              style={{ overflow: "hidden" }}
+            >
+              <div
+                style={{
+                  padding: "15px 20px",
+                  borderBottom: "1px solid #ebebeb",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "4px",
+                  }}
+                >
+                  <Skeleton className="h-4 w-36 rounded-sm" />
+                  <Skeleton className="h-3 w-48 rounded-sm" />
+                </div>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <Skeleton className="h-6 w-24 rounded-full" />
+                  <Skeleton className="h-7 w-28 rounded-md" />
+                </div>
+              </div>
+              <div style={{ padding: "16px 20px" }}>
+                {[1, 2].map((j) => (
+                  <div
+                    key={j}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "8px 0",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "12px",
+                        width: "70%",
+                      }}
+                    >
+                      <Skeleton className="h-4 w-12 rounded-sm" />
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "4px",
+                          width: "80%",
+                        }}
+                      >
+                        <Skeleton className="h-4 w-32 rounded-sm" />
+                        <Skeleton className="h-3 w-3/4 rounded-sm" />
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: "6px" }}>
+                      <Skeleton className="h-7 w-7 rounded-md" />
+                      <Skeleton className="h-7 w-7 rounded-md" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : categories.length === 0 ? null : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+          {categories.map((cat) => {
+            const concepts = cat.concepts || [];
+
+            return (
+              <div
+                key={cat.id}
+                className="card admin-card"
+                style={{ overflow: "hidden" }}
+              >
+                {/* Cabecera de la Card de Categoría (.card-h del prototipo) */}
+                <div
+                  style={{
+                    padding: "15px 20px",
+                    borderBottom: "1px solid #ebebeb",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    gap: "12px",
+                  }}
+                >
+                  <div>
+                    <h3
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "17px",
+                        fontWeight: 500,
+                        letterSpacing: "-0.02em",
+                        color: "#08090a",
+                        margin: 0,
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {cat.name}
+                    </h3>
+                    <div
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "12.5px",
+                        color: "#6f6f6f",
+                        marginTop: "2px",
+                        letterSpacing: "-0.01em",
+                      }}
+                    >
+                      {t("conceptsCount", { count: concepts.length })}
+                    </div>
+                  </div>
+
+                  <Link
+                    href={`/admin/taxonomy/concepts/new?categoryId=${cat.id}`}
+                    className="b sec sm"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      style={{
+                        width: 13,
+                        height: 13,
+                        stroke: "currentColor",
+                        fill: "none",
+                        strokeWidth: 2,
+                      }}
+                    >
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    <span>{t("newConceptBtn")}</span>
+                  </Link>
+                </div>
+
+                {/* Tabla de Conceptos o Estado Vacío */}
+                {concepts.length === 0 ? (
+                  <div
+                    style={{
+                      padding: "32px 20px",
+                      textAlign: "center",
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "13px",
+                      color: "#6f6f6f",
+                      background: "#fafafa",
+                    }}
+                  >
+                    {t("emptyConceptsText")}
+                  </div>
+                ) : (
+                  <div style={{ width: "100%", overflowX: "auto" }}>
+                    <table className="tbl">
+                      <tbody>
+                        {concepts.map((concept, cIdx) => {
+                          const conceptCode = formatConceptCode(cat, cIdx);
+
+                          return (
+                            <tr key={concept.id}>
+                              {/* Código técnico en mono (width 88px) */}
+                              <td
+                                style={{
+                                  width: "88px",
+                                  fontFamily:
+                                    "var(--m, 'IBM Plex Mono', monospace)",
+                                  fontSize: "12.5px",
+                                  color: "#08090a",
+                                }}
+                              >
+                                {conceptCode}
+                              </td>
+
+                              {/* Nombre y Definición */}
+                              <td>
+                                <div
+                                  style={{
+                                    fontFamily:
+                                      "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                                    fontSize: "14.5px",
+                                    fontWeight: 500,
+                                    color: "#08090a",
+                                    letterSpacing: "-0.01em",
+                                  }}
+                                >
+                                  {concept.name}
+                                </div>
+                                <div
+                                  style={{
+                                    fontFamily:
+                                      "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                                    fontSize: "12.5px",
+                                    color: "#6f6f6f",
+                                    marginTop: "2px",
+                                    lineHeight: 1.4,
+                                    letterSpacing: "-0.01em",
+                                  }}
+                                >
+                                  {concept.description || "—"}
+                                </div>
+                              </td>
+
+                              {/* Botones de Acción (estáticos y visibles) */}
+                              <td
+                                className="act"
+                                style={{
+                                  width: "92px",
+                                  paddingRight: "20px",
+                                  textAlign: "right",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                  }}
+                                >
+                                  <Link
+                                    href={`/admin/taxonomy/concepts/${concept.id}`}
+                                    className="b icon ghost"
+                                    title={t("editConceptTooltip")}
+                                  >
+                                    <svg viewBox="0 0 24 24">
+                                      <path d="M4 20h4l10-10-4-4L4 16z" />
+                                    </svg>
+                                  </Link>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setConceptToDelete({
+                                        id: concept.id || "",
+                                        categoryId: cat.id || "",
+                                        name: concept.name,
+                                      })
+                                    }
+                                    className="b icon danger"
+                                    title={t("deleteConceptTooltip")}
+                                  >
+                                    <svg viewBox="0 0 24 24">
+                                      <path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── Modal de Confirmación para Eliminar Categoría ──────────── */}
+      {categoryToDelete && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(8,9,10,0.45)",
+            backdropFilter: "blur(4px)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 50,
+            padding: "20px",
+          }}
+        >
+          <div
+            className="admin-card"
+            style={{
+              width: "100%",
+              maxWidth: "440px",
+              padding: "24px",
+              borderRadius: "12px",
+              background: "#ffffff",
+              boxShadow: "0 10px 30px -10px rgba(8,9,10,0.2)",
+            }}
+          >
+            <h3
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "18px",
+                fontWeight: 500,
+                color: "#08090a",
+                margin: "0 0 8px 0",
+              }}
+            >
+              {t("deleteCategoryTitle")}
+            </h3>
+            <p
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "13.5px",
+                color: "#706f6f",
+                margin: "0 0 20px 0",
+                lineHeight: 1.45,
+              }}
+            >
+              {t("deleteCategoryConfirm", { name: categoryToDelete.name })}
+            </p>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "10px",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setCategoryToDelete(null)}
+                disabled={isDeleting}
+                className="b sec sm"
+                style={{ height: "34px", padding: "0 14px" }}
+              >
+                {t("cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleDeleteCategory()}
+                disabled={isDeleting}
+                className="b pri sm"
+                style={{
+                  height: "34px",
+                  padding: "0 14px",
+                  background: "#b3261e",
+                  borderColor: "#b3261e",
+                }}
+              >
+                {isDeleting ? t("deleting") : t("deleteCategoryBtn")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal de Confirmación para Eliminar Concepto ───────────── */}
+      {conceptToDelete && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(8,9,10,0.45)",
+            backdropFilter: "blur(4px)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 50,
+            padding: "20px",
+          }}
+        >
+          <div
+            className="admin-card"
+            style={{
+              width: "100%",
+              maxWidth: "440px",
+              padding: "24px",
+              borderRadius: "12px",
+              background: "#ffffff",
+              boxShadow: "0 10px 30px -10px rgba(8,9,10,0.2)",
+            }}
+          >
+            <h3
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "18px",
+                fontWeight: 500,
+                color: "#08090a",
+                margin: "0 0 8px 0",
+              }}
+            >
+              {t("deleteConceptTitle")}
+            </h3>
+            <p
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "13.5px",
+                color: "#706f6f",
+                margin: "0 0 20px 0",
+                lineHeight: 1.45,
+              }}
+            >
+              {t("deleteConceptConfirm", { name: conceptToDelete.name })}
+            </p>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "10px",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setConceptToDelete(null)}
+                disabled={isDeleting}
+                className="b sec sm"
+                style={{ height: "34px", padding: "0 14px" }}
+              >
+                {t("cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleDeleteConcept()}
+                disabled={isDeleting}
+                className="b pri sm"
+                style={{
+                  height: "34px",
+                  padding: "0 14px",
+                  background: "#b3261e",
+                  borderColor: "#b3261e",
+                }}
+              >
+                {isDeleting ? t("deleting") : t("deleteConceptBtn")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+export default TaxonomyManagement;

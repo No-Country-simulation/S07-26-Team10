@@ -1,94 +1,129 @@
 "use client";
 
-import { Lock, Shield } from "lucide-react";
 import { useTranslations } from "next-intl";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LanguageToggle } from "@/components/language-toggle";
+import { AdminLanguageToggle } from "@/features/admin/components/ui/toggles/admin-language-toggle";
 import { LoginForm } from "./login-form";
 
 export function LoginCard() {
   const t = useTranslations("LoginPage");
 
   return (
-    <div className="w-full max-w-md flex flex-col items-center">
-      <Card className="w-full border border-border/60 bg-card shadow-sm rounded-xl p-6 sm:p-8 relative">
-        <div className="absolute top-4 right-4 z-10">
-          <LanguageToggle />
-        </div>
-
-        <CardHeader className="p-0 mb-6 space-y-2">
-          <CardTitle className="text-xl sm:text-2xl font-medium tracking-tight text-foreground text-left">
-            {t("title")}
-          </CardTitle>
-          <CardDescription className="text-sm text-muted-foreground leading-relaxed text-left">
-            {t("descriptionPrefix")}
-            <span className="italic">{t("descriptionHighlight")}</span>
-            {t("descriptionSuffix")}
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="p-0">
-          <LoginForm />
-        </CardContent>
-      </Card>
-
-      <footer className="mt-8 flex flex-col items-center gap-2 text-xs text-muted-foreground/70 tracking-widest uppercase">
-        <div className="flex items-center gap-3 font-medium text-center">
-          <span>{t("footerVersion")}</span>
-          <span className="opacity-40 font-light">|</span>
-          <span>{t("footerSystemTitle")}</span>
-        </div>
-        <div className="flex items-center gap-4 text-[10px] opacity-75 mt-1">
-          <div className="flex items-center gap-1.5">
-            <Lock className="size-3" />
-            <span>{t("footerSsl")}</span>
+    <>
+      {/* .lbox del prototipo: fondo blanco, borde #ebebeb, radius 12px, padding 30px */}
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "420px",
+          background: "#ffffff",
+          border: "1px solid #ebebeb",
+          borderRadius: "12px",
+          padding: "30px",
+          boxShadow: "0 1px 3px rgba(8,9,10,0.04)",
+          boxSizing: "border-box",
+        }}
+      >
+        {/* Encabezado con título y selector de idioma */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "14px",
+            marginBottom: "10px",
+          }}
+        >
+          <div style={{ flex: 1 }}>
+            <h1
+              style={{
+                fontFamily: "'Inter Tight', system-ui, sans-serif",
+                fontSize: "24px",
+                fontWeight: 500,
+                letterSpacing: "-0.02em",
+                color: "#08090a",
+                margin: 0,
+                lineHeight: 1.2,
+              }}
+            >
+              {t("title")}
+            </h1>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Shield className="size-3" />
-            <span>{t("footerRestricted")}</span>
-          </div>
+          <AdminLanguageToggle />
         </div>
-      </footer>
-    </div>
+
+        {/* Descripción — equivale a .d del prototipo */}
+        <p
+          style={{
+            fontFamily: "'Inter Tight', system-ui, sans-serif",
+            fontSize: "15px",
+            color: "#706f6f",
+            margin: "0 0 26px 0",
+            lineHeight: 1.5,
+            letterSpacing: "-0.01em",
+          }}
+        >
+          {t("descriptionPrefix")}
+          {t("descriptionHighlight")}
+          {t("descriptionSuffix")}
+        </p>
+
+        <LoginForm />
+      </div>
+
+      {/* Footer — equivale a .lfoot del prototipo */}
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "22px",
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: "11px",
+          letterSpacing: ".05em",
+          color: "#6f6f6f",
+          lineHeight: 1.9,
+        }}
+      >
+        {t("footerVersion")} · {t("footerSystemTitle")}
+        <br />
+        {t("footerSsl")} · {t("footerRestricted")}
+      </div>
+    </>
   );
 }
 
 export function LoginCardSkeleton() {
   return (
-    <div className="w-full max-w-md flex flex-col items-center">
-      <Card className="w-full border border-border/60 bg-card shadow-sm rounded-xl p-6 sm:p-8 relative">
-        <div className="absolute top-4 right-4">
-          <Skeleton className="h-8 w-16 rounded-full" />
-        </div>
-        <CardHeader className="p-0 mb-6 space-y-3">
+    <>
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "420px",
+          background: "#ffffff",
+          border: "1px solid #ebebeb",
+          borderRadius: "12px",
+          padding: "30px",
+        }}
+        className="space-y-4"
+      >
+        <div className="flex items-start gap-4 mb-2">
           <Skeleton className="h-7 w-1/2 rounded-md" />
-          <Skeleton className="h-4 w-full rounded-md" />
-          <Skeleton className="h-4 w-3/4 rounded-md" />
-        </CardHeader>
-        <CardContent className="p-0 space-y-4">
-          <div className="space-y-2">
-            <Skeleton className="h-3 w-28 rounded-md" />
-            <Skeleton className="h-10 w-full rounded-md" />
-          </div>
-          <div className="space-y-2">
-            <Skeleton className="h-3 w-24 rounded-md" />
-            <Skeleton className="h-10 w-full rounded-md" />
-          </div>
-          <Skeleton className="h-4 w-36 rounded-md" />
-          <Skeleton className="h-11 w-full rounded-md mt-4" />
-        </CardContent>
-      </Card>
-      <div className="mt-8 flex flex-col items-center gap-2">
-        <Skeleton className="h-3 w-64 rounded-md" />
-        <Skeleton className="h-3 w-40 rounded-md" />
+          <Skeleton className="h-7 w-16 rounded-lg ml-auto" />
+        </div>
+        <Skeleton className="h-4 w-full rounded-md" />
+        <Skeleton className="h-4 w-3/4 rounded-md" />
+        <div className="space-y-2 pt-2">
+          <Skeleton className="h-3 w-24 rounded-md" />
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-3 w-24 rounded-md" />
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+        <Skeleton className="h-4 w-36 rounded-md" />
+        <Skeleton className="h-11 w-full rounded-md mt-2" />
       </div>
-    </div>
+      <div className="mt-6 space-y-1 text-center">
+        <Skeleton className="h-3 w-64 rounded-md mx-auto" />
+        <Skeleton className="h-3 w-40 rounded-md mx-auto" />
+      </div>
+    </>
   );
 }

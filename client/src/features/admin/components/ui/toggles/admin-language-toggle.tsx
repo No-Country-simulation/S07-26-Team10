@@ -1,7 +1,6 @@
 "use client";
 
 import { useLanguage } from "@/context/language-context";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,17 +16,37 @@ export function AdminLanguageToggle() {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2 rounded-full"
+          <button
+            type="button"
             title="Cambiar idioma de la interfaz del CMS"
+            className="inline-flex items-center"
+            style={{
+              gap: 7,
+              height: 30,
+              padding: '0 12px',
+              borderRadius: 8,
+              border: '1px solid #ebebeb',
+              background: '#ffffff',
+              fontSize: 12.5,
+              fontFamily: "'IBM Plex Mono', monospace",
+              color: '#08090a',
+              cursor: 'pointer',
+              letterSpacing: '.04em',
+            }}
           >
-            <Globe className="size-4" />
-            <span className="font-medium">
-              {language === "es" ? "ES" : "EN"}
+            <Globe
+              style={{
+                width: 14,
+                height: 14,
+                stroke: '#6f6f6f',
+                fill: 'none',
+                strokeWidth: 1.8,
+              }}
+            />
+            <span style={{ fontWeight: 500 }}>
+              {language === 'es' ? 'ES' : 'EN'}
             </span>
-          </Button>
+          </button>
         }
       />
       <DropdownMenuContent align="end" className="w-36">
