@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { logoutAction } from "@/features/auth/auth-actions";
 import { cn } from "@/lib/utils";
-import { LogOut, User } from "lucide-react";
+import { User } from "lucide-react";
 import { AdminLanguageToggle } from "./ui/toggles/admin-language-toggle";
 import { AdminReportToggle } from "./ui/toggles/admin-report-toggle";
 import { AdminVersionToggle } from "./ui/toggles/admin-version-toggle";
@@ -32,7 +32,7 @@ export function AdminHeader({
   const t = useTranslations("AdminPage");
   const pathname = usePathname();
 
-  const displayName = "admin";
+  const displayName = userName || userRole || "admin";
 
   return (
     <>

@@ -5,7 +5,7 @@ import { AdminHeader } from "@/features/admin/components/admin-header";
 import { AdminSidebar } from "@/features/admin/components/admin-sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { VersionProvider } from "@/context/version-context";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 function AdminLayoutSkeleton() {
   return (
