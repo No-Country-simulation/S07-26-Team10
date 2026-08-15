@@ -569,7 +569,7 @@ export function AdminDashboard() {
             <span
               style={{
                 fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
-                fontSize: "12px",
+                fontSize: "12.5px",
                 letterSpacing: ".04em",
                 color: "#6f6f6f",
               }}
@@ -579,7 +579,7 @@ export function AdminDashboard() {
             <b
               style={{
                 fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
-                fontSize: "36px",
+                fontSize: "40px",
                 fontWeight: 500,
                 letterSpacing: "-0.02em",
                 color: "#08090a",
@@ -592,7 +592,7 @@ export function AdminDashboard() {
               style={{
                 fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
                 fontStyle: "normal",
-                fontSize: "12px",
+                fontSize: "12.5px",
                 color: "#6f6f6f",
                 letterSpacing: "-0.01em",
               }}
@@ -616,7 +616,7 @@ export function AdminDashboard() {
             <span
               style={{
                 fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
-                fontSize: "12px",
+                fontSize: "12.5px",
                 letterSpacing: ".04em",
                 color: "#6f6f6f",
               }}
@@ -626,7 +626,7 @@ export function AdminDashboard() {
             <b
               style={{
                 fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
-                fontSize: "36px",
+                fontSize: "40px",
                 fontWeight: 500,
                 letterSpacing: "-0.02em",
                 color: "#08090a",
@@ -650,7 +650,7 @@ export function AdminDashboard() {
             <span
               style={{
                 fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
-                fontSize: "12px",
+                fontSize: "12.5px",
                 letterSpacing: ".04em",
                 color: "#6f6f6f",
               }}
@@ -660,7 +660,7 @@ export function AdminDashboard() {
             <b
               style={{
                 fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
-                fontSize: "36px",
+                fontSize: "40px",
                 fontWeight: 500,
                 letterSpacing: "-0.02em",
                 color: "#00603a",
@@ -684,7 +684,7 @@ export function AdminDashboard() {
             <span
               style={{
                 fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
-                fontSize: "12px",
+                fontSize: "12.5px",
                 letterSpacing: ".04em",
                 color: "#6f6f6f",
               }}
@@ -694,7 +694,7 @@ export function AdminDashboard() {
             <b
               style={{
                 fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
-                fontSize: "36px",
+                fontSize: "40px",
                 fontWeight: 500,
                 letterSpacing: "-0.02em",
                 color: "#08090a",
@@ -707,7 +707,7 @@ export function AdminDashboard() {
               style={{
                 fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
                 fontStyle: "normal",
-                fontSize: "12px",
+                fontSize: "12.5px",
                 color: "#6f6f6f",
                 letterSpacing: "-0.01em",
               }}

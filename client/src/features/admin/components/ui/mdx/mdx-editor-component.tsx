@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useRef } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Bold,
   Italic,
@@ -21,10 +20,17 @@ interface MDXEditorComponentProps {
   onChange: (markdown: string) => void;
 }
 
-export function MDXEditorComponent({ markdown, onChange }: MDXEditorComponentProps) {
+export function MDXEditorComponent({
+  markdown,
+  onChange,
+}: MDXEditorComponentProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const insertSyntax = (prefix: string, suffix: string = "", defaultText: string = "") => {
+  const insertSyntax = (
+    prefix: string,
+    suffix: string = "",
+    defaultText: string = "",
+  ) => {
     const textarea = textareaRef.current;
     if (!textarea) return;
 
@@ -45,7 +51,7 @@ export function MDXEditorComponent({ markdown, onChange }: MDXEditorComponentPro
       textarea.focus();
       textarea.setSelectionRange(
         start + prefix.length,
-        start + prefix.length + selectedText.length
+        start + prefix.length + selectedText.length,
       );
     }, 0);
   };
@@ -57,7 +63,7 @@ export function MDXEditorComponent({ markdown, onChange }: MDXEditorComponentPro
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
 
-    // Find the beginning of the current line
+    // Buscar el inicio de la línea actual
     const lineStart = markdown.lastIndexOf("\n", start - 1) + 1;
     const newText =
       markdown.substring(0, lineStart) +
@@ -73,137 +79,188 @@ export function MDXEditorComponent({ markdown, onChange }: MDXEditorComponentPro
   };
 
   return (
-    <div className="border border-border/60 rounded-xl bg-card overflow-hidden shadow-xs focus-within:ring-2 focus-within:ring-primary/20 transition-all flex flex-col">
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-1 p-2 bg-muted/40 border-b border-border/40 text-xs">
-        <Button
+    <div
+      style={{
+        border: "1px solid #ebebeb",
+        borderRadius: "8px",
+        background: "#ffffff",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        boxShadow: "0 1px 2px rgba(8,9,10,0.03)",
+        transition: "border-color .16s, box-shadow .16s",
+      }}
+    >
+      {/* Barra de herramientas */}
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          gap: "3px",
+          padding: "6px 10px",
+          background: "#fafafa",
+          borderBottom: "1px solid #ebebeb",
+        }}
+      >
+        <button
           type="button"
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 rounded-md"
           title="Negrita (**texto**)"
           onClick={() => insertSyntax("**", "**", "texto en negrita")}
+          className="b icon ghost sm"
+          style={{ width: "28px", height: "28px", borderRadius: "5px" }}
         >
-          <Bold className="h-3.5 w-3.5" />
-        </Button>
-        <Button
+          <Bold style={{ width: 13, height: 13 }} />
+        </button>
+
+        <button
           type="button"
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 rounded-md"
           title="Cursiva (*texto*)"
           onClick={() => insertSyntax("*", "*", "texto en cursiva")}
+          className="b icon ghost sm"
+          style={{ width: "28px", height: "28px", borderRadius: "5px" }}
         >
-          <Italic className="h-3.5 w-3.5" />
-        </Button>
+          <Italic style={{ width: 13, height: 13 }} />
+        </button>
 
-        <div className="h-4 w-px bg-border/60 mx-1" />
+        <div
+          style={{
+            width: "1px",
+            height: "16px",
+            background: "#ebebeb",
+            margin: "0 4px",
+          }}
+        />
 
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 rounded-md font-bold text-xs"
           title="Encabezado 1 (# Título)"
           onClick={() => insertPrefixToLine("# ")}
+          className="b icon ghost sm"
+          style={{ width: "28px", height: "28px", borderRadius: "5px" }}
         >
-          <Heading1 className="h-3.5 w-3.5" />
-        </Button>
-        <Button
+          <Heading1 style={{ width: 13, height: 13 }} />
+        </button>
+
+        <button
           type="button"
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 rounded-md font-bold text-xs"
           title="Encabezado 2 (## Subtítulo)"
           onClick={() => insertPrefixToLine("## ")}
+          className="b icon ghost sm"
+          style={{ width: "28px", height: "28px", borderRadius: "5px" }}
         >
-          <Heading2 className="h-3.5 w-3.5" />
-        </Button>
-        <Button
+          <Heading2 style={{ width: 13, height: 13 }} />
+        </button>
+
+        <button
           type="button"
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 rounded-md font-bold text-xs"
           title="Encabezado 3 (### Sección)"
           onClick={() => insertPrefixToLine("### ")}
+          className="b icon ghost sm"
+          style={{ width: "28px", height: "28px", borderRadius: "5px" }}
         >
-          <Heading3 className="h-3.5 w-3.5" />
-        </Button>
+          <Heading3 style={{ width: 13, height: 13 }} />
+        </button>
 
-        <div className="h-4 w-px bg-border/60 mx-1" />
+        <div
+          style={{
+            width: "1px",
+            height: "16px",
+            background: "#ebebeb",
+            margin: "0 4px",
+          }}
+        />
 
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 rounded-md"
-          title="Lista viñetas (- elemento)"
+          title="Lista de viñetas (- elemento)"
           onClick={() => insertPrefixToLine("- ")}
+          className="b icon ghost sm"
+          style={{ width: "28px", height: "28px", borderRadius: "5px" }}
         >
-          <List className="h-3.5 w-3.5" />
-        </Button>
-        <Button
+          <List style={{ width: 13, height: 13 }} />
+        </button>
+
+        <button
           type="button"
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 rounded-md"
           title="Lista numerada (1. elemento)"
           onClick={() => insertPrefixToLine("1. ")}
+          className="b icon ghost sm"
+          style={{ width: "28px", height: "28px", borderRadius: "5px" }}
         >
-          <ListOrdered className="h-3.5 w-3.5" />
-        </Button>
+          <ListOrdered style={{ width: 13, height: 13 }} />
+        </button>
 
-        <div className="h-4 w-px bg-border/60 mx-1" />
+        <div
+          style={{
+            width: "1px",
+            height: "16px",
+            background: "#ebebeb",
+            margin: "0 4px",
+          }}
+        />
 
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 rounded-md"
           title="Cita (> cita)"
           onClick={() => insertPrefixToLine("> ")}
+          className="b icon ghost sm"
+          style={{ width: "28px", height: "28px", borderRadius: "5px" }}
         >
-          <Quote className="h-3.5 w-3.5" />
-        </Button>
-        <Button
+          <Quote style={{ width: 13, height: 13 }} />
+        </button>
+
+        <button
           type="button"
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 rounded-md"
           title="Bloque de código (``` código ```)"
           onClick={() => insertSyntax("\n```\n", "\n```\n", "código aquí")}
+          className="b icon ghost sm"
+          style={{ width: "28px", height: "28px", borderRadius: "5px" }}
         >
-          <Code className="h-3.5 w-3.5" />
-        </Button>
-        <Button
+          <Code style={{ width: 13, height: 13 }} />
+        </button>
+
+        <button
           type="button"
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 rounded-md"
           title="Enlace ([Texto](url))"
           onClick={() => insertSyntax("[", "](https://)", "texto del enlace")}
+          className="b icon ghost sm"
+          style={{ width: "28px", height: "28px", borderRadius: "5px" }}
         >
-          <LinkIcon className="h-3.5 w-3.5" />
-        </Button>
-        <Button
+          <LinkIcon style={{ width: 13, height: 13 }} />
+        </button>
+
+        <button
           type="button"
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 rounded-md"
           title="Línea horizontal (---)"
           onClick={() => insertPrefixToLine("---\n")}
+          className="b icon ghost sm"
+          style={{ width: "28px", height: "28px", borderRadius: "5px" }}
         >
-          <Minus className="h-3.5 w-3.5" />
-        </Button>
+          <Minus style={{ width: 13, height: 13 }} />
+        </button>
       </div>
 
-      {/* Content Textarea */}
+      {/* Área de texto limpia con fondo blanco plano */}
       <textarea
         ref={textareaRef}
         value={markdown}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Escriba su contenido Markdown / MDX aquí..."
-        className="w-full p-4 min-h-[320px] bg-transparent text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none resize-y leading-relaxed"
+        style={{
+          width: "100%",
+          padding: "16px",
+          minHeight: "340px",
+          background: "#ffffff",
+          fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+          fontSize: "13.5px",
+          color: "#08090a",
+          lineHeight: 1.65,
+          border: "none",
+          outline: "none",
+          resize: "vertical",
+          boxSizing: "border-box",
+        }}
       />
     </div>
   );

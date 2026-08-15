@@ -1,6 +1,6 @@
 /* ============================================================
    PhysaFlow — Admin theme
-   Copia 1:1 de variables y tamaños de design/prototipo/admin.html
+   Copia 1:1 de variables, componentes y estilos de design/prototipo/admin.html
    ============================================================ */
 
 .admin-theme {
@@ -164,4 +164,214 @@
 .stats,
 .admin-stats {
   overflow: hidden;
+}
+
+/* ===== BOTONES PROTOTIPO (ESTÁTICOS SIN MOVIMIENTO) ===== */
+.b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-family: var(--f);
+  font-size: var(--fs-ui, 14px);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color .16s ease, color .16s ease, border-color .16s ease;
+  transform: none !important;
+  -webkit-transform: none !important;
+  white-space: nowrap;
+  text-decoration: none;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.b:active,
+.b:focus,
+.b:hover {
+  transform: none !important;
+  -webkit-transform: none !important;
+}
+
+/* Anulación estricta del translate de landing.css para todos los botones en Admin */
+.admin-theme .b svg,
+.admin-theme .b:hover svg,
+.admin-theme .b:active svg,
+.admin-theme .b:focus svg,
+.admin-main .b svg,
+.admin-main .b:hover svg,
+.b svg,
+.b:hover svg,
+.b.icon svg,
+.b.icon:hover svg,
+.b.pri svg,
+.b.pri:hover svg,
+.b.sec svg,
+.b.sec:hover svg,
+.b.ghost svg,
+.b.ghost:hover svg,
+.b.danger svg,
+.b.danger:hover svg {
+  transform: none !important;
+  -webkit-transform: none !important;
+}
+
+.b.pri {
+  background: var(--green);
+  color: #ffffff;
+  border-color: var(--green);
+}
+.b.pri:hover {
+  background: var(--green-dp);
+  border-color: var(--green-dp);
+  color: #ffffff;
+}
+
+.b.sec {
+  background: var(--light);
+  border-color: var(--stroke);
+  color: var(--ink);
+}
+.b.sec:hover {
+  border-color: var(--ink);
+  background: var(--light);
+  color: var(--ink);
+}
+
+.b.sm {
+  height: 30px;
+  padding: 0 12px;
+  font-size: var(--fs-meta, 12.5px);
+  border-radius: 6px;
+}
+
+.b.icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 6px;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+}
+.b.icon svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  transition: stroke .16s ease;
+  pointer-events: none;
+  transform: none !important;
+}
+
+.b.ghost {
+  background: transparent;
+  color: #6f6f6f;
+  border-color: transparent;
+}
+.b.ghost:hover {
+  background: rgba(0, 96, 58, 0.10) !important;
+  color: #00603a !important;
+  border-color: rgba(0, 96, 58, 0.25) !important;
+}
+.b.ghost:hover svg {
+  stroke: #00603a !important;
+  color: #00603a !important;
+}
+
+.b.danger {
+  background: transparent;
+  color: #6f6f6f;
+  border-color: transparent;
+}
+.b.danger:hover {
+  background: rgba(179, 38, 30, 0.12) !important;
+  color: #b3261e !important;
+  border-color: rgba(179, 38, 30, 0.30) !important;
+}
+.b.danger:hover svg {
+  stroke: #b3261e !important;
+  color: #b3261e !important;
+}
+
+/* ===== TABLA PROTOTIPO ===== */
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tbl th {
+  text-align: left;
+  font-family: var(--m);
+  font-size: var(--fs-micro, 11px);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--meta);
+  font-weight: 400;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--stroke);
+}
+
+.tbl td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--stroke);
+  vertical-align: middle;
+}
+
+.tbl tr:last-child td {
+  border-bottom: 0;
+}
+
+.tbl tbody tr:hover {
+  background: rgba(0, 96, 58, 0.035);
+}
+
+.tbl .mono {
+  font-family: var(--m);
+  font-size: var(--fs-meta, 12.5px);
+  color: var(--meta);
+}
+
+.tbl .act {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ===== BADGES ===== */
+.bg {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-family: var(--m);
+  font-size: var(--fs-micro, 11px);
+  letter-spacing: .03em;
+  white-space: nowrap;
+}
+
+.bg.pub {
+  background: var(--green);
+  color: #ffffff;
+}
+
+.bg.draft {
+  background: var(--gold-dk);
+  color: #ffffff;
+}
+
+.bg.arch {
+  border: 1px solid var(--stroke);
+  color: var(--meta);
+}
+
+.bg.soft {
+  background: var(--green-lt);
+  color: var(--green);
 }

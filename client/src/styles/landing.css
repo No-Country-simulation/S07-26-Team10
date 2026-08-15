@@ -409,7 +409,8 @@ header.sm .sep {
   transition: transform .22s
 }
 
-.b:hover svg {
+.phi .b:hover svg,
+.landing .b:hover svg {
   transform: translate(2px, -2px)
 }
 
