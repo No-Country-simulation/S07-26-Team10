@@ -4,18 +4,24 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Save, Folder, Upload, FileCheck, CheckCircle2, AlertCircle, Link2, Loader2 } from "lucide-react";
+import {
+  Upload,
+  FileCheck,
+  CheckCircle2,
+  AlertCircle,
+  Link2,
+  Loader2,
+  Image as ImageIcon,
+} from "lucide-react";
 import type { ResourceItem } from "../../schemas/resource-schema";
 import { getSectionOptionsAction } from "../../actions/sections-actions";
-import { createResourceAction, updateResourceAction, uploadFileAction } from "../../actions/resources-actions";
+import {
+  createResourceAction,
+  updateResourceAction,
+  uploadFileAction,
+} from "../../actions/resources-actions";
 import { useVersion } from "@/context/version-context";
 
 interface ResourceFormProps {
@@ -24,30 +30,50 @@ interface ResourceFormProps {
   preselectedSectionId?: string;
 }
 
-export function ResourceForm({ initialData, isEditMode = false, preselectedSectionId }: ResourceFormProps) {
+export function ResourceForm({
+  initialData,
+  isEditMode = false,
+  preselectedSectionId,
+}: ResourceFormProps) {
   const t = useTranslations("AdminPage.resources.resourceForm");
+  const tRoot = useTranslations("AdminPage.resources");
   const router = useRouter();
   const { activeReportId } = useVersion();
 
-  const [sectionId, setSectionId] = useState(initialData?.section_id || preselectedSectionId || "");
-  const [type, setType] = useState(initialData?.type || "IMAGE");
+  const [sectionId, setSectionId] = useState(
+    initialData?.section_id || preselectedSectionId || "",
+  );
+  const [type, setType] = useState<"IMAGE" | "GRAPH" | "DIAGRAM" | "FILE">(
+    initialData?.type || "IMAGE",
+  );
   const [title, setTitle] = useState(initialData?.title || "");
-  const [description, setDescription] = useState(initialData?.description || "");
+  const [description, setDescription] = useState(
+    initialData?.description || "",
+  );
   const [fileUrl, setFileUrl] = useState(initialData?.file_url || "");
-  const [cloudinaryPublicId, setCloudinaryPublicId] = useState(initialData?.cloudinary_public_id || "");
+  const [cloudinaryPublicId, setCloudinaryPublicId] = useState(
+    initialData?.cloudinary_public_id || "",
+  );
   const [altText, setAltText] = useState(initialData?.alt_text || "");
-  const [downloadable, setDownloadable] = useState(initialData?.downloadable ?? true);
-  
+  const [downloadable, setDownloadable] = useState(
+    initialData?.downloadable ?? true,
+  );
+
   // File upload state & Mutually exclusive Source Mode state
   const [sourceMode, setSourceMode] = useState<"file" | "url">(
-    initialData?.file_url && !initialData.cloudinary_public_id ? "url" : "file"
+    initialData?.file_url && !initialData.cloudinary_public_id ? "url" : "file",
   );
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
-  const [sectionOptions, setSectionOptions] = useState<{ id: string; title: string }[]>([]);
+  const [sectionOptions, setSectionOptions] = useState<
+    { id: string; title: string }[]
+  >([]);
   const [isLoadingSections, setIsLoadingSections] = useState(true);
 
   useEffect(() => {
@@ -56,7 +82,11 @@ export function ResourceForm({ initialData, isEditMode = false, preselectedSecti
       try {
         const secs = await getSectionOptionsAction(activeReportId ?? undefined);
         setSectionOptions(secs);
-        if (!initialData?.section_id && !preselectedSectionId && secs.length > 0) {
+        if (
+          !initialData?.section_id &&
+          !preselectedSectionId &&
+          secs.length > 0
+        ) {
           setSectionId(secs[0].id);
         }
       } catch (err) {
@@ -65,7 +95,7 @@ export function ResourceForm({ initialData, isEditMode = false, preselectedSecti
         setIsLoadingSections(false);
       }
     }
-    loadSections();
+    void loadSections();
   }, [initialData, preselectedSectionId, activeReportId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,19 +107,25 @@ export function ResourceForm({ initialData, isEditMode = false, preselectedSecti
     let finalCloudinaryId = cloudinaryPublicId;
 
     try {
-      // 1. If uploading a file to Cloudinary
+      // 1. Si sube archivo a Cloudinary
       if (sourceMode === "file" && selectedFile) {
         setIsUploading(true);
         const formData = new FormData();
         formData.append("file", selectedFile);
 
-        const isImage = selectedFile.type.startsWith("image/") || type.toUpperCase() === "IMAGE";
+        const isImage =
+          selectedFile.type.startsWith("image/") ||
+          type.toUpperCase() === "IMAGE";
         const resourceType = isImage ? "image" : "raw";
 
         const uploadRes = await uploadFileAction(formData, resourceType);
         setIsUploading(false);
 
-        if (!uploadRes.success || !uploadRes.data?.file_url) {
+        const uploadData = uploadRes.data as
+          | { file_url?: string; public_id?: string }
+          | undefined;
+
+        if (!uploadRes.success || !uploadData?.file_url) {
           setFeedback({
             type: "error",
             message: uploadRes.message || t("errorUpload"),
@@ -98,15 +134,11 @@ export function ResourceForm({ initialData, isEditMode = false, preselectedSecti
           return;
         }
 
-        finalFileUrl = uploadRes.data.file_url;
-        finalCloudinaryId = uploadRes.data.cloudinary_public_id || "";
-        setCloudinaryPublicId(finalCloudinaryId);
-      } else if (sourceMode === "url") {
-        finalCloudinaryId = ""; // External URL does not have a Cloudinary Public ID
-        setCloudinaryPublicId("");
+        finalFileUrl = uploadData.file_url;
+        finalCloudinaryId = uploadData.public_id || "";
       }
 
-      if (!finalFileUrl) {
+      if (!finalFileUrl && !selectedFile) {
         setFeedback({
           type: "error",
           message: t("errorNoFileOrUrl"),
@@ -115,7 +147,6 @@ export function ResourceForm({ initialData, isEditMode = false, preselectedSecti
         return;
       }
 
-      // 2. Submit Create or Update Resource
       if (isEditMode && initialData?.id) {
         const res = await updateResourceAction(
           initialData.id,
@@ -125,25 +156,26 @@ export function ResourceForm({ initialData, isEditMode = false, preselectedSecti
             description,
             file_url: finalFileUrl,
             cloudinary_public_id: finalCloudinaryId,
-            old_cloudinary_public_id: initialData.cloudinary_public_id,
             alt_text: altText,
             downloadable,
           },
-          sectionId
+          sectionId,
         );
 
         if (res.success) {
-          setFeedback({ type: "success", message: res.message || t("successUpdated") });
-          const targetSecId = res.data?.section_id || sectionId || preselectedSectionId;
+          setFeedback({
+            type: "success",
+            message: t("successUpdated"),
+          });
           setTimeout(() => {
-            if (targetSecId) {
-              router.push(`/admin/sections/${targetSecId}`);
-            } else {
-              router.push("/admin/resources");
-            }
+            router.push("/admin/resources");
+            router.refresh();
           }, 800);
         } else {
-          setFeedback({ type: "error", message: res.message || t("errorUpdated") });
+          setFeedback({
+            type: "error",
+            message: res.message || t("errorUpdated"),
+          });
         }
       } else {
         const res = await createResourceAction({
@@ -158,22 +190,27 @@ export function ResourceForm({ initialData, isEditMode = false, preselectedSecti
         });
 
         if (res.success) {
-          setFeedback({ type: "success", message: res.message || t("successCreated") });
-          const targetSecId = res.data?.section_id || sectionId || preselectedSectionId;
+          setFeedback({
+            type: "success",
+            message: t("successCreated"),
+          });
           setTimeout(() => {
-            if (targetSecId) {
-              router.push(`/admin/sections/${targetSecId}`);
-            } else {
-              router.push("/admin/resources");
-            }
+            router.push("/admin/resources");
+            router.refresh();
           }, 800);
         } else {
-          setFeedback({ type: "error", message: res.message || t("errorCreated") });
+          setFeedback({
+            type: "error",
+            message: res.message || t("errorCreated"),
+          });
         }
       }
     } catch (err) {
-      console.error("Resource submit error:", err);
-      setFeedback({ type: "error", message: t("errorUpdated") });
+      console.error("Error submitting resource form:", err);
+      setFeedback({
+        type: "error",
+        message: "Ocurrió un error inesperado al guardar el recurso.",
+      });
     } finally {
       setIsSubmitting(false);
       setIsUploading(false);
@@ -181,325 +218,864 @@ export function ResourceForm({ initialData, isEditMode = false, preselectedSecti
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full max-w-4xl mx-auto py-2">
-      {/* Breadcrumb Header */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-          <Link href="/admin/resources" className="hover:text-foreground">
+    <div>
+      <form onSubmit={handleSubmit}>
+        {/* ── Encabezado y Breadcrumb (.eyebrow del prototipo) ────────── */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+            fontSize: "11px",
+            letterSpacing: ".07em",
+            textTransform: "uppercase",
+            color: "#00603a",
+          }}
+        >
+          <span
+            style={{
+              width: "22px",
+              height: "1px",
+              background: "#00603a",
+              display: "inline-block",
+              flexShrink: 0,
+            }}
+          />
+          <span>{tRoot("headerTag")}</span>
+          <span style={{ color: "#a8a8a8" }}>/</span>
+          <Link
+            href="/admin/resources"
+            style={{
+              color: "#6f6f6f",
+              textDecoration: "none",
+              transition: "color .16s",
+            }}
+          >
             {t("breadcrumbBase")}
           </Link>
-          <span>›</span>
-          <span className="text-foreground">{isEditMode ? t("breadcrumbEdit") : t("breadcrumbNew")}</span>
+          <span style={{ color: "#a8a8a8" }}>/</span>
+          <span style={{ color: "#08090a", fontWeight: 500 }}>
+            {isEditMode ? t("breadcrumbEdit") : t("breadcrumbNew")}
+          </span>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* ── Título, Subtítulo y Botones de Acción (.mh del prototipo) ── */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: "20px",
+            margin: "16px 0 28px",
+            flexWrap: "wrap",
+          }}
+        >
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              {isEditMode ? t("editTitle", { title: initialData?.title || "" }) : t("createTitle")}
+            <h1
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "34px",
+                fontWeight: 500,
+                lineHeight: 1.1,
+                letterSpacing: "-0.03em",
+                color: "#08090a",
+                margin: 0,
+              }}
+            >
+              {isEditMode ? t("editTitle", { title }) : t("createTitle")}
             </h1>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p
+              style={{
+                fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                fontSize: "15px",
+                color: "#706f6f",
+                marginTop: "8px",
+                maxWidth: "74ch",
+                lineHeight: 1.45,
+                letterSpacing: "-0.01em",
+              }}
+            >
               {t("subtitle")}
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link href={sectionId ? `/admin/sections/${sectionId}` : preselectedSectionId ? `/admin/sections/${preselectedSectionId}` : "/admin/resources"}>
-              <Button type="button" variant="outline" className="rounded-xl border-border/60">
-                {t("cancel")}
-              </Button>
+          {/* Botones de Acción Superiores */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <Link href="/admin/resources" className="b sec">
+              {t("cancel")}
             </Link>
-            <Button
+            <button
               type="submit"
               disabled={isSubmitting || isUploading}
-              className="rounded-xl px-5 gap-2 shadow-xs bg-emerald-950 text-emerald-100 hover:bg-emerald-900"
+              className="b pri"
+              style={{
+                background: "#00603a",
+                borderColor: "#00603a",
+                color: "#ffffff",
+              }}
             >
               {isUploading ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  <span>{t("uploadingFile")}</span>
-                </>
-              ) : isSubmitting ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  <span>{t("saving")}</span>
-                </>
-              ) : (
-                <>
-                  <Save className="size-4" />
-                  <span>{t("saveResource")}</span>
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Warning Banner when creating a new resource but no sections exist */}
-      {!isEditMode && sectionOptions.length === 0 && (
-        <div className="p-4 rounded-2xl text-xs font-medium flex items-center justify-between gap-3 border bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300">
-          <div className="flex items-center gap-2.5">
-            <AlertCircle className="size-5 shrink-0" />
-            <span>
-              {t("noSectionsWarning")}
-            </span>
-          </div>
-          <Link href="/admin/sections/new">
-            <Button type="button" variant="outline" size="sm" className="rounded-xl border-amber-500/40 text-amber-900 dark:text-amber-200 hover:bg-amber-500/20 text-xs shrink-0 font-semibold">
-              {t("createSectionBtn")}
-            </Button>
-          </Link>
-        </div>
-      )}
-
-      {/* Feedback Banner */}
-      {feedback && (
-        <div
-          className={`p-4 rounded-xl text-sm font-medium flex items-center gap-3 border ${
-            feedback.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
-              : "bg-destructive/10 border-destructive/30 text-destructive"
-          }`}
-        >
-          {feedback.type === "success" ? (
-            <CheckCircle2 className="size-5 shrink-0" />
-          ) : (
-            <AlertCircle className="size-5 shrink-0" />
-          )}
-          <span>{feedback.message}</span>
-        </div>
-      )}
-
-      <Card className="border border-border/60 bg-card shadow-xs rounded-2xl p-6">
-        <CardHeader className="p-0 mb-6 border-b border-border/40 pb-4">
-          <div className="flex items-center gap-2.5">
-            <Folder className="size-5 text-emerald-700 dark:text-emerald-400" />
-            <CardTitle className="text-base font-semibold">{t("breadcrumbBase")}</CardTitle>
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-0 space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="res-sec" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("sectionLabel")} <span className="text-destructive">*</span>
-              </Label>
-              {isLoadingSections ? (
-                <Skeleton className="h-10 w-full rounded-xl" />
-              ) : (
-                <Select value={sectionId} onValueChange={(val) => { if (val) setSectionId(val); }} disabled={isEditMode}>
-                  <SelectTrigger id="res-sec" className={`rounded-xl bg-background text-sm font-medium w-full min-w-0 overflow-hidden ${isEditMode ? "opacity-80 bg-muted/50 cursor-not-allowed" : ""}`}>
-                    <SelectValue placeholder={t("sectionLabel")}>
-                      <span className="truncate block max-w-[240px] sm:max-w-[340px]">
-                        {sectionOptions.find((s) => s.id === sectionId)?.title || t("sectionLabel")}
-                      </span>
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl max-w-lg">
-                    {sectionOptions.length === 0 ? (
-                      <div className="p-3 text-xs text-muted-foreground italic text-center">
-                        {t("noSectionsWarning")}
-                      </div>
-                    ) : (
-                      sectionOptions.map((sec) => (
-                        <SelectItem key={sec.id} value={sec.id} className="cursor-pointer max-w-full">
-                          <span className="truncate block max-w-[280px] sm:max-w-[380px]" title={sec.title}>
-                            {sec.title}
-                          </span>
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="res-type" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("typeLabel")} <span className="text-destructive">*</span>
-              </Label>
-              <Select value={type} onValueChange={(val) => { if (val) setType(val as "IMAGE" | "GRAPH" | "DIAGRAM" | "FILE"); }}>
-                <SelectTrigger id="res-type" className="rounded-xl bg-background text-sm font-medium">
-                  <SelectValue placeholder={t("typePlaceholder")}>
-                    {type === "IMAGE" && t("typeImage")}
-                    {type === "GRAPH" && t("typeGraph")}
-                    {type === "DIAGRAM" && t("typeDiagram")}
-                    {type === "FILE" && t("typeFile")}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  <SelectItem value="IMAGE">{t("typeImage")}</SelectItem>
-                  <SelectItem value="GRAPH">{t("typeGraph")}</SelectItem>
-                  <SelectItem value="DIAGRAM">{t("typeDiagram")}</SelectItem>
-                  <SelectItem value="FILE">{t("typeFile")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="res-title" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {t("titleLabel")} <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="res-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength={255}
-              placeholder={t("titlePlaceholder")}
-              className="rounded-xl bg-background text-sm font-medium"
-              required
-            />
-          </div>
-
-          {/* Mode Selector for Asset Source: Upload File VS External URL */}
-          <div className="space-y-3 pt-2">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("assetSourceLabel")} <span className="text-destructive">*</span>
-              </Label>
-              <div className="flex items-center gap-1.5 p-1 bg-muted rounded-xl border border-border/40 text-xs">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSourceMode("file");
+                <Loader2
+                  style={{
+                    width: 15,
+                    height: 15,
+                    animation: "spin 1s linear infinite",
                   }}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all ${
-                    sourceMode === "file"
-                      ? "bg-background text-foreground font-semibold shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Upload className="size-3.5" />
-                  <span>{t("uploadFileBtn")}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSourceMode("url");
-                    setSelectedFile(null);
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all ${
-                    sourceMode === "url"
-                      ? "bg-background text-foreground font-semibold shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Link2 className="size-3.5" />
-                  <span>{t("urlBtn")}</span>
-                </button>
-              </div>
-            </div>
-
-            {sourceMode === "file" ? (
-              /* File Upload Input Dropzone Field */
-              <div className="relative border-2 border-dashed border-border/70 hover:border-emerald-700/50 transition-all rounded-2xl p-5 bg-muted/20 text-center flex flex-col items-center justify-center gap-2 group cursor-pointer">
-                <input
-                  type="file"
-                  id="res-file-input"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      setSelectedFile(file);
-                      setFileUrl("");
-                    }
-                  }}
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
                 />
-                {selectedFile ? (
-                  <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-semibold text-xs bg-emerald-500/10 px-4 py-2 rounded-xl border border-emerald-500/20">
-                    <FileCheck className="size-4 shrink-0 text-emerald-600" />
-                    <span className="truncate max-w-xs">{selectedFile.name}</span>
-                    <span className="text-[10px] font-mono text-muted-foreground">({(selectedFile.size / 1024).toFixed(1)} KB)</span>
-                  </div>
-                ) : fileUrl ? (
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-semibold text-xs bg-emerald-500/10 px-4 py-2 rounded-xl border border-emerald-500/20">
-                      <FileCheck className="size-4 shrink-0 text-emerald-600" />
-                      <span className="truncate max-w-xs">{t("currentFile", { url: fileUrl })}</span>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground pt-1">
-                      {t("replaceFileHint")}
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <div className="size-10 rounded-full bg-background border border-border/60 flex items-center justify-center text-muted-foreground group-hover:scale-105 group-hover:text-emerald-700 transition-all">
-                      <Upload className="size-4" />
-                    </div>
-                    <div className="space-y-0.5">
-                      <p className="text-xs font-bold text-foreground">
-                        {t("dropzoneClick")}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground">
-                        {t("dropzoneHint")}
-                      </p>
-                    </div>
-                  </>
-                )}
-              </div>
+              ) : (
+                <svg
+                  viewBox="0 0 24 24"
+                  style={{
+                    width: 15,
+                    height: 15,
+                    stroke: "#ffffff",
+                    fill: "none",
+                    strokeWidth: 2,
+                  }}
+                >
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+              )}
+              <span>
+                {isSubmitting || isUploading
+                  ? t("saving")
+                  : t("saveResource")}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* ── Banners de Alerta / Feedback ─────────────────────────── */}
+        {feedback && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              padding: "14px 16px",
+              borderRadius: "8px",
+              marginBottom: "24px",
+              fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+              fontSize: "13.5px",
+              border:
+                feedback.type === "success"
+                  ? "1px solid rgba(0,96,58,.25)"
+                  : "1px solid rgba(179,38,30,.28)",
+              borderLeft:
+                feedback.type === "success"
+                  ? "3px solid #00603a"
+                  : "3px solid #b3261e",
+              background:
+                feedback.type === "success"
+                  ? "rgba(0,96,58,.04)"
+                  : "rgba(179,38,30,.04)",
+              color: feedback.type === "success" ? "#00603a" : "#b3261e",
+            }}
+          >
+            {feedback.type === "success" ? (
+              <CheckCircle2 style={{ width: 18, height: 18, flexShrink: 0 }} />
             ) : (
-              /* File URL Direct Input Field */
-              <div className="space-y-1.5">
-                <Input
-                  id="res-url"
-                  value={fileUrl}
-                  onChange={(e) => setFileUrl(e.target.value)}
-                  placeholder={t("fileUrlPlaceholder")}
-                  className="rounded-xl bg-background text-sm font-mono"
-                  required={sourceMode === "url"}
-                />
-                <p className="text-[11px] text-muted-foreground">
-                  {t("fileUrlHelper")}
-                </p>
+              <AlertCircle style={{ width: 18, height: 18, flexShrink: 0 }} />
+            )}
+            <span>{feedback.message}</span>
+          </div>
+        )}
+
+        {/* ── Grid Principal de Formulario ─────────────────────────── */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(12, 1fr)",
+            gap: "24px",
+            alignItems: "start",
+          }}
+        >
+          {/* Columna Izquierda: Parámetros del Recurso (8 cols) */}
+          <div
+            style={{
+              gridColumn: "span 8",
+              display: "flex",
+              flexDirection: "column",
+              gap: "24px",
+            }}
+            className="col-span-12 lg:col-span-8"
+          >
+            <div className="card admin-card" style={{ overflow: "hidden" }}>
+              <div
+                style={{
+                  padding: "15px 20px",
+                  borderBottom: "1px solid #ebebeb",
+                }}
+              >
+                <h3
+                  style={{
+                    fontFamily:
+                      "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                    fontSize: "17px",
+                    fontWeight: 500,
+                    color: "#08090a",
+                    margin: 0,
+                  }}
+                >
+                  {t("cardTitle")}
+                </h3>
+              </div>
+
+              <div
+                style={{
+                  padding: "20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "18px",
+                }}
+              >
+                {/* Sección vinculada */}
+                <div>
+                  <label
+                    htmlFor="resource-section"
+                    style={{
+                      display: "block",
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      letterSpacing: "-0.01em",
+                      color: "#00603a",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    {t("sectionLabel")}{" "}
+                    <span style={{ color: "#b3261e" }}>*</span>
+                  </label>
+                  {isLoadingSections ? (
+                    <Skeleton className="h-10 w-full rounded-md" />
+                  ) : sectionOptions.length === 0 ? (
+                    <div
+                      style={{
+                        padding: "12px",
+                        borderRadius: "8px",
+                        background: "rgba(122,102,48,.06)",
+                        border: "1px solid rgba(122,102,48,.18)",
+                        fontSize: "13px",
+                        color: "#7a6630",
+                      }}
+                    >
+                      {t("noSectionsWarning")}{" "}
+                      <Link
+                        href="/admin/sections/new"
+                        style={{
+                          color: "#00603a",
+                          textDecoration: "underline",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {t("createSectionBtn")}
+                      </Link>
+                    </div>
+                  ) : (
+                    <select
+                      id="resource-section"
+                      value={sectionId}
+                      onChange={(e) => setSectionId(e.target.value)}
+                      required
+                      style={{
+                        width: "100%",
+                        height: "40px",
+                        padding: "0 13px",
+                        border: "1px solid #ebebeb",
+                        borderRadius: "8px",
+                        background: "#ffffff",
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "14px",
+                        color: "#08090a",
+                        outline: "none",
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      {sectionOptions.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.title}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                {/* Tipo de recurso y Título */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 2fr",
+                    gap: "16px",
+                  }}
+                >
+                  <div>
+                    <label
+                      htmlFor="resource-type"
+                      style={{
+                        display: "block",
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "14px",
+                        fontWeight: 500,
+                        letterSpacing: "-0.01em",
+                        color: "#00603a",
+                        marginBottom: "6px",
+                      }}
+                    >
+                      {t("typeLabel")}
+                    </label>
+                    <select
+                      id="resource-type"
+                      value={type}
+                      onChange={(e) =>
+                        setType(
+                          e.target.value as
+                            | "IMAGE"
+                            | "GRAPH"
+                            | "DIAGRAM"
+                            | "FILE",
+                        )
+                      }
+                      style={{
+                        width: "100%",
+                        height: "40px",
+                        padding: "0 13px",
+                        border: "1px solid #ebebeb",
+                        borderRadius: "8px",
+                        background: "#ffffff",
+                        fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                        fontSize: "13px",
+                        color: "#08090a",
+                        outline: "none",
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      <option value="IMAGE">IMAGE</option>
+                      <option value="GRAPH">GRAPH</option>
+                      <option value="DIAGRAM">DIAGRAM</option>
+                      <option value="FILE">FILE</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="resource-title"
+                      style={{
+                        display: "block",
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "14px",
+                        fontWeight: 500,
+                        letterSpacing: "-0.01em",
+                        color: "#00603a",
+                        marginBottom: "6px",
+                      }}
+                    >
+                      {t("titleLabel")}{" "}
+                      <span style={{ color: "#b3261e" }}>*</span>
+                    </label>
+                    <input
+                      id="resource-title"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder={t("titlePlaceholder")}
+                      required
+                      style={{
+                        width: "100%",
+                        height: "40px",
+                        padding: "0 13px",
+                        border: "1px solid #ebebeb",
+                        borderRadius: "8px",
+                        background: "#ffffff",
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "14px",
+                        color: "#08090a",
+                        outline: "none",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Descripción */}
+                <div>
+                  <label
+                    htmlFor="resource-desc"
+                    style={{
+                      display: "block",
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      letterSpacing: "-0.01em",
+                      color: "#00603a",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    {t("descLabel")}
+                  </label>
+                  <textarea
+                    id="resource-desc"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder={t("descPlaceholder")}
+                    rows={2}
+                    style={{
+                      width: "100%",
+                      padding: "10px 13px",
+                      border: "1px solid #ebebeb",
+                      borderRadius: "8px",
+                      background: "#ffffff",
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "14px",
+                      color: "#08090a",
+                      outline: "none",
+                      resize: "vertical",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+
+                {/* Origen del archivo (Subir archivo vs URL) */}
+                <div
+                  style={{
+                    border: "1px solid #ebebeb",
+                    borderRadius: "8px",
+                    padding: "16px",
+                    background: "#fafafa",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "14px",
+                    }}
+                  >
+                    <label
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "13.5px",
+                        fontWeight: 500,
+                        color: "#08090a",
+                      }}
+                    >
+                      {t("assetSourceLabel")}
+                    </label>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "2px",
+                        background: "#ebebeb",
+                        padding: "2px",
+                        borderRadius: "6px",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setSourceMode("file")}
+                        style={{
+                          padding: "4px 10px",
+                          borderRadius: "4px",
+                          border: "none",
+                          fontFamily:
+                            "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                          fontSize: "12px",
+                          fontWeight: sourceMode === "file" ? 500 : 400,
+                          background:
+                            sourceMode === "file" ? "#ffffff" : "transparent",
+                          color:
+                            sourceMode === "file" ? "#08090a" : "#6f6f6f",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {t("uploadFileBtn")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSourceMode("url")}
+                        style={{
+                          padding: "4px 10px",
+                          borderRadius: "4px",
+                          border: "none",
+                          fontFamily:
+                            "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                          fontSize: "12px",
+                          fontWeight: sourceMode === "url" ? 500 : 400,
+                          background:
+                            sourceMode === "url" ? "#ffffff" : "transparent",
+                          color:
+                            sourceMode === "url" ? "#08090a" : "#6f6f6f",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {t("urlBtn")}
+                      </button>
+                    </div>
+                  </div>
+
+                  {sourceMode === "file" ? (
+                    <div>
+                      <label
+                        htmlFor="file-dropzone"
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: "24px 16px",
+                          borderRadius: "8px",
+                          border: "1px dashed #d0d0d0",
+                          background: "#ffffff",
+                          cursor: "pointer",
+                          textAlign: "center",
+                        }}
+                      >
+                        <Upload
+                          style={{
+                            width: 24,
+                            height: 24,
+                            color: "#00603a",
+                            marginBottom: "8px",
+                          }}
+                        />
+                        <span
+                          style={{
+                            fontFamily:
+                              "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                            fontSize: "13.5px",
+                            fontWeight: 500,
+                            color: "#08090a",
+                          }}
+                        >
+                          {selectedFile
+                            ? selectedFile.name
+                            : t("dropzoneClick")}
+                        </span>
+                        <span
+                          style={{
+                            fontFamily:
+                              "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                            fontSize: "12px",
+                            color: "#6f6f6f",
+                            marginTop: "4px",
+                          }}
+                        >
+                          {selectedFile
+                            ? `${(selectedFile.size / 1024).toFixed(1)} KB`
+                            : t("dropzoneHint")}
+                        </span>
+                        <input
+                          id="file-dropzone"
+                          type="file"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              setSelectedFile(e.target.files[0]);
+                            }
+                          }}
+                          style={{ display: "none" }}
+                        />
+                      </label>
+                      {fileUrl && !selectedFile && (
+                        <p
+                          style={{
+                            fontFamily:
+                              "var(--m, 'IBM Plex Mono', monospace)",
+                            fontSize: "11.5px",
+                            color: "#6f6f6f",
+                            marginTop: "8px",
+                            margin: "8px 0 0",
+                            wordBreak: "break-all",
+                          }}
+                        >
+                          {t("currentFile", { url: fileUrl })}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div>
+                      <input
+                        value={fileUrl}
+                        onChange={(e) => setFileUrl(e.target.value)}
+                        placeholder={t("fileUrlPlaceholder")}
+                        style={{
+                          width: "100%",
+                          height: "40px",
+                          padding: "0 13px",
+                          border: "1px solid #ebebeb",
+                          borderRadius: "8px",
+                          background: "#ffffff",
+                          fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                          fontSize: "13px",
+                          color: "#08090a",
+                          outline: "none",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                      <p
+                        style={{
+                          fontFamily:
+                            "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                          fontSize: "12px",
+                          color: "#6f6f6f",
+                          marginTop: "6px",
+                          margin: "6px 0 0",
+                        }}
+                      >
+                        {t("fileUrlHelper")}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Texto Alternativo (Alt Text) */}
+                <div>
+                  <label
+                    htmlFor="resource-alt"
+                    style={{
+                      display: "block",
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      letterSpacing: "-0.01em",
+                      color: "#00603a",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    {t("altTextLabel")}{" "}
+                    <span style={{ color: "#b3261e" }}>*</span>
+                  </label>
+                  <input
+                    id="resource-alt"
+                    value={altText}
+                    onChange={(e) => setAltText(e.target.value)}
+                    placeholder={t("altTextPlaceholder")}
+                    required
+                    style={{
+                      width: "100%",
+                      height: "40px",
+                      padding: "0 13px",
+                      border: "1px solid #ebebeb",
+                      borderRadius: "8px",
+                      background: "#ffffff",
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "14px",
+                      color: "#08090a",
+                      outline: "none",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Columna Derecha: Configuración Lateral y Vista Previa (4 cols) */}
+          <div
+            style={{
+              gridColumn: "span 4",
+              display: "flex",
+              flexDirection: "column",
+              gap: "20px",
+            }}
+            className="col-span-12 lg:col-span-4"
+          >
+            {/* Card: Configuración */}
+            <div className="card admin-card" style={{ overflow: "hidden" }}>
+              <div
+                style={{
+                  padding: "15px 18px",
+                  borderBottom: "1px solid #ebebeb",
+                }}
+              >
+                <h3
+                  style={{
+                    fontFamily:
+                      "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                    fontSize: "16px",
+                    fontWeight: 500,
+                    color: "#08090a",
+                    margin: 0,
+                  }}
+                >
+                  Configuración
+                </h3>
+              </div>
+
+              <div style={{ padding: "18px" }}>
+                {/* Switch Descargable */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: "6px",
+                  }}
+                >
+                  <label
+                    style={{
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "13px",
+                      fontWeight: 500,
+                      color: "#08090a",
+                    }}
+                  >
+                    {t("downloadableLabel")}
+                  </label>
+                  <span className={downloadable ? "bg pub" : "bg draft"}>
+                    {downloadable ? tRoot("yes") : tRoot("no")}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "10px 12px",
+                    borderRadius: "8px",
+                    background: "#fafafa",
+                    border: "1px solid #ebebeb",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "12.5px",
+                      color: "#6f6f6f",
+                    }}
+                  >
+                    {downloadable ? tRoot("yes") : tRoot("no")}
+                  </span>
+                  <Switch
+                    checked={downloadable}
+                    onCheckedChange={setDownloadable}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Card: Vista Previa del Asset */}
+            {(fileUrl || selectedFile) && (
+              <div className="card admin-card" style={{ overflow: "hidden" }}>
+                <div
+                  style={{
+                    padding: "15px 18px",
+                    borderBottom: "1px solid #ebebeb",
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontFamily:
+                        "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                      fontSize: "16px",
+                      fontWeight: 500,
+                      color: "#08090a",
+                      margin: 0,
+                    }}
+                  >
+                    {t("previewTitle")}
+                  </h3>
+                </div>
+                <div
+                  style={{
+                    padding: "16px",
+                    display: "grid",
+                    placeItems: "center",
+                    background: "#fafafa",
+                  }}
+                >
+                  {type.toUpperCase() === "IMAGE" ||
+                  type.toUpperCase() === "GRAPH" ||
+                  type.toUpperCase() === "DIAGRAM" ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={
+                        selectedFile
+                          ? URL.createObjectURL(selectedFile)
+                          : fileUrl
+                      }
+                      alt={altText || title}
+                      style={{
+                        maxHeight: "180px",
+                        maxWidth: "100%",
+                        objectFit: "contain",
+                        borderRadius: "6px",
+                        border: "1px solid #ebebeb",
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        color: "#6f6f6f",
+                        fontSize: "13px",
+                      }}
+                    >
+                      <FileCheck
+                        style={{ width: 24, height: 24, color: "#00603a" }}
+                      />
+                      <span>Documento listo para asociar</span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="res-alt" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {t("altTextLabel")}
-            </Label>
-            <Input
-              id="res-alt"
-              value={altText}
-              onChange={(e) => setAltText(e.target.value)}
-              maxLength={255}
-              placeholder={t("altTextPlaceholder")}
-              className="rounded-xl bg-background text-sm"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="res-desc" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {t("descLabel")}
-            </Label>
-            <Textarea
-              id="res-desc"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              placeholder={t("descPlaceholder")}
-              className="rounded-xl bg-background text-xs leading-relaxed p-3 border-border/60"
-            />
-          </div>
-
-          <div className="pt-3 border-t border-border/40 flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("downloadableLabel")}
-              </Label>
-              <p className="text-[11px] text-muted-foreground">
-                {t("downloadableLabel")}
+            {/* Nota editorial de accesibilidad (.quote del prototipo) */}
+            <div
+              style={{
+                borderLeft: "2px solid #00603a",
+                padding: "2px 0 2px 14px",
+                margin: "4px 0",
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
+                  fontSize: "11px",
+                  letterSpacing: ".07em",
+                  textTransform: "uppercase",
+                  color: "#00603a",
+                  marginBottom: "4px",
+                }}
+              >
+                Accesibilidad visual
+              </div>
+              <p
+                style={{
+                  fontFamily: "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                  fontSize: "12.5px",
+                  color: "#6f6f6f",
+                  lineHeight: 1.45,
+                  margin: 0,
+                }}
+              >
+                El texto alternativo es obligatorio. Permite a lectores de
+                pantalla e indexadores comprender los diagramas y gráficos del
+                informe.
               </p>
             </div>
-            <Switch
-              checked={downloadable}
-              onCheckedChange={setDownloadable}
-            />
           </div>
-        </CardContent>
-      </Card>
-    </form>
+        </div>
+      </form>
+    </div>
   );
 }
 
