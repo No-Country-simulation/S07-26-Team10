@@ -180,7 +180,17 @@
       "autoOrderLabel": "Assign to end",
       "autoOrderNotice": "Will be automatically assigned to the end of the references.",
       "citationUrlLabel": "Citation URL (citation_url)",
-      "citationUrlHelper": "DOI link or URL address to access the cited source."
+      "citationUrlPlaceholder": "https://doi.org/10.1145/...",
+      "citationUrlHelper": "DOI link or URL address to access the cited source.",
+      "configTitle": "Configuration",
+      "successCreated": "Reference created successfully.",
+      "successUpdated": "Reference updated successfully.",
+      "errorCreate": "Error creating reference.",
+      "errorUpdate": "Error updating reference.",
+      "errorGeneric": "An unexpected error occurred while saving the reference.",
+      "noReportSelected": "You must select a report.",
+      "apaGuideTitle": "APA 7 format",
+      "apaGuideDesc": "The order in this table defines citation numbering within the report text. Consistency in author and source names is recommended."
     }
   },
   "resources": {

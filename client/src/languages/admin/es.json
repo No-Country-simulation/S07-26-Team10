@@ -180,7 +180,17 @@
       "autoOrderLabel": "Asignar al final",
       "autoOrderNotice": "Se asignará automáticamente al final de las referencias.",
       "citationUrlLabel": "URL de Citación (citation_url)",
-      "citationUrlHelper": "Enlace DOI o dirección URL de acceso a la fuente citada."
+      "citationUrlPlaceholder": "https://doi.org/10.1145/...",
+      "citationUrlHelper": "Enlace DOI o dirección URL de acceso a la fuente citada.",
+      "configTitle": "Configuración",
+      "successCreated": "Referencia creada exitosamente.",
+      "successUpdated": "Referencia actualizada exitosamente.",
+      "errorCreate": "Error al crear la referencia.",
+      "errorUpdate": "Error al actualizar la referencia.",
+      "errorGeneric": "Ocurrió un error inesperado al guardar la referencia.",
+      "noReportSelected": "Debe seleccionar un reporte obligatoriamente.",
+      "apaGuideTitle": "Formato APA 7",
+      "apaGuideDesc": "El orden de esta tabla define la numeración y citas dentro del texto del reporte. Se recomienda mantener consistencia en los nombres de autores y fuentes."
     }
   },
   "resources": {

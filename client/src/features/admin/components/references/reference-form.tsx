@@ -4,9 +4,15 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Switch } from "@/components/ui/switch";
 import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
-import type { ReferenceItem } from "../../schemas/reference-schema";
+import {
+  referenceFormSchema,
+  type ReferenceFormInput,
+  type ReferenceItem,
+} from "../../schemas/reference-schema";
 import {
   createReferenceAction,
   updateReferenceAction,
@@ -29,29 +35,18 @@ export function ReferenceForm({
   const router = useRouter();
   const { activeReportId, activeReportVersion, reportVersions } = useVersion();
 
-  const [reportId, setReportId] = useState(
-    () =>
-      initialData?.report_version_id ||
-      initialData?.report_id ||
-      preselectedReportId ||
-      activeReportVersion?.id ||
-      activeReportId ||
-      reportVersions?.[0]?.id ||
-      "",
+  const defaultReportId =
+    initialData?.report_version_id ||
+    initialData?.report_id ||
+    preselectedReportId ||
+    activeReportVersion?.id ||
+    activeReportId ||
+    reportVersions?.[0]?.id ||
+    "";
+
+  const [autoOrder, setAutoOrder] = useState<boolean>(
+    !isEditMode && initialData?.display_order === undefined,
   );
-  const [authors, setAuthors] = useState(initialData?.authors || "");
-  const [title, setTitle] = useState(initialData?.title || "");
-  const [year, setYear] = useState<number>(
-    initialData?.year || new Date().getFullYear(),
-  );
-  const [source, setSource] = useState(initialData?.source || "");
-  const [citationUrl, setCitationUrl] = useState(
-    initialData?.citation_url || "",
-  );
-  const [displayOrder, setDisplayOrder] = useState<number>(
-    initialData?.display_order ?? 1,
-  );
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     message: string;
@@ -67,13 +62,28 @@ export function ReferenceForm({
     return [];
   }, [reportVersions]);
 
-  const [autoOrder, setAutoOrder] = useState<boolean>(
-    !isEditMode && initialData?.display_order === undefined,
-  );
+  const {
+    control,
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<ReferenceFormInput>({
+    resolver: zodResolver(referenceFormSchema),
+    defaultValues: {
+      report_id: defaultReportId,
+      authors: initialData?.authors || "",
+      title: initialData?.title || "",
+      year: initialData?.year || new Date().getFullYear(),
+      source: initialData?.source || "",
+      citation_url: initialData?.citation_url || "",
+      display_order: initialData?.display_order ?? 1,
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const watchTitle = useWatch({ control, name: "title" });
+
+  const onSubmit = async (values: ReferenceFormInput) => {
     setFeedback(null);
 
     try {
@@ -81,20 +91,20 @@ export function ReferenceForm({
         const res = await updateReferenceAction(
           initialData.id,
           {
-            authors,
-            title,
-            year: Number(year),
-            source,
-            citation_url: citationUrl,
-            ...(autoOrder ? {} : { display_order: Number(displayOrder) }),
+            authors: values.authors,
+            title: values.title,
+            year: values.year,
+            source: values.source,
+            citation_url: values.citation_url,
+            ...(autoOrder ? {} : { display_order: values.display_order ?? 1 }),
           },
-          reportId,
+          values.report_id,
         );
 
         if (res.success) {
           setFeedback({
             type: "success",
-            message: res.message || "Referencia actualizada exitosamente.",
+            message: res.message || t("successUpdated"),
           });
           setTimeout(() => {
             router.push("/admin/references");
@@ -103,34 +113,33 @@ export function ReferenceForm({
         } else {
           setFeedback({
             type: "error",
-            message: res.message || "Error al actualizar la referencia.",
+            message: res.message || t("errorUpdate"),
           });
         }
       } else {
-        if (!reportId) {
+        if (!values.report_id) {
           setFeedback({
             type: "error",
-            message: "Debe seleccionar un reporte obligatoriamente.",
+            message: t("noReportSelected"),
           });
-          setIsSubmitting(false);
           return;
         }
 
         const res = await createReferenceAction({
-          report_version_id: reportId,
-          report_id: reportId,
-          authors,
-          title,
-          year: Number(year),
-          source,
-          citation_url: citationUrl,
-          ...(autoOrder ? {} : { display_order: Number(displayOrder) }),
+          report_version_id: values.report_id,
+          report_id: values.report_id,
+          authors: values.authors,
+          title: values.title,
+          year: values.year,
+          source: values.source,
+          citation_url: values.citation_url,
+          ...(autoOrder ? {} : { display_order: values.display_order ?? 1 }),
         });
 
         if (res.success) {
           setFeedback({
             type: "success",
-            message: res.message || "Referencia creada exitosamente.",
+            message: res.message || t("successCreated"),
           });
           setTimeout(() => {
             router.push("/admin/references");
@@ -139,7 +148,7 @@ export function ReferenceForm({
         } else {
           setFeedback({
             type: "error",
-            message: res.message || "Error al crear la referencia.",
+            message: res.message || t("errorCreate"),
           });
         }
       }
@@ -147,16 +156,14 @@ export function ReferenceForm({
       console.error("Error saving reference:", err);
       setFeedback({
         type: "error",
-        message: "Ocurrió un error inesperado al guardar la referencia.",
+        message: t("errorGeneric"),
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   return (
     <div>
-      <form onSubmit={handleSubmit} noValidate>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
         {/* ── Encabezado y Breadcrumb (.eyebrow del prototipo) ────────── */}
         <div
           style={{
@@ -220,7 +227,11 @@ export function ReferenceForm({
                 margin: 0,
               }}
             >
-              {isEditMode ? t("editTitle", { title }) : t("createTitle")}
+              {isEditMode
+                ? t("editTitle", {
+                    title: watchTitle || initialData?.title || "",
+                  })
+                : t("createTitle")}
             </h1>
             <p
               style={{
@@ -385,14 +396,14 @@ export function ReferenceForm({
                   </label>
                   <select
                     id="reference-report"
-                    value={reportId}
-                    onChange={(e) => setReportId(e.target.value)}
-                    required
+                    {...register("report_id")}
                     style={{
                       width: "100%",
                       height: "40px",
                       padding: "0 13px",
-                      border: "1px solid #ebebeb",
+                      border: errors.report_id
+                        ? "1px solid #b3261e"
+                        : "1px solid #ebebeb",
                       borderRadius: "8px",
                       background: "#ffffff",
                       fontFamily:
@@ -410,6 +421,20 @@ export function ReferenceForm({
                       </option>
                     ))}
                   </select>
+                  {errors.report_id && (
+                    <p
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "12px",
+                        color: "#b3261e",
+                        marginTop: "5px",
+                        margin: 0,
+                      }}
+                    >
+                      {errors.report_id.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Autores */}
@@ -432,15 +457,15 @@ export function ReferenceForm({
                   </label>
                   <input
                     id="reference-authors"
-                    value={authors}
-                    onChange={(e) => setAuthors(e.target.value)}
+                    {...register("authors")}
                     placeholder={t("authorsPlaceholder")}
-                    required
                     style={{
                       width: "100%",
                       height: "40px",
                       padding: "0 13px",
-                      border: "1px solid #ebebeb",
+                      border: errors.authors
+                        ? "1px solid #b3261e"
+                        : "1px solid #ebebeb",
                       borderRadius: "8px",
                       background: "#ffffff",
                       fontFamily:
@@ -451,6 +476,20 @@ export function ReferenceForm({
                       boxSizing: "border-box",
                     }}
                   />
+                  {errors.authors && (
+                    <p
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "12px",
+                        color: "#b3261e",
+                        marginTop: "5px",
+                        margin: 0,
+                      }}
+                    >
+                      {errors.authors.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Título de la publicación */}
@@ -473,15 +512,15 @@ export function ReferenceForm({
                   </label>
                   <input
                     id="reference-title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    {...register("title")}
                     placeholder={t("titlePlaceholder")}
-                    required
                     style={{
                       width: "100%",
                       height: "40px",
                       padding: "0 13px",
-                      border: "1px solid #ebebeb",
+                      border: errors.title
+                        ? "1px solid #b3261e"
+                        : "1px solid #ebebeb",
                       borderRadius: "8px",
                       background: "#ffffff",
                       fontFamily:
@@ -492,6 +531,20 @@ export function ReferenceForm({
                       boxSizing: "border-box",
                     }}
                   />
+                  {errors.title && (
+                    <p
+                      style={{
+                        fontFamily:
+                          "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                        fontSize: "12px",
+                        color: "#b3261e",
+                        marginTop: "5px",
+                        margin: 0,
+                      }}
+                    >
+                      {errors.title.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Año y Organización / Fuente */}
@@ -521,17 +574,40 @@ export function ReferenceForm({
                     </label>
                     <input
                       id="reference-year"
-                      type="number"
-                      value={year}
-                      onChange={(e) => setYear(Number(e.target.value))}
-                      required
-                      min={1900}
-                      max={2100}
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      {...register("year", {
+                        valueAsNumber: true,
+                        onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                          const digitsOnly = e.target.value.replace(/\D/g, "");
+                          const parsed = digitsOnly ? parseInt(digitsOnly, 10) : "";
+                          setValue("year", parsed as number, { shouldValidate: true });
+                        },
+                      })}
+                      onKeyDown={(e) => {
+                        if (
+                          !/[0-9]/.test(e.key) &&
+                          ![
+                            "Backspace",
+                            "Delete",
+                            "Tab",
+                            "ArrowLeft",
+                            "ArrowRight",
+                            "Home",
+                            "End",
+                          ].includes(e.key)
+                        ) {
+                          e.preventDefault();
+                        }
+                      }}
                       style={{
                         width: "100%",
                         height: "40px",
                         padding: "0 13px",
-                        border: "1px solid #ebebeb",
+                        border: errors.year
+                          ? "1px solid #b3261e"
+                          : "1px solid #ebebeb",
                         borderRadius: "8px",
                         background: "#ffffff",
                         fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
@@ -541,6 +617,20 @@ export function ReferenceForm({
                         boxSizing: "border-box",
                       }}
                     />
+                    {errors.year && (
+                      <p
+                        style={{
+                          fontFamily:
+                            "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                          fontSize: "12px",
+                          color: "#b3261e",
+                          marginTop: "5px",
+                          margin: 0,
+                        }}
+                      >
+                        {errors.year.message}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -562,15 +652,15 @@ export function ReferenceForm({
                     </label>
                     <input
                       id="reference-source"
-                      value={source}
-                      onChange={(e) => setSource(e.target.value)}
+                      {...register("source")}
                       placeholder={t("sourcePlaceholder")}
-                      required
                       style={{
                         width: "100%",
                         height: "40px",
                         padding: "0 13px",
-                        border: "1px solid #ebebeb",
+                        border: errors.source
+                          ? "1px solid #b3261e"
+                          : "1px solid #ebebeb",
                         borderRadius: "8px",
                         background: "#ffffff",
                         fontFamily:
@@ -581,6 +671,20 @@ export function ReferenceForm({
                         boxSizing: "border-box",
                       }}
                     />
+                    {errors.source && (
+                      <p
+                        style={{
+                          fontFamily:
+                            "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                          fontSize: "12px",
+                          color: "#b3261e",
+                          marginTop: "5px",
+                          margin: 0,
+                        }}
+                      >
+                        {errors.source.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -603,9 +707,8 @@ export function ReferenceForm({
                   </label>
                   <input
                     id="reference-url"
-                    value={citationUrl}
-                    onChange={(e) => setCitationUrl(e.target.value)}
-                    placeholder="https://doi.org/... o URL web"
+                    {...register("citation_url")}
+                    placeholder={t("citationUrlPlaceholder")}
                     style={{
                       width: "100%",
                       height: "40px",
@@ -718,17 +821,40 @@ export function ReferenceForm({
                 ) : (
                   <div>
                     <input
-                      type="number"
-                      min={1}
-                      value={displayOrder}
-                      onChange={(e) =>
-                        setDisplayOrder(parseInt(e.target.value) || 1)
-                      }
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      {...register("display_order", {
+                        valueAsNumber: true,
+                        onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                          const digitsOnly = e.target.value.replace(/\D/g, "");
+                          const parsed = digitsOnly ? parseInt(digitsOnly, 10) : 1;
+                          setValue("display_order", parsed, { shouldValidate: true });
+                        },
+                      })}
+                      onKeyDown={(e) => {
+                        if (
+                          !/[0-9]/.test(e.key) &&
+                          ![
+                            "Backspace",
+                            "Delete",
+                            "Tab",
+                            "ArrowLeft",
+                            "ArrowRight",
+                            "Home",
+                            "End",
+                          ].includes(e.key)
+                        ) {
+                          e.preventDefault();
+                        }
+                      }}
                       style={{
                         width: "100%",
                         height: "38px",
                         padding: "0 12px",
-                        border: "1px solid #ebebeb",
+                        border: errors.display_order
+                          ? "1px solid #b3261e"
+                          : "1px solid #ebebeb",
                         borderRadius: "8px",
                         background: "#ffffff",
                         fontFamily: "var(--m, 'IBM Plex Mono', monospace)",
@@ -738,6 +864,20 @@ export function ReferenceForm({
                         boxSizing: "border-box",
                       }}
                     />
+                    {errors.display_order && (
+                      <p
+                        style={{
+                          fontFamily:
+                            "var(--f, 'Inter Tight', system-ui, sans-serif)",
+                          fontSize: "12px",
+                          color: "#b3261e",
+                          marginTop: "5px",
+                          margin: 0,
+                        }}
+                      >
+                        {errors.display_order.message}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -761,7 +901,7 @@ export function ReferenceForm({
                   marginBottom: "4px",
                 }}
               >
-                Formato APA 7
+                {t("apaGuideTitle")}
               </div>
               <p
                 style={{
@@ -772,9 +912,7 @@ export function ReferenceForm({
                   margin: 0,
                 }}
               >
-                El orden de esta tabla define la numeración y citas dentro del
-                texto del reporte. Se recomienda mantener consistencia en los
-                nombres de autores y fuentes.
+                {t("apaGuideDesc")}
               </p>
             </div>
           </div>
