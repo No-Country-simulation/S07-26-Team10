@@ -6,51 +6,27 @@ import type {
 export type ReportLanguage = "ES" | "EN";
 export type ReportStatus = "DRAFT" | "PUBLISHED";
 
-export function getReportVersions(
-  reportId: string,
-  status?: ReportStatus,
-) {
-  const query = status
-    ? `?status=${status}`
-    : "";
+export function getReportVersions(reportId: string, status?: ReportStatus) {
+  const query = status ? `?status=${status}` : "";
 
-  return apiGet<PublicReportVersion[]>(
-    `/reports/${reportId}/versions${query}`,
-    {
-      revalidate: 3600,
-      tags: [`report:${reportId}:versions`],
-    },
-  );
+  return apiGet<PublicReportVersion[]>(`/reports/${reportId}/versions${query}`, {
+    revalidate: 3600,
+    tags: [`report:${reportId}:versions`],
+  });
 }
 
-export function getPublishedVersions(
-  reportId: string,
-) {
-  return apiGet<PublicReportVersion[]>(
-    `/reports/${reportId}/versions/published`,
-    {
-      revalidate: 3600,
-      tags: [
-        `report:${reportId}:versions:published`,
-      ],
-    },
-  );
+export function getPublishedVersions(reportId: string) {
+  return apiGet<PublicReportVersion[]>(`/reports/${reportId}/versions/published`, {
+    revalidate: 3600,
+    tags: [`report:${reportId}:versions:published`],
+  });
 }
 
-export function getReportVersion(
-  reportId: string,
-  versionId: string,
-  loadRelations = false,
-) {
-  return apiGet<PublicReportVersion>(
-    `/reports/${reportId}/versions/${versionId}?load_relations=${loadRelations}`,
-    {
-      revalidate: 3600,
-      tags: [
-        `report:${reportId}:version:${versionId}`,
-      ],
-    },
-  );
+export function getReportVersion(reportId: string, versionId: string, loadRelations = false) {
+  return apiGet<PublicReportVersion>(`/reports/${reportId}/versions/${versionId}?load_relations=${loadRelations}`, {
+    revalidate: 3600,
+    tags: [`report:${reportId}:version:${versionId}`],
+  });
 }
 
 export function getReportVersionByLanguage(
@@ -58,34 +34,20 @@ export function getReportVersionByLanguage(
   language: ReportLanguage,
   status?: ReportStatus,
 ) {
-  const query = status
-    ? `?status=${status}`
-    : "";
+  const query = status ? `?status=${status}` : "";
 
-  console.log(`[query] Reporte ${reportId} | Idioma: ${language}`);
-
-  return apiGet<PublicReportVersion>(
-    `/reports/${reportId}/versions/by-language/${language}${query}`,
-    {
-      revalidate: 3600,
-      tags: [
-        `report:${reportId}`,
-        `report:${reportId}:version:${language}`,
-      ],
-    },
-  );
+  return apiGet<PublicReportVersion>(`/reports/${reportId}/versions/by-language/${language}${query}`, {
+    revalidate: 3600,
+    tags: [
+      `report:${reportId}`,
+      `report:${reportId}:version:${language}`,
+    ],
+  });
 }
 
-export function getAvailableReportVersions(
-  reportId: string,
-) {
-  return apiGet<PublicReportVersion[]>(
-    `/reports/${reportId}/versions/available`,
-    {
-      revalidate: 3600,
-      tags: [
-        `report:${reportId}:versions:available`,
-      ],
-    },
-  );
+export function availableReportVersions(reportId: string) {
+  return apiGet<PublicReportVersion[]>(`/reports/${reportId}/versions/available`, {
+    revalidate: 3600,
+    tags: [`report:${reportId}:versions:available`],
+  });
 }
