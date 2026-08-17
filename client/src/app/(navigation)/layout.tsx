@@ -1,5 +1,7 @@
 import { NavigationHeader } from "@/components/navigation-header";
 import { NavigationFooter } from "@/components/navigation-footer";
+import { VersionProvider } from "@/context/version-context";
+import { NavigationHeaderWrapper } from "./navigation-header-wrapper";
 
 export default function NavigationLayout({
   children,
@@ -7,10 +9,14 @@ export default function NavigationLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="phi min-h-screen flex flex-col bg-background text-foreground font-sans antialiased">
-      <NavigationHeader />
-      <main className="flex-1">{children}</main>
-      <NavigationFooter />
-    </div>
+    <VersionProvider publicOnly>
+      <div className="phi min-h-screen flex flex-col bg-background text-foreground font-sans antialiased">
+        <NavigationHeaderWrapper>
+          <NavigationHeader />
+        </NavigationHeaderWrapper>
+        <main className="flex-1">{children}</main>
+        <NavigationFooter />
+      </div>
+    </VersionProvider>
   );
 }
