@@ -1,65 +1,106 @@
 import "server-only";
 import { cache } from "react";
 import { HomeIntroData } from "./home-types";
+import { env } from "@/lib/env";
 import { FALLBACK_HOME_DATA } from "./data/HomeIntro";
-import { apiGet } from "@/lib/api/http";
-import {
-  getReportBySlug,
-  resolvePublishedVersion,
-  type SiteLanguage,
-} from "@/lib/api/reports";
-import type { ApiSection } from "@/lib/api/types";
+
+interface ApiReport {
+  id: string;
+  slug: string;
+}
+
+interface ApiVersion {
+  id: string;
+  title: string | null;
+  version: string | null;
+  language: string;
+  summary: string | null;
+  citation_text: string | null;
+}
+
+interface ApiSection {
+  slug: string;
+  content: string | null;
+}
 
 /**
  * Server-only query to fetch the home intro data and MDX content for a given language ("es" | "en").
  * Wrapped in React cache() for request-level deduplication.
  */
 export const getHomeIntro = cache(
-  async (lang: SiteLanguage = "es"): Promise<HomeIntroData> => {
+  async (lang: "es" | "en" = "es"): Promise<HomeIntroData> => {
     const targetLang = lang === "en" ? "en" : "es";
     const fallback = FALLBACK_HOME_DATA[targetLang];
 
-    try {
-      const report = await getReportBySlug();
-      const version = await resolvePublishedVersion(report.id, targetLang);
+    if (env.apiUrl) {
+      try {
+        const response = await fetch(
+          `${env.apiUrl}/reports/by-slug/stranded-capacity-ai-infrastructure`,
+          {
+            headers: { "Content-Type": "application/json" },
+            next: { revalidate: 3600 },
+          },
+        );
 
-      if (version) {
-        let introduction = fallback.introduction;
-        let methodology = fallback.methodology;
+        if (response.ok) {
+          const data: ApiReport = await response.json();
 
-        try {
-          const sections = await apiGet<ApiSection[]>(
-            `/report-versions/${version.id}/sections`,
+          const versionsRes = await fetch(
+            `${env.apiUrl}/reports/${data.id}/versions/published`,
+            { headers: { "Content-Type": "application/json" } },
           );
-          const introSection = sections.find((s) =>
-            s.slug.toLowerCase().includes("intro"),
-          );
-          const methSection = sections.find((s) =>
-            s.slug.toLowerCase().includes("method"),
-          );
-          if (introSection?.content) introduction = introSection.content;
-          if (methSection?.content) methodology = methSection.content;
-        } catch {
-          // sections unreachable → keep fallback
+
+          if (versionsRes.ok) {
+            const versions: ApiVersion[] = await versionsRes.json();
+            const version =
+              versions.find(
+                (v) => v.language.toLowerCase() === targetLang,
+              ) || versions[0];
+
+            if (version) {
+              let introduction = fallback.introduction;
+              let methodology = fallback.methodology;
+
+              try {
+                const sectionsRes = await fetch(
+                  `${env.apiUrl}/report-versions/${version.id}/sections`,
+                  { headers: { "Content-Type": "application/json" } },
+                );
+                if (sectionsRes.ok) {
+                  const sections: ApiSection[] = await sectionsRes.json();
+                  const introSection = sections.find((s) =>
+                    s.slug.toLowerCase().includes("intro"),
+                  );
+                  const methSection = sections.find((s) =>
+                    s.slug.toLowerCase().includes("method"),
+                  );
+                  if (introSection?.content) introduction = introSection.content;
+                  if (methSection?.content) methodology = methSection.content;
+                }
+              } catch {
+                // sections unreachable → keep fallback
+              }
+
+              return {
+                id: data.id || fallback.id,
+                title: version.title || fallback.title,
+                slug: data.slug || fallback.slug,
+                description: version.summary || fallback.description,
+                introduction,
+                methodology,
+                citation_text: version.citation_text || fallback.citation_text,
+                created_at: fallback.created_at,
+                updated_at: fallback.updated_at,
+              };
+            }
+          }
         }
-
-        return {
-          id: report.id || fallback.id,
-          title: version.title || fallback.title,
-          slug: report.slug || fallback.slug,
-          description: version.summary || fallback.description,
-          introduction,
-          methodology,
-          citation_text: version.citation_text || fallback.citation_text,
-          created_at: fallback.created_at,
-          updated_at: fallback.updated_at,
-        };
+      } catch (error) {
+        console.warn(
+          "API server unreachable for home intro, using fallback content",
+          error,
+        );
       }
-    } catch (error) {
-      console.warn(
-        "API server unreachable for home intro, using fallback content",
-        error,
-      );
     }
 
     // Fallback to local content when the API is unavailable
