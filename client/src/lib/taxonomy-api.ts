@@ -3,32 +3,16 @@ import type {
   TaxonomyCategory,
   TaxonomyConcept,
 } from "@/lib/taxonomy-types"
-
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "")
-const REPORT_SLUG = "stranded-capacity-ai-infrastructure"
-
-interface ApiReport {
-  id: string
-  slug: string
-}
-
-interface ApiVersion {
-  id: string
-  language: "ES" | "EN" | string
-}
-
-interface ApiCategory {
-  id: string
-  name: string
-  description: string | null
-}
-
-interface ApiConcept {
-  id: string
-  category_id: string
-  name: string
-  description: string | null
-}
+import { apiGet } from "@/lib/api/http"
+import {
+  getReportBySlug,
+  resolvePublishedVersion,
+  type SiteLanguage,
+} from "@/lib/api/reports"
+import type {
+  ApiCategory,
+  ApiConcept,
+} from "@/lib/api/types"
 
 /** Infer the layer code from an API category name (ids are UUIDs on the live API). */
 function layerForCategoryName(name: string): string {
@@ -45,40 +29,18 @@ function localCategory(raw: { id: string; name: string }) {
   )
 }
 
-/** Resolve the published report version id so category endpoints can be called by id. */
-async function resolvePublishedVersionId(reportId: string): Promise<string | null> {
+export async function fetchTaxonomyData(
+  lang: SiteLanguage = "es",
+): Promise<TaxonomyCategory[]> {
   try {
-    const res = await fetch(`${API_BASE}/reports/${reportId}/versions/published`, {
-      next: { revalidate: 3600 },
-    })
-    if (!res.ok) return null
-    const data: ApiVersion[] = await res.json()
-    if (!Array.isArray(data) || data.length === 0) return null
-    return data[0].id
-  } catch {
-    return null
-  }
-}
+    const report = await getReportBySlug()
+    const version = await resolvePublishedVersion(report.id, lang)
+    if (!version) throw new Error("no published version")
 
-export async function fetchTaxonomyData(): Promise<TaxonomyCategory[]> {
-  try {
-    const reportRes = await fetch(`${API_BASE}/reports/by-slug/${REPORT_SLUG}`, {
-      next: { revalidate: 3600 },
-    })
-    if (!reportRes.ok) throw new Error(`report returned ${reportRes.status}`)
-    const report: ApiReport = await reportRes.json()
-
-    const versionId = await resolvePublishedVersionId(report.id)
-    if (!versionId) throw new Error("no published version")
-
-    const catRes = await fetch(
-      `${API_BASE}/report-versions/${versionId}/categories`,
-      { next: { revalidate: 3600 } },
-    )
-    if (!catRes.ok) throw new Error(`categories returned ${catRes.status}`)
-
-    const rawCategories: ApiCategory[] = await catRes.json()
     const categories: TaxonomyCategory[] = []
+    const rawCategories = await apiGet<ApiCategory[]>(
+      `/report-versions/${version.id}/categories`,
+    )
 
     for (const rawCat of rawCategories) {
       const layerCode = layerForCategoryName(rawCat.name)
@@ -86,14 +48,10 @@ export async function fetchTaxonomyData(): Promise<TaxonomyCategory[]> {
 
       let concepts: TaxonomyConcept[] = []
       try {
-        const conRes = await fetch(
-          `${API_BASE}/categories/${rawCat.id}/concepts`,
-          { next: { revalidate: 3600 } },
+        const rawConcepts = await apiGet<ApiConcept[]>(
+          `/categories/${rawCat.id}/concepts`,
         )
-        if (conRes.ok) {
-          const rawConcepts: ApiConcept[] = await conRes.json()
-          concepts = rawConcepts.map((c, i) => mergeConceptFromApi(c, layerCode, i))
-        }
+        concepts = rawConcepts.map((c, i) => mergeConceptFromApi(c, layerCode, i))
       } catch {
         // keep fallback concepts below
       }

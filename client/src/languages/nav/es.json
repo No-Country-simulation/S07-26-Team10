@@ -7,9 +7,9 @@
   "chapters": "Capítulos",
   "taxonomy": "Taxonomía",
   "references": "Referencias",
-  "strandedCapacityIndex": "Índice de Capacidad Varada",
   "searchPlaceholder": "Buscar en el índice…",
   "noResults": "Sin resultados. El índice sigue siendo un borrador — la mayoría de los capítulos están pendientes.",
+  "menu": "Menú",
   "theProblem": "El problema",
   "theCapacityFunnel": "El embudo de capacidad",
   "s": {
