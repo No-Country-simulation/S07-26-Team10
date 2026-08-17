@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { useLanguage } from "@/context/language-context";
 import { useScrollProgress } from "@/hooks/use-scroll-progress";
 import { useSectionTracker } from "@/hooks/use-section-tracker";
-import { searchIndex } from "@/features/home/data/search-index";
+import { searchIndex } from "@/features/public/home/data/search-index";
 
 import { ReportToggle } from "./report-toggle";
 import { VersionToggle } from "./version-toggle";
@@ -105,16 +105,19 @@ function SearchOverlay({
   );
 }
 
-export function NavigationHeader() {
+export function NavigationHeader({ disableShrink = false }: { disableShrink?: boolean }) {
   const t = useTranslations("Nav");
   const { language, setLanguage } = useLanguage();
-  const { progress, shrink } = useScrollProgress();
+  const { progress, shrink } = useScrollProgress({ disableShrink });
   const active = useSectionTracker(".phi section.n[data-n]");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const pathname = usePathname();
   const onHome = pathname === "/";
   const shrunk = !onHome ? false : shrink;
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
 
   return (
     <>
@@ -125,11 +128,15 @@ export function NavigationHeader() {
               className="iso"
               src="/physaflow-isotipo.png"
               alt="PhysaFlow"
+              width="44"
+              height="44"
             />
             <img
               className="wmk"
               src="/physaflow-wordmark-black.png"
               alt="PhysaFlow"
+              width="154"
+              height="26"
             />
           </Link>
           <span className="sep" />
@@ -144,7 +151,7 @@ export function NavigationHeader() {
           </div>
           <nav>
             {NAV_LINKS.map((link) => (
-              <Link key={link.key} href={link.href}>
+              <Link key={link.key} href={link.href} onClick={closeMobileMenu}>
                 {t(link.key)}
               </Link>
             ))}
@@ -153,7 +160,6 @@ export function NavigationHeader() {
             <ReportToggle />
             <VersionToggle />
             <button
-
               className="ic"
               id="sbtn"
               aria-label="Search"
@@ -177,11 +183,45 @@ export function NavigationHeader() {
               </button>
             </div>
           </div>
+          <button
+            className="burger"
+            aria-label={t("menu")}
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <i />
+          </button>
         </div>
         <div className="prog">
           <i id="pg" style={{ width: `${progress}%` }} />
         </div>
       </header>
+      
+      <div className={`mmenu ${mobileMenuOpen ? "on" : ""}`} onClick={closeMobileMenu}>
+        <nav>
+          {NAV_LINKS.map((link) => (
+            <Link key={link.key} href={link.href} onClick={closeMobileMenu}>
+              {t(link.key)}
+            </Link>
+          ))}
+        </nav>
+        <div className="mlg">
+          <button
+            aria-current={language === "en" ? "true" : "false"}
+            onClick={() => { setLanguage("en"); closeMobileMenu(); }}
+          >
+            EN
+          </button>
+          <span style={{ color: "#DADADA" }}>/</span>
+          <button
+            aria-current={language === "es" ? "true" : "false"}
+            onClick={() => { setLanguage("es"); closeMobileMenu(); }}
+          >
+            ES
+          </button>
+        </div>
+      </div>
+
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
