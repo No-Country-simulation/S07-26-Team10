@@ -11,6 +11,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Layers, Check } from "lucide-react";
 
+function setCookie(name: string, value: string, days = 365) {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+}
+
 export function VersionToggle() {
   const pathname = usePathname();
   const { version, setVersion, availableVersions } = useVersion();
@@ -24,6 +29,11 @@ export function VersionToggle() {
   const displayVersion = hasVersions
     ? version || availableVersions[0]
     : "Sin versión";
+
+  const handleVersionChange = (v: string) => {
+    setVersion(v);
+    setCookie("app_version", v);
+  };
 
   return (
     <DropdownMenu>
@@ -43,12 +53,11 @@ export function VersionToggle() {
         }
       />
       {hasVersions && (
-
         <DropdownMenuContent align="end" className="w-36">
           {availableVersions.map((v) => (
             <DropdownMenuItem
               key={v}
-              onClick={() => setVersion(v)}
+              onClick={() => handleVersionChange(v)}
               className="justify-between cursor-pointer font-mono text-xs font-semibold"
             >
               <span>{v}</span>
