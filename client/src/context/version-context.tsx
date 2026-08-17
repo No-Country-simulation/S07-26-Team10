@@ -12,6 +12,9 @@ import {
   getReportsWithVersionsAction,
 } from "@/features/admin/actions/reports-actions";
 import type {
+  PublicReportWithVersions,
+} from "@/features/public/report/queries/reports";
+import type {
   BaseReport,
   ReportVersion,
 } from "@/features/admin/schemas/report-schema";
@@ -67,7 +70,15 @@ function compareVersionsDescending(a: string, b: string): number {
   return 0;
 }
 
-export function VersionProvider({ children }: { children: React.ReactNode }) {
+export function VersionProvider({
+  children,
+  publicOnly = false,
+  initialReports = [],
+}: {
+  children: React.ReactNode;
+  publicOnly?: boolean;
+  initialReports?: PublicReportWithVersions[];
+}) {
   const [version, setVersionState] = useState<string>("");
   const [contentLanguage, setContentLanguageState] = useState<Language>(() => {
     if (typeof window !== "undefined") {
@@ -80,8 +91,15 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
   const [versionLangsMap, setVersionLangsMap] = useState<
     Record<string, Language[]>
   >({});
-  const [baseReports, setBaseReports] = useState<BaseReport[]>([]);
-  const [reportVersions, setReportVersions] = useState<ReportVersion[]>([]);
+  const [baseReports, setBaseReports] = useState<BaseReport[]>(() =>
+    initialReports.map(({ report_versions, ...base }) => {
+      void report_versions;
+      return base;
+    }),
+  );
+  const [reportVersions, setReportVersions] = useState<ReportVersion[]>(() =>
+    initialReports.flatMap((r) => r.report_versions),
+  );
   const [selectedBaseReportId, setSelectedBaseReportIdState] = useState<string | null>(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("app_base_report_id");
@@ -105,22 +123,33 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
   };
 
 
+  useEffect(() => {
+    console.log(`Versión: ${version} | Idioma: ${contentLanguage}`);
+  }, [version, contentLanguage]);
+
   const setContentLanguage = (lang: Language) => {
     setContentLanguageState(lang);
     localStorage.setItem("app_content_lang", lang);
+    console.log(`Versión: ${version} | Idioma: ${lang}`);
   };
 
   const loadReportsAndSync = useCallback(async () => {
     try {
-      // Una sola request: GET /api/v1/reports/admin/with-versions
-      const reportsWithVersions = await getReportsWithVersionsAction();
-
-      const bases: BaseReport[] = reportsWithVersions.map((r) => {
+      let reportsWithVersions;
+      if (publicOnly) {
+        // Datos ya provistos por el Server Component (layout) vía props.
+        // No se usa server action en la parte pública.
+        reportsWithVersions = initialReports;
+      } else {
+        // Admin: Una sola request: GET /api/v1/reports/admin/with-versions
+        reportsWithVersions = await getReportsWithVersionsAction();
+      }
+      const bases: BaseReport[] = (reportsWithVersions || []).map((r) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { report_versions, ...base } = r;
         return base;
       });
-      const allVersions: ReportVersion[] = reportsWithVersions.flatMap((r) => r.report_versions);
+      const allVersions: ReportVersion[] = (reportsWithVersions || []).flatMap((r) => r.report_versions || []);
 
       setBaseReports(bases);
       setReportVersions(allVersions);
@@ -161,7 +190,7 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.error("Error syncing version context with reports action:", err);
     }
-  }, []);
+  }, [publicOnly, initialReports]);
 
   useEffect(() => {
     let isMounted = true;
@@ -184,6 +213,7 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
     if (langs.length === 1) {
       setContentLanguageState(langs[0]);
     }
+    console.log(`Versión: ${ver} | Idioma: ${contentLanguage}`);
   };
 
   const currentBaseReportId = selectedBaseReportId || baseReports[0]?.id || null;
