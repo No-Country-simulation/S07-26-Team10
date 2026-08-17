@@ -7,9 +7,9 @@
   "chapters": "Chapters",
   "taxonomy": "Taxonomy",
   "references": "References",
-  "strandedCapacityIndex": "Stranded Capacity Index",
   "searchPlaceholder": "Search the index…",
   "noResults": "No results. The index is still a draft — most chapters are pending.",
+  "menu": "Menu",
   "theProblem": "The problem",
   "theCapacityFunnel": "The capacity funnel",
   "s": {
