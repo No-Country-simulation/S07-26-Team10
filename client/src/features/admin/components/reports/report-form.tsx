@@ -22,8 +22,7 @@ import {
 } from "../../actions/reports-actions";
 import { MDXEditorComponent } from "@/features/admin/components/ui/mdx/mdx-editor-component";
 import { MdxPreview } from "@/features/admin/components/ui/mdx/mdx-preview";
-import { useLanguage } from "@/context/language-context";
-import { useVersion } from "@/context/version-context";
+import { useLanguage, useVersion } from "@/features/admin/context";
 
 interface ReportFormProps {
   initialData?: ReportVersion;

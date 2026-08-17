@@ -21,7 +21,7 @@ import {
 import { MDXEditorComponent } from "@/features/admin/components/ui/mdx/mdx-editor-component";
 import { MdxPreview } from "@/features/admin/components/ui/mdx/mdx-preview";
 import { Switch } from "@/components/ui/switch";
-import { useVersion } from "@/context/version-context";
+import { useVersion } from "@/features/admin/context";
 import {
   getResourcesBySectionAction,
   deleteResourceAction,

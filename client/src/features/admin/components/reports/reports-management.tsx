@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useVersion } from "@/context/version-context";
+import { useVersion } from "@/features/admin/context";
 import {
   getReportsWithVersionsAction,
   deleteReportAction,

@@ -8,7 +8,7 @@ import { getSectionsWithResourcesAction } from "../../actions/sections-actions";
 import { deleteResourceAction } from "../../actions/resources-actions";
 import type { ResourceItem } from "../../schemas/resource-schema";
 import type { SectionItem } from "../../schemas/section-schema";
-import { useVersion } from "@/context/version-context";
+import { useVersion } from "@/features/admin/context";
 import { Layers, Copy, Check } from "lucide-react";
 
 export function ResourcesManagementSkeleton() {

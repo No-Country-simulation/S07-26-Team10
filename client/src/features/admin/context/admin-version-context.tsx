@@ -1,0 +1,306 @@
+"use client";
+
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
+import { type AdminLanguage, type Language } from "./admin-language-context";
+import { getReportsWithVersionsAction } from "../actions/reports-actions";
+import type {
+  BaseReport,
+  ReportVersion,
+} from "../schemas/report-schema";
+
+export function parseReportSlug(
+  input: string,
+): { version: string; lang: AdminLanguage } | null {
+  if (!input) return null;
+  const match = input.trim().match(/^(v[0-9.-]+)-(es|en)$/i);
+  if (match) {
+    return {
+      version: match[1].toLowerCase(),
+      lang: match[2].toLowerCase() as AdminLanguage,
+    };
+  }
+  return null;
+}
+
+export type AdminVersionContextType = {
+  version: string;
+  setVersion: (ver: string) => void;
+  availableVersions: string[];
+  contentLanguage: AdminLanguage;
+  setContentLanguage: (lang: AdminLanguage) => void;
+  availableContentLanguages: AdminLanguage[];
+  isContentLanguageLocked: boolean;
+  baseReports: BaseReport[];
+  reportVersions: ReportVersion[];
+  reportsList: ReportVersion[];
+  refreshReports: () => Promise<void>;
+  activeReport: BaseReport | null;
+  activeReportVersion: ReportVersion | null;
+  activeReportId: string | null;
+  activeVersionId: string | null;
+  selectedBaseReportId: string | null;
+  setActiveBaseReportId: (id: string) => void;
+};
+
+const AdminVersionContext = createContext<AdminVersionContextType | undefined>(
+  undefined,
+);
+
+function compareVersionsDescending(a: string, b: string): number {
+  const cleanA = a.replace(/^v/i, "");
+  const cleanB = b.replace(/^v/i, "");
+  const partsA = cleanA.split(/[\.-]/).map(Number);
+  const partsB = cleanB.split(/[\.-]/).map(Number);
+  const maxLen = Math.max(partsA.length, partsB.length);
+  for (let i = 0; i < maxLen; i++) {
+    const numA = isNaN(partsA[i]) ? 0 : partsA[i];
+    const numB = isNaN(partsB[i]) ? 0 : partsB[i];
+    if (numA !== numB) return numB - numA;
+  }
+  return 0;
+}
+
+export function AdminVersionProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [version, setVersionState] = useState<string>("");
+  const [contentLanguage, setContentLanguageState] = useState<AdminLanguage>(
+    () => {
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("app_content_lang") as AdminLanguage;
+        if (saved === "es" || saved === "en") return saved;
+      }
+      return "es";
+    },
+  );
+
+  const [versionLangsMap, setVersionLangsMap] = useState<
+    Record<string, AdminLanguage[]>
+  >({});
+  const [baseReports, setBaseReports] = useState<BaseReport[]>([]);
+  const [reportVersions, setReportVersions] = useState<ReportVersion[]>([]);
+  const [selectedBaseReportId, setSelectedBaseReportIdState] = useState<
+    string | null
+  >(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("app_base_report_id");
+    }
+    return null;
+  });
+
+  const setActiveBaseReportId = (id: string) => {
+    setSelectedBaseReportIdState(id);
+    localStorage.setItem("app_base_report_id", id);
+    const targetVers = reportVersions.filter((rv) => rv.report_id === id);
+    if (targetVers.length > 0) {
+      const firstVer = targetVers[0].version.toLowerCase().startsWith("v")
+        ? targetVers[0].version.toLowerCase()
+        : `v${targetVers[0].version.toLowerCase()}`;
+      setVersionState(firstVer);
+      localStorage.setItem("app_version", firstVer);
+    } else {
+      setVersionState("");
+    }
+  };
+
+  const setContentLanguage = (lang: AdminLanguage) => {
+    setContentLanguageState(lang);
+    localStorage.setItem("app_content_lang", lang);
+  };
+
+  const loadReportsAndSync = useCallback(async () => {
+    try {
+      const reportsWithVersions = await getReportsWithVersionsAction();
+
+      const bases: BaseReport[] = reportsWithVersions.map((r) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { report_versions, ...base } = r;
+        return base;
+      });
+      const allVersions: ReportVersion[] = reportsWithVersions.flatMap(
+        (r) => r.report_versions,
+      );
+
+      setBaseReports(bases);
+      setReportVersions(allVersions);
+
+      const vMap: Record<string, Set<AdminLanguage>> = {};
+
+      allVersions.forEach((rv) => {
+        const verStr = rv.version.toLowerCase().startsWith("v")
+          ? rv.version.toLowerCase()
+          : `v${rv.version.toLowerCase()}`;
+        const langStr = (rv.language || "ES").toLowerCase() as AdminLanguage;
+        if (!vMap[verStr]) {
+          vMap[verStr] = new Set();
+        }
+        vMap[verStr].add(langStr);
+      });
+
+      const uniqueVersions = Object.keys(vMap).sort(compareVersionsDescending);
+      const langsMap: Record<string, AdminLanguage[]> = {};
+      Object.entries(vMap).forEach(([ver, langSet]) => {
+        langsMap[ver] = Array.from(langSet);
+      });
+
+      setVersionLangsMap(langsMap);
+
+      const savedVer = localStorage.getItem("app_version");
+      const activeVer =
+        savedVer && uniqueVersions.includes(savedVer)
+          ? savedVer
+          : uniqueVersions[0] || "";
+
+      if (activeVer) {
+        setVersionState(activeVer);
+        const langs = langsMap[activeVer] || [];
+        if (langs.length === 1) {
+          setContentLanguageState(langs[0]);
+        }
+      }
+    } catch (err) {
+      console.error("Error syncing version context with reports action:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function init() {
+      if (isMounted) {
+        await loadReportsAndSync();
+      }
+    }
+    void init();
+    return () => {
+      isMounted = false;
+    };
+  }, [loadReportsAndSync]);
+
+  const setVersion = (ver: string) => {
+    setVersionState(ver);
+    localStorage.setItem("app_version", ver);
+
+    const langs = versionLangsMap[ver] || [];
+    if (langs.length === 1) {
+      setContentLanguageState(langs[0]);
+    }
+  };
+
+  const currentBaseReportId =
+    selectedBaseReportId || baseReports[0]?.id || null;
+
+  const currentReportVersions = currentBaseReportId
+    ? reportVersions.filter((rv) => rv.report_id === currentBaseReportId)
+    : reportVersions;
+
+  const vMap: Record<string, Set<AdminLanguage>> = {};
+  currentReportVersions.forEach((rv) => {
+    const verStr = rv.version.toLowerCase().startsWith("v")
+      ? rv.version.toLowerCase()
+      : `v${rv.version.toLowerCase()}`;
+    const langStr = (rv.language || "ES").toLowerCase() as AdminLanguage;
+    if (!vMap[verStr]) {
+      vMap[verStr] = new Set();
+    }
+    vMap[verStr].add(langStr);
+  });
+
+  const availableVersions = Object.keys(vMap).sort(compareVersionsDescending);
+  const langsMap: Record<string, AdminLanguage[]> = {};
+  Object.entries(vMap).forEach(([ver, langSet]) => {
+    langsMap[ver] = Array.from(langSet);
+  });
+
+  const defaultLangs: AdminLanguage[] = ["es", "en"];
+  const availableContentLanguages: AdminLanguage[] = version
+    ? langsMap[version] || defaultLangs
+    : defaultLangs;
+  const isContentLanguageLocked = availableContentLanguages.length === 1;
+
+  const activeReportVersion =
+    currentReportVersions.find((rv) => {
+      const verStr = rv.version.toLowerCase().startsWith("v")
+        ? rv.version.toLowerCase()
+        : `v${rv.version.toLowerCase()}`;
+      const langStr = (rv.language || "ES").toLowerCase();
+      return (
+        verStr === version.toLowerCase() &&
+        langStr === contentLanguage.toLowerCase()
+      );
+    }) ||
+    currentReportVersions[0] ||
+    null;
+
+  const activeReport = currentBaseReportId
+    ? baseReports.find((b) => b.id === currentBaseReportId) ||
+      baseReports[0] ||
+      null
+    : baseReports[0] || null;
+
+  const activeVersionId = activeReportVersion?.id || null;
+  const activeReportId = activeVersionId;
+
+  return (
+    <AdminVersionContext.Provider
+      value={{
+        version,
+        setVersion,
+        availableVersions,
+        contentLanguage,
+        setContentLanguage,
+        availableContentLanguages,
+        isContentLanguageLocked,
+        baseReports,
+        reportVersions,
+        reportsList: reportVersions,
+        refreshReports: loadReportsAndSync,
+        activeReport,
+        activeReportVersion,
+        activeReportId,
+        activeVersionId,
+        selectedBaseReportId,
+        setActiveBaseReportId,
+      }}
+    >
+      {children}
+    </AdminVersionContext.Provider>
+  );
+}
+
+export function useAdminVersion() {
+  const context = useContext(AdminVersionContext);
+  if (!context) {
+    return {
+      version: "v1",
+      setVersion: () => {},
+      availableVersions: [],
+      contentLanguage: "es" as AdminLanguage,
+      setContentLanguage: () => {},
+      availableContentLanguages: ["es" as AdminLanguage],
+      isContentLanguageLocked: false,
+      baseReports: [],
+      reportVersions: [],
+      reportsList: [],
+      refreshReports: async () => {},
+      activeReport: null,
+      activeReportVersion: null,
+      activeReportId: null,
+      activeVersionId: null,
+      selectedBaseReportId: null,
+      setActiveBaseReportId: () => {},
+    };
+  }
+  return context;
+}
+
+export const useVersion = useAdminVersion;
+export const VersionProvider = AdminVersionProvider;
+export type { Language };

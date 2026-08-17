@@ -11,7 +11,7 @@ import {
 import { getSectionsAction } from "../../actions/sections-actions";
 import type { ReferenceItem } from "../../schemas/reference-schema";
 import type { SectionItem } from "../../schemas/section-schema";
-import { useVersion } from "@/context/version-context";
+import { useVersion } from "@/features/admin/context";
 import { BookOpen, ExternalLink } from "lucide-react";
 
 export function ReferencesManagementSkeleton() {

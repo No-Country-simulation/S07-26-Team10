@@ -17,7 +17,7 @@ import {
   SidebarContent,
   SidebarHeader,
 } from "@/components/ui/sidebar";
-import { useVersion } from "@/context/version-context";
+import { useVersion } from "@/features/admin/context";
 import { getSectionsWithResourcesAction } from "@/features/admin/actions/sections-actions";
 import NextImage from "next/image";
 

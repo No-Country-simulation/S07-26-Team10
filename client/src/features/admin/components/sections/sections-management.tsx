@@ -10,7 +10,7 @@ import {
   deleteSectionAction,
   type SectionWithResources,
 } from "../../actions/sections-actions";
-import { useVersion } from "@/context/version-context";
+import { useVersion } from "@/features/admin/context";
 import { Layers } from "lucide-react";
 
 export function SectionsManagement() {

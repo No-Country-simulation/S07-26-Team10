@@ -11,7 +11,7 @@ import {
   deleteConceptAction,
 } from "../../actions/taxonomy-actions";
 import type { CategoryItem } from "../../schemas/taxonomy-schema";
-import { useVersion } from "@/context/version-context";
+import { useVersion } from "@/features/admin/context";
 import { Layers } from "lucide-react";
 
 export function TaxonomyManagementSkeleton() {
