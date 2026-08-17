@@ -457,25 +457,10 @@ export function SectionForm({
           </div>
         )}
 
-        {/* ── Layout Principal: 2 Columnas (8 cols + 4 cols) ────────── */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(12, 1fr)",
-            gap: "24px",
-            alignItems: "start",
-          }}
-        >
-          {/* Columna Izquierda: Formulario y Editor (8 cols) */}
-          <div
-            style={{
-              gridColumn: "span 8",
-              display: "flex",
-              flexDirection: "column",
-              gap: "24px",
-            }}
-            className="col-span-12 lg:col-span-8"
-          >
+        {/* ── Layout Principal: 2 Columnas (8 cols + 4 cols) en desktop, 1 Columna en móvil ────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Columna Izquierda: Formulario y Editor (8 cols en desktop, full en móvil) */}
+          <div className="col-span-1 lg:col-span-8 flex flex-col gap-6 w-full min-w-0">
             {/* Card 01: Identificación y título */}
             <div className="card admin-card" style={{ overflow: "hidden" }}>
               <div
@@ -1096,16 +1081,8 @@ export function SectionForm({
             ) : null}
           </div>
 
-          {/* Columna Derecha: Configuración Lateral (4 cols) */}
-          <div
-            style={{
-              gridColumn: "span 4",
-              display: "flex",
-              flexDirection: "column",
-              gap: "20px",
-            }}
-            className="col-span-12 lg:col-span-4"
-          >
+          {/* Columna Derecha: Configuración Lateral (4 cols en desktop, full en móvil) */}
+          <div className="col-span-1 lg:col-span-4 flex flex-col gap-5 w-full min-w-0">
             {/* Card: Configuración de Publicación y Estado */}
             <div className="card admin-card" style={{ overflow: "hidden" }}>
               <div

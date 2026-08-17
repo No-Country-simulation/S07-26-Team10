@@ -154,8 +154,8 @@ export function ReportsManagementSkeleton() {
         >
           <Skeleton className="h-5 w-32 rounded-sm" />
         </div>
-        <div style={{ width: "100%", overflowX: "auto" }}>
-          <table className="tbl">
+        <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+          <table className="tbl" style={{ minWidth: "640px" }}>
             <thead>
               <tr>
                 <th style={{ width: "90px", textAlign: "left" }}>Versión</th>
@@ -958,8 +958,8 @@ export function ReportsManagement() {
         </div>
 
         {/* Tabla */}
-        <div style={{ width: "100%", overflowX: "auto" }}>
-          <table className="tbl">
+        <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+          <table className="tbl" style={{ minWidth: "640px" }}>
             <thead>
               <tr>
                 <th style={{ width: "90px", textAlign: "left" }}>

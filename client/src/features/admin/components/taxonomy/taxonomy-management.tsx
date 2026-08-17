@@ -318,8 +318,8 @@ export function TaxonomyManagement() {
         style={{ overflow: "hidden", marginBottom: "36px" }}
       >
         {loading ? (
-          <div style={{ width: "100%", overflowX: "auto" }}>
-            <table className="tbl">
+          <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+            <table className="tbl" style={{ minWidth: "640px" }}>
               <thead>
                 <tr>
                   <th style={{ width: "70px", textAlign: "left" }}>
@@ -440,8 +440,8 @@ export function TaxonomyManagement() {
             </Link>
           </div>
         ) : (
-          <div style={{ width: "100%", overflowX: "auto" }}>
-            <table className="tbl">
+          <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+            <table className="tbl" style={{ minWidth: "640px" }}>
               <thead>
                 <tr>
                   <th style={{ textAlign: "left" }}>{t("colCategory")}</th>
@@ -777,8 +777,8 @@ export function TaxonomyManagement() {
                     {t("emptyConceptsText")}
                   </div>
                 ) : (
-                  <div style={{ width: "100%", overflowX: "auto" }}>
-                    <table className="tbl">
+                  <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+                    <table className="tbl" style={{ minWidth: "640px" }}>
                       <tbody>
                         {concepts.map((concept, cIdx) => {
                           const conceptCode = formatConceptCode(cat, cIdx);

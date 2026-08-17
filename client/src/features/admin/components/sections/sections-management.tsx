@@ -615,7 +615,8 @@ export function SectionsManagement() {
             </Link>
           </div>
         ) : (
-          <table className="tbl">
+          <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+            <table className="tbl" style={{ minWidth: "680px" }}>
             <thead>
               <tr>
                 <th style={{ width: "90px" }}>{t("sections.colOrder")}</th>
@@ -740,6 +741,7 @@ export function SectionsManagement() {
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

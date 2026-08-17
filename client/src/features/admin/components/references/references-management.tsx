@@ -216,8 +216,8 @@ export function ReferencesManagementSkeleton() {
 
       {/* ── Tabla de Referencias Skeleton ───────────────────────────── */}
       <div className="card admin-card" style={{ overflow: "hidden" }}>
-        <div style={{ width: "100%", overflowX: "auto" }}>
-          <table className="tbl">
+        <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+          <table className="tbl" style={{ minWidth: "680px" }}>
             <thead>
               <tr>
                 <th style={{ width: "70px", textAlign: "left" }}>Orden</th>
@@ -643,8 +643,8 @@ export function ReferencesManagement() {
         </div>
       ) : (
         <div className="card admin-card" style={{ overflow: "hidden" }}>
-          <div style={{ width: "100%", overflowX: "auto" }}>
-            <table className="tbl">
+          <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+            <table className="tbl" style={{ minWidth: "680px" }}>
               <thead>
                 <tr>
                   <th style={{ width: "70px", textAlign: "left" }}>
