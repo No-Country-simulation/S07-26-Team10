@@ -9,7 +9,7 @@ export default function NavigationLayout({
   children: React.ReactNode;
 }) {
   return (
-    <VersionProvider publicOnly>
+    <VersionProvider>
       <div className="phi min-h-screen flex flex-col bg-background text-foreground font-sans antialiased">
         <NavigationHeaderWrapper>
           <NavigationHeader />
