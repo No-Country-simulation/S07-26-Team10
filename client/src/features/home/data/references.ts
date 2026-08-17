@@ -1,3 +1,11 @@
+import { apiGet } from "@/lib/api/http";
+import {
+  getReportBySlug,
+  resolvePublishedVersion,
+  type SiteLanguage,
+} from "@/lib/api/reports";
+import type { ApiReference } from "@/lib/api/types";
+
 export interface Reference {
   authors: string;
   title: string;
@@ -27,18 +35,6 @@ const FALLBACK_REFERENCES: Reference[] = [
   },
 ];
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
-const REPORT_SLUG = "stranded-capacity-ai-infrastructure";
-
-export interface ApiReference {
-  authors?: string | null;
-  title?: string | null;
-  year?: number | null;
-  source?: string | null;
-  citation_url?: string | null;
-  display_order?: number | null;
-}
-
 function mapApiReference(raw: ApiReference): Reference {
   return {
     authors: raw.authors || "PhysaFlow",
@@ -49,38 +45,17 @@ function mapApiReference(raw: ApiReference): Reference {
   };
 }
 
-async function resolvePublishedVersionId(reportId: string): Promise<string | null> {
+export async function getReferences(
+  lang: SiteLanguage = "es",
+): Promise<Reference[]> {
   try {
-    const res = await fetch(`${API_BASE}/reports/${reportId}/versions/published`, {
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) return null;
-    const data: { id: string }[] = await res.json();
-    if (!Array.isArray(data) || data.length === 0) return null;
-    return data[0].id;
-  } catch {
-    return null;
-  }
-}
+    const report = await getReportBySlug();
+    const version = await resolvePublishedVersion(report.id, lang);
+    if (!version) return FALLBACK_REFERENCES;
 
-export async function getReferences(): Promise<Reference[]> {
-  try {
-    const reportRes = await fetch(`${API_BASE}/reports/by-slug/${REPORT_SLUG}`, {
-      next: { revalidate: 3600 },
-    });
-    if (!reportRes.ok) return FALLBACK_REFERENCES;
-    const report: { id: string } = await reportRes.json();
-
-    const versionId = await resolvePublishedVersionId(report.id);
-    if (!versionId) return FALLBACK_REFERENCES;
-
-    const res = await fetch(
-      `${API_BASE}/report-versions/${versionId}/references`,
-      { next: { revalidate: 3600 } },
+    const data = await apiGet<ApiReference[]>(
+      `/report-versions/${version.id}/references`,
     );
-    if (!res.ok) return FALLBACK_REFERENCES;
-
-    const data = await res.json();
     if (!Array.isArray(data) || data.length === 0) return FALLBACK_REFERENCES;
 
     return data.map(mapApiReference);
