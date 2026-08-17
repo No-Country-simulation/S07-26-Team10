@@ -10,7 +10,7 @@ import {
   deleteSectionAction,
   type SectionWithResources,
 } from "../../actions/sections-actions";
-import { useVersion } from "@/context/version-context";
+import { useVersion } from "@/features/admin/context";
 import { Layers } from "lucide-react";
 
 export function SectionsManagement() {
@@ -615,7 +615,8 @@ export function SectionsManagement() {
             </Link>
           </div>
         ) : (
-          <table className="tbl">
+          <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+            <table className="tbl" style={{ minWidth: "680px" }}>
             <thead>
               <tr>
                 <th style={{ width: "90px" }}>{t("sections.colOrder")}</th>
@@ -740,6 +741,7 @@ export function SectionsManagement() {
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

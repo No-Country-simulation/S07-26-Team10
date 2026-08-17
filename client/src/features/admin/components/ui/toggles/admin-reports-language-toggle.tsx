@@ -1,6 +1,6 @@
 "use client";
 
-import { useLanguage } from "@/context/language-context";
+import { useLanguage } from "@/features/admin/context";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

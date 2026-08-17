@@ -4,7 +4,10 @@ import { getCurrentUser } from "@/features/auth/auth-queries";
 import { AdminHeader } from "@/features/admin/components/admin-header";
 import { AdminSidebar } from "@/features/admin/components/admin-sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { VersionProvider } from "@/context/version-context";
+import {
+  AdminVersionProvider as VersionProvider,
+  AdminLanguageProvider as LanguageProvider,
+} from "@/features/admin/context";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 function AdminLayoutSkeleton() {
@@ -31,35 +34,37 @@ export default async function AdminLayout({
   }
 
   return (
-    <VersionProvider>
-      {/*
-        Estructura igual al prototipo:
-        .app { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh }
-        .side = sidebar (izquierda, altura completa)
-        .main = columna derecha: header arriba + contenido abajo
-      */}
-      <SidebarProvider
-        className="admin-theme min-h-screen flex bg-[#FCFCFC] text-foreground"
-        style={{ "--sidebar-width": "250px" } as React.CSSProperties}
-      >
-        {/* Sidebar — columna izquierda, altura completa */}
-        <AdminSidebar />
+    <LanguageProvider>
+      <VersionProvider>
+        {/*
+          Estructura igual al prototipo:
+          .app { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh }
+          .side = sidebar (izquierda, altura completa)
+          .main = columna derecha: header arriba + contenido abajo
+        */}
+        <SidebarProvider
+          className="admin-theme min-h-screen flex bg-[#FCFCFC] text-foreground"
+          style={{ "--sidebar-width": "250px" } as React.CSSProperties}
+        >
+          {/* Sidebar — columna izquierda, altura completa */}
+          <AdminSidebar />
 
-        {/* Columna derecha: header sticky + contenido (.main del prototipo) */}
-        <div className="main flex-1 flex flex-col min-w-0 bg-[#FCFCFC]">
-          <AdminHeader
-            userRole={user.role}
-            userName={user.name || user.email}
-          />
+          {/* Columna derecha: header sticky + contenido (.main del prototipo) */}
+          <div className="main flex-1 flex flex-col min-w-0 bg-[#FCFCFC]">
+            <AdminHeader
+              userRole={user.role}
+              userName={user.name || user.email}
+            />
 
-          {/* Contenido del módulo — .body del prototipo con resplandor ambiental */}
-          <div className="flex-1 min-w-0 overflow-y-auto">
-            <main className="body relative w-full max-w-[1200px] px-[22px] py-[30px] pb-[70px]">
-              <Suspense fallback={<AdminLayoutSkeleton />}>{children}</Suspense>
-            </main>
+            {/* Contenido del módulo — .body del prototipo con resplandor ambiental */}
+            <div className="flex-1 min-w-0 overflow-y-auto">
+              <main className="body relative w-full max-w-[1200px] px-[22px] py-[30px] pb-[70px]">
+                <Suspense fallback={<AdminLayoutSkeleton />}>{children}</Suspense>
+              </main>
+            </div>
           </div>
-        </div>
-      </SidebarProvider>
-    </VersionProvider>
+        </SidebarProvider>
+      </VersionProvider>
+    </LanguageProvider>
   );
 }

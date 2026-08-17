@@ -1,6 +1,6 @@
 "use client";
 
-import { useVersion } from "@/context/version-context";
+import { useVersion } from "@/features/admin/context";
 import {
   DropdownMenu,
   DropdownMenuContent,

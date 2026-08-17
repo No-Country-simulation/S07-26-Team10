@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useVersion } from "@/context/version-context";
+import { useVersion } from "@/features/admin/context";
 import {
   getReportsWithVersionsAction,
   deleteReportAction,
@@ -154,8 +154,8 @@ export function ReportsManagementSkeleton() {
         >
           <Skeleton className="h-5 w-32 rounded-sm" />
         </div>
-        <div style={{ width: "100%", overflowX: "auto" }}>
-          <table className="tbl">
+        <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+          <table className="tbl" style={{ minWidth: "640px" }}>
             <thead>
               <tr>
                 <th style={{ width: "90px", textAlign: "left" }}>Versión</th>
@@ -958,8 +958,8 @@ export function ReportsManagement() {
         </div>
 
         {/* Tabla */}
-        <div style={{ width: "100%", overflowX: "auto" }}>
-          <table className="tbl">
+        <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+          <table className="tbl" style={{ minWidth: "640px" }}>
             <thead>
               <tr>
                 <th style={{ width: "90px", textAlign: "left" }}>

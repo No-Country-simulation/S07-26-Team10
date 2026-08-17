@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useVersion } from "@/context/version-context";
+import { useVersion } from "@/features/admin/context";
 import { getSectionsWithResourcesAction } from "@/features/admin/actions/sections-actions";
 import { checkBackendHealthAction } from "@/features/admin/actions/reports-actions";
 import { Skeleton } from "@/components/ui/skeleton";

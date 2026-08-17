@@ -17,7 +17,7 @@ import {
   createReferenceAction,
   updateReferenceAction,
 } from "../../actions/references-actions";
-import { useVersion } from "@/context/version-context";
+import { useVersion } from "@/features/admin/context";
 
 interface ReferenceFormProps {
   initialData?: ReferenceItem;
@@ -328,25 +328,10 @@ export function ReferenceForm({
           </div>
         )}
 
-        {/* ── Grid Principal de Formulario ─────────────────────────── */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(12, 1fr)",
-            gap: "24px",
-            alignItems: "start",
-          }}
-        >
-          {/* Columna Izquierda: Parámetros de la Referencia (8 cols) */}
-          <div
-            style={{
-              gridColumn: "span 8",
-              display: "flex",
-              flexDirection: "column",
-              gap: "24px",
-            }}
-            className="col-span-12 lg:col-span-8"
-          >
+        {/* ── Grid Principal de Formulario (8 cols + 4 cols en desktop, 1 col en móvil) ─────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Columna Izquierda: Parámetros de la Referencia (8 cols en desktop, full en móvil) */}
+          <div className="col-span-1 lg:col-span-8 flex flex-col gap-6 w-full min-w-0">
             <div className="card admin-card" style={{ overflow: "hidden" }}>
               <div
                 style={{
@@ -548,13 +533,7 @@ export function ReferenceForm({
                 </div>
 
                 {/* Año y Organización / Fuente */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "140px 1fr",
-                    gap: "16px",
-                  }}
-                >
+                <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-4">
                   <div>
                     <label
                       htmlFor="reference-year"
@@ -740,16 +719,8 @@ export function ReferenceForm({
             </div>
           </div>
 
-          {/* Columna Derecha: Orden y Guía Editorial (4 cols) */}
-          <div
-            style={{
-              gridColumn: "span 4",
-              display: "flex",
-              flexDirection: "column",
-              gap: "20px",
-            }}
-            className="col-span-12 lg:col-span-4"
-          >
+          {/* Columna Derecha: Orden y Guía Editorial (4 cols en desktop, full en móvil) */}
+          <div className="col-span-1 lg:col-span-4 flex flex-col gap-5 w-full min-w-0">
             {/* Card: Orden de Cita */}
             <div className="card admin-card" style={{ overflow: "hidden" }}>
               <div

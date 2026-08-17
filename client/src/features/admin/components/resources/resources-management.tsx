@@ -8,7 +8,7 @@ import { getSectionsWithResourcesAction } from "../../actions/sections-actions";
 import { deleteResourceAction } from "../../actions/resources-actions";
 import type { ResourceItem } from "../../schemas/resource-schema";
 import type { SectionItem } from "../../schemas/section-schema";
-import { useVersion } from "@/context/version-context";
+import { useVersion } from "@/features/admin/context";
 import { Layers, Copy, Check } from "lucide-react";
 
 export function ResourcesManagementSkeleton() {
@@ -154,7 +154,8 @@ export function ResourcesManagementSkeleton() {
               <Skeleton className="h-3.5 w-20 rounded-sm" />
             </div>
             <div className="card admin-card" style={{ overflow: "hidden" }}>
-              <table className="tbl">
+              <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+                <table className="tbl" style={{ minWidth: "680px" }}>
                 <thead>
                   <tr>
                     <th style={{ textAlign: "left" }}>Recurso</th>
@@ -210,7 +211,8 @@ export function ResourcesManagementSkeleton() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+                </table>
+              </div>
             </div>
           </div>
         ))}
@@ -700,7 +702,8 @@ export function ResourcesManagement() {
                 <Skeleton className="h-3.5 w-20 rounded-sm" />
               </div>
               <div className="card admin-card" style={{ overflow: "hidden" }}>
-                <table className="tbl">
+                <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+                  <table className="tbl" style={{ minWidth: "680px" }}>
                   <thead>
                     <tr>
                       <th style={{ textAlign: "left" }}>
@@ -763,7 +766,8 @@ export function ResourcesManagement() {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                  </table>
+                </div>
               </div>
             </div>
           ))}
@@ -848,8 +852,8 @@ export function ResourcesManagement() {
 
                 {/* Tarjeta con Tabla de Recursos */}
                 <div className="card admin-card" style={{ overflow: "hidden" }}>
-                  <div style={{ width: "100%", overflowX: "auto" }}>
-                    <table className="tbl">
+                  <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+                    <table className="tbl" style={{ minWidth: "680px" }}>
                       <thead>
                         <tr>
                           <th style={{ textAlign: "left" }}>
@@ -1065,8 +1069,8 @@ export function ResourcesManagement() {
               </div>
 
               <div className="card admin-card" style={{ overflow: "hidden" }}>
-                <div style={{ width: "100%", overflowX: "auto" }}>
-                  <table className="tbl">
+                <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+                  <table className="tbl" style={{ minWidth: "680px" }}>
                     <thead>
                       <tr>
                         <th style={{ textAlign: "left" }}>

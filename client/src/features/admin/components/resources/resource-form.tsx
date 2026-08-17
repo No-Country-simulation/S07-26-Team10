@@ -26,7 +26,7 @@ import {
   updateResourceAction,
   uploadFileAction,
 } from "../../actions/resources-actions";
-import { useVersion } from "@/context/version-context";
+import { useVersion } from "@/features/admin/context";
 
 interface ResourceFormProps {
   initialData?: ResourceItem;
@@ -400,25 +400,10 @@ export function ResourceForm({
           </div>
         )}
 
-        {/* ── Grid Principal de Formulario ─────────────────────────── */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(12, 1fr)",
-            gap: "24px",
-            alignItems: "start",
-          }}
-        >
-          {/* Columna Izquierda: Parámetros del Recurso (8 cols) */}
-          <div
-            style={{
-              gridColumn: "span 8",
-              display: "flex",
-              flexDirection: "column",
-              gap: "24px",
-            }}
-            className="col-span-12 lg:col-span-8"
-          >
+        {/* ── Grid Principal de Formulario (8 cols + 4 cols en desktop, 1 col en móvil) ─────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Columna Izquierda: Parámetros del Recurso (8 cols en desktop, full en móvil) */}
+          <div className="col-span-1 lg:col-span-8 flex flex-col gap-6 w-full min-w-0">
             <div className="card admin-card" style={{ overflow: "hidden" }}>
               <div
                 style={{
@@ -536,14 +521,8 @@ export function ResourceForm({
                 </div>
 
                 {/* Tipo de recurso y Título */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 2fr",
-                    gap: "16px",
-                  }}
-                >
-                  <div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="sm:col-span-1">
                     <label
                       htmlFor="resource-type"
                       style={{
@@ -583,7 +562,7 @@ export function ResourceForm({
                     </select>
                   </div>
 
-                  <div>
+                  <div className="sm:col-span-2">
                     <label
                       htmlFor="resource-title"
                       style={{
@@ -930,16 +909,8 @@ export function ResourceForm({
             </div>
           </div>
 
-          {/* Columna Derecha: Configuración Lateral y Vista Previa (4 cols) */}
-          <div
-            style={{
-              gridColumn: "span 4",
-              display: "flex",
-              flexDirection: "column",
-              gap: "20px",
-            }}
-            className="col-span-12 lg:col-span-4"
-          >
+          {/* Columna Derecha: Configuración Lateral y Vista Previa (4 cols en desktop, full en móvil) */}
+          <div className="col-span-1 lg:col-span-4 flex flex-col gap-5 w-full min-w-0">
             {/* Card: Configuración */}
             <div className="card admin-card" style={{ overflow: "hidden" }}>
               <div
