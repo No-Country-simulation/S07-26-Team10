@@ -33,6 +33,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem("app_lang", lang);
+    // Also set cookie for SSR version resolution
+    document.cookie = `app_content_lang=${lang}; path=/; SameSite=Lax; max-age=31536000`;
   };
 
   const setReportsLanguage = (lang: Language) => {
@@ -43,6 +45,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   return (
     <LanguageContext.Provider value={{ language, setLanguage, reportsLanguage, setReportsLanguage }}>
       <NextIntlClientProvider
+        key={language}
         locale={language}
         messages={messagesMap[language]}
         timeZone="UTC"
