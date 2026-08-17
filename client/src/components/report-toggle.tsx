@@ -10,6 +10,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { FileText, Check } from "lucide-react";
 
+function setCookie(name: string, value: string, days = 365) {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+}
+
 export function ReportToggle() {
   const { baseReports, activeReport, setActiveBaseReportId } = useVersion();
 
@@ -19,6 +24,11 @@ export function ReportToggle() {
 
   const currentReport = activeReport || baseReports[0];
   const displayLabel = currentReport?.slug || "Reporte";
+
+  const handleReportChange = (id: string) => {
+    setActiveBaseReportId(id);
+    setCookie("app_base_report_id", id);
+  };
 
   return (
     <DropdownMenu>
@@ -40,7 +50,7 @@ export function ReportToggle() {
           {baseReports.map((b) => (
             <DropdownMenuItem
               key={b.id}
-              onClick={() => setActiveBaseReportId(b.id)}
+              onClick={() => handleReportChange(b.id)}
               className="justify-between cursor-pointer font-mono text-xs font-semibold"
             >
               <span className="truncate">{b.slug}</span>
