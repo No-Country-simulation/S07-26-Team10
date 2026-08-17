@@ -140,7 +140,7 @@ export function NavigationHeader({ disableShrink = false }: { disableShrink?: bo
             />
           </Link>
           <span className="sep" />
-          <span className="rep">{t("strandedCapacityIndex")}</span>
+          
           <div className="now">
             <span className="n" id="nn">
               {active.n}
@@ -196,7 +196,7 @@ export function NavigationHeader({ disableShrink = false }: { disableShrink?: bo
           <i id="pg" style={{ width: `${progress}%` }} />
         </div>
       </header>
-      
+
       <div className={`mmenu ${mobileMenuOpen ? "on" : ""}`} onClick={closeMobileMenu}>
         <nav>
           {NAV_LINKS.map((link) => (
