@@ -3,21 +3,18 @@ import "server-only";
 import { cache } from "react";
 import { cookies } from "next/headers";
 import {
-  getReportBySlug,
   getReportById,
-  getPublishedVersions,
   getPublishedVersionByLanguage,
   getPublishedVersionByVersion,
   getFullReport,
   getReportVersionSections,
   getReportVersionSectionBySlug,
+  resolveDefaultReport,
   resolvePublishedVersion,
 } from "@/lib/api/reports";
 import type { ApiReport, ApiVersion, ApiSection, FullReportData } from "@/lib/api/types";
 
 export type PublicLanguage = "es" | "en";
-
-const DEFAULT_REPORT_SLUG = "stranded-capacity-index-2026";
 
 
 
@@ -51,9 +48,9 @@ export const getPublicReportContext = cache(async (lang?: PublicLanguage) => {
     report = await getReportById(selectedReportId).catch(() => null);
   }
 
-  // Fallback to default slug if no report ID selected or not found
+  // Fallback to default report if no report ID selected or not found
   if (!report) {
-    report = await getReportBySlug(DEFAULT_REPORT_SLUG).catch(() => null);
+    report = await resolveDefaultReport().catch(() => null);
   }
 
   if (!report) {

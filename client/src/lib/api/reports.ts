@@ -10,9 +10,10 @@ import type {
   FullReportData,
 } from "@/lib/api/types";
 
-export const REPORT_SLUG = "stranded-capacity-ai-infrastructure";
-
 export type SiteLanguage = "es" | "en";
+
+/** Slug del reporte por defecto (compatibilidad con chapters-queries.ts). */
+export const REPORT_SLUG = "stranded-capacity-ai-infrastructure";
 
 /** Map a site language ("es" | "en") to the API language code ("ES" | "EN"). */
 export function toApiLanguage(lang: SiteLanguage): "ES" | "EN" {
@@ -20,10 +21,29 @@ export function toApiLanguage(lang: SiteLanguage): "ES" | "EN" {
 }
 
 /** GET /reports/by-slug/{slug} */
-export async function getReportBySlug(
-  slug: string = REPORT_SLUG,
-): Promise<ApiReport> {
+export async function getReportBySlug(slug: string): Promise<ApiReport> {
   return apiGet<ApiReport>(`/reports/by-slug/${slug}`);
+}
+
+/**
+ * Resuelve dinámicamente el reporte por defecto sin depender de un slug
+ * hardcodeado. Prefiere el primer reporte con versiones publicadas;
+ * fallback al primer reporte de la lista.
+ */
+export async function resolveDefaultReport(): Promise<ApiReport | null> {
+  const reports = await getReports();
+  if (!Array.isArray(reports) || reports.length === 0) return null;
+
+  for (const report of reports) {
+    try {
+      const versions = await getPublishedVersions(report.id);
+      if (Array.isArray(versions) && versions.length > 0) return report;
+    } catch {
+      // seguir con el siguiente
+    }
+  }
+
+  return reports[0] || null;
 }
 
 /** GET /reports/{reportId} */

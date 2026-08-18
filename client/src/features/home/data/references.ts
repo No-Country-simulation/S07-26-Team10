@@ -1,3 +1,10 @@
+import {
+  getReportBySlug,
+  REPORT_SLUG,
+  resolvePublishedVersion,
+} from "@/lib/api/reports";
+
+
 export interface Reference {
   authors: string;
   title: string;
@@ -28,7 +35,6 @@ const FALLBACK_REFERENCES: Reference[] = [
 ];
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
-const REPORT_SLUG = "stranded-capacity-ai-infrastructure";
 
 export interface ApiReference {
   authors?: string | null;
@@ -49,33 +55,14 @@ function mapApiReference(raw: ApiReference): Reference {
   };
 }
 
-async function resolvePublishedVersionId(reportId: string): Promise<string | null> {
-  try {
-    const res = await fetch(`${API_BASE}/reports/${reportId}/versions/published`, {
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) return null;
-    const data: { id: string }[] = await res.json();
-    if (!Array.isArray(data) || data.length === 0) return null;
-    return data[0].id;
-  } catch {
-    return null;
-  }
-}
-
 export async function getReferences(): Promise<Reference[]> {
   try {
-    const reportRes = await fetch(`${API_BASE}/reports/by-slug/${REPORT_SLUG}`, {
-      next: { revalidate: 3600 },
-    });
-    if (!reportRes.ok) return FALLBACK_REFERENCES;
-    const report: { id: string } = await reportRes.json();
-
-    const versionId = await resolvePublishedVersionId(report.id);
-    if (!versionId) return FALLBACK_REFERENCES;
+    const report = await getReportBySlug(REPORT_SLUG);
+    const version = await resolvePublishedVersion(report.id, "es");
+    if (!version) return FALLBACK_REFERENCES;
 
     const res = await fetch(
-      `${API_BASE}/report-versions/${versionId}/references`,
+      `${API_BASE}/report-versions/${version.id}/references`,
       { next: { revalidate: 3600 } },
     );
     if (!res.ok) return FALLBACK_REFERENCES;
