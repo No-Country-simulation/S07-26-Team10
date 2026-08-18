@@ -13,6 +13,7 @@ from app.modules.resources.router import router as resources_router
 from app.modules.sections.router import router as sections_router
 from app.modules.uploads.router import router as uploads_router
 from app.modules.users.router import router as users_router
+from app.modules.search.router import router as search_router
 
 # se declaran las rutas
 
@@ -28,6 +29,7 @@ api_router.include_router(resources_router)
 api_router.include_router(sections_router)
 api_router.include_router(uploads_router)
 api_router.include_router(users_router)
+api_router.include_router(search_router)
 
 
 @api_router.get("/", tags=["Health"])
