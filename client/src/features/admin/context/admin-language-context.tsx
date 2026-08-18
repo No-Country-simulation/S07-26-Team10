@@ -1,85 +1,48 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React from "react";
 import { NextIntlClientProvider } from "next-intl";
 import { messagesMap } from "@/languages";
+import {
+  useAdminLanguageStore,
+  type AdminLanguage,
+  type Language,
+} from "../store/admin-language-store";
 
-export type AdminLanguage = "es" | "en";
-export type Language = AdminLanguage;
-
-type AdminLanguageContextType = {
-  language: AdminLanguage;
-  setLanguage: (lang: AdminLanguage) => void;
-  reportsLanguage: AdminLanguage;
-  setReportsLanguage: (lang: AdminLanguage) => void;
-};
-
-const AdminLanguageContext = createContext<AdminLanguageContextType | undefined>(
-  undefined,
-);
+export type { AdminLanguage, Language };
 
 export function AdminLanguageProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [language, setLanguageState] = useState<AdminLanguage>("es");
-  const [reportsLanguage, setReportsLanguageState] = useState<AdminLanguage>("es");
-
-  useEffect(() => {
-    const savedLang = localStorage.getItem("app_lang") as AdminLanguage;
-    if (savedLang === "es" || savedLang === "en") {
-      queueMicrotask(() => setLanguageState(savedLang));
-    }
-    const savedReportsLang = localStorage.getItem(
-      "app_reports_lang",
-    ) as AdminLanguage;
-    if (savedReportsLang === "es" || savedReportsLang === "en") {
-      queueMicrotask(() => setReportsLanguageState(savedReportsLang));
-    }
-  }, []);
-
-  const setLanguage = (lang: AdminLanguage) => {
-    setLanguageState(lang);
-    localStorage.setItem("app_lang", lang);
-  };
-
-  const setReportsLanguage = (lang: AdminLanguage) => {
-    setReportsLanguageState(lang);
-    localStorage.setItem("app_reports_lang", lang);
-  };
+  const language = useAdminLanguageStore((state) => state.language);
 
   return (
-    <AdminLanguageContext.Provider
-      value={{
-        language,
-        setLanguage,
-        reportsLanguage,
-        setReportsLanguage,
-      }}
+    <NextIntlClientProvider
+      locale={language}
+      messages={messagesMap[language]}
+      timeZone="UTC"
     >
-      <NextIntlClientProvider
-        locale={language}
-        messages={messagesMap[language]}
-        timeZone="UTC"
-      >
-        {children}
-      </NextIntlClientProvider>
-    </AdminLanguageContext.Provider>
+      {children}
+    </NextIntlClientProvider>
   );
 }
 
 export function useAdminLanguage() {
-  const context = useContext(AdminLanguageContext);
-  if (!context) {
-    return {
-      language: "es" as AdminLanguage,
-      setLanguage: () => {},
-      reportsLanguage: "es" as AdminLanguage,
-      setReportsLanguage: () => {},
-    };
-  }
-  return context;
+  const language = useAdminLanguageStore((state) => state.language);
+  const setLanguage = useAdminLanguageStore((state) => state.setLanguage);
+  const reportsLanguage = useAdminLanguageStore((state) => state.reportsLanguage);
+  const setReportsLanguage = useAdminLanguageStore(
+    (state) => state.setReportsLanguage,
+  );
+
+  return {
+    language,
+    setLanguage,
+    reportsLanguage,
+    setReportsLanguage,
+  };
 }
 
 export const useLanguage = useAdminLanguage;
