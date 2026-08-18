@@ -4,4 +4,5 @@ export interface PublicReference {
   year: number;
   source: string;
   citationUrl: string;
+  usage?: string;
 }
