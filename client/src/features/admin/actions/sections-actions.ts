@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { cookies } from "next/headers";
 import {
   createSectionSchema,
@@ -11,6 +11,23 @@ import {
 } from "../schemas/section-schema";
 import type { ResourceItem } from "../schemas/resource-schema";
 import { getApiUrl } from "@/lib/api-url";
+
+function invalidateSectionTags(reportVersionId?: string, slug?: string) {
+  const tags = ["sections"];
+  if (reportVersionId) {
+    tags.push(`sections-${reportVersionId}`);
+    if (slug) {
+      tags.push(`section-${reportVersionId}-${slug}`);
+    }
+  }
+  tags.forEach((t) => {
+    try {
+      updateTag(t);
+    } catch {
+      // ignore in non-action context
+    }
+  });
+}
 
 /**
  * Sección con sus recursos embebidos (respuesta del endpoint with-resources).
@@ -264,10 +281,14 @@ export async function createSectionAction(input: CreateSectionInput): Promise<{
 
     if (res.status === 201 || res.ok) {
       const data = await res.json();
+      const created = mapSectionResponse(data);
+      invalidateSectionTags(created.report_version_id || reportVersionId, created.slug);
       revalidatePath("/admin/sections");
+      revalidatePath("/");
+      revalidatePath("/chapter");
       return {
         success: true,
-        data: mapSectionResponse(data),
+        data: created,
         message: "Sección creada exitosamente.",
       };
     }
@@ -354,10 +375,17 @@ export async function updateSectionAction(
 
       if (res.ok) {
         const data = await res.json();
+        const updated = mapSectionResponse(data);
+        invalidateSectionTags(updated.report_version_id || reportVersionId, updated.slug);
         revalidatePath("/admin/sections");
+        revalidatePath("/");
+        if (updated.slug) {
+          revalidatePath(`/chapter/${updated.slug}`);
+        }
+        revalidatePath("/chapter/[slug]", "page");
         return {
           success: true,
-          data: mapSectionResponse(data),
+          data: updated,
           message: "Sección actualizada exitosamente.",
         };
       }
@@ -414,7 +442,11 @@ export async function deleteSectionAction(sectionId: string, reportVersionId?: s
       });
 
       if (res.ok || res.status === 204) {
+        invalidateSectionTags(reportVersionId);
         revalidatePath("/admin/sections");
+        revalidatePath("/");
+        revalidatePath("/chapter");
+        revalidatePath("/chapter/[slug]", "page");
         return { success: true, message: "Sección eliminada exitosamente." };
       }
     }

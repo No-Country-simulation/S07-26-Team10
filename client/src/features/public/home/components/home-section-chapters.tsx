@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { chapters } from "../data/chapters";
+import { ChaptersList } from "@/features/chapters";
 
 export function HomeSectionChapters() {
   const t = useTranslations("HomePage");
@@ -26,21 +25,7 @@ export function HomeSectionChapters() {
         </div>
         <div className="sbody rv">
           <div />
-          <div className="chap">
-            {chapters.map((c) => (
-              <Link key={c.num} href={c.href}>
-                <span className="n">{c.num}</span>
-                <div>
-                  <h3>
-                    {c.ns === "nav"
-                      ? tnav(c.titleKey)
-                      : t(`chapters.${c.titleKey}`)}
-                  </h3>
-                </div>
-                <span className="t">{c.time}</span>
-              </Link>
-            ))}
-          </div>
+          <ChaptersList />
         </div>
       </div>
     </section>
