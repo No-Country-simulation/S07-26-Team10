@@ -1,22 +1,12 @@
 import "server-only";
 
 import { cache } from "react";
-import { env } from "@/lib/env";
+import { placeholderTaxonomy } from "@/features/public/taxonomy/data/placeholder";
 import type {
   PublicTaxonomyCategory,
   PublicTaxonomyConcept,
 } from "@/features/public/taxonomy/types";
-import { taxonomyData } from "@/util/mock/taxonomy";
 import { getFullTaxonomy } from "@/features/public/components-queries";
-
-const REPORT_SLUG = "stranded-capacity-index-2026";
-const API_BASE = (process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || env.apiUrl || "").replace(/\/$/, "");
-
-interface ApiCategory {
-  id: string;
-  name: string;
-  description: string | null;
-}
 
 interface ApiConcept {
   id: string;
@@ -40,104 +30,75 @@ function normalize(s: string): string {
     .trim();
 }
 
-function findRichConcept(categoryName: string, apiName: string): PublicTaxonomyConcept | undefined {
-  const key = normalize(apiName);
-
-  for (const cat of taxonomyData) {
-    const catKey = normalize(cat.name);
-    const catMatch =
-      normalize(categoryName).includes(catKey) || catKey.includes(normalize(categoryName));
-
-    if (!catMatch) continue;
-
-    const found = cat.concepts.find(
-      (concept) => normalize(concept.name) === key,
-    );
-    if (found) return found;
-
-    // Coincidencia parcial (p.ej. "Scheduler Fragmentation" ↔ "Scheduler")
-    const partial = cat.concepts.find((concept) => {
-      const ck = normalize(concept.name);
-      return key.includes(ck) || ck.includes(key);
-    });
-    if (partial) return partial;
-  }
-
-  return undefined;
-}
-
 function toConcept(
   apiConcept: ApiConcept,
   layerCode: "FAC" | "IT" | "WKL",
-  categoryName: string,
   index: number,
 ): PublicTaxonomyConcept {
-  const rich = findRichConcept(categoryName, apiConcept.name);
-
-  const label: "est" | "prop" = rich?.label ?? (index % 2 === 0 ? "est" : "prop");
+  const label: "est" | "prop" = index % 2 === 0 ? "est" : "prop";
 
   return {
     id: apiConcept.id,
-    itemCode: rich?.itemCode ?? `${layerCode}-${String(index + 1).padStart(2, "0")}`,
-    layerCode: rich?.layerCode ?? layerCode,
-    slug: rich?.slug ?? normalize(apiConcept.name).replace(/\s+/g, "-"),
+    itemCode: `${layerCode}-${String(index + 1).padStart(2, "0")}`,
+    layerCode,
+    slug: normalize(apiConcept.name).replace(/\s+/g, "-"),
     name: apiConcept.name,
     label,
     shortDescription:
-      rich?.shortDescription ??
-      apiConcept.description ??
-      "Sin descripción corta disponible.",
-    whatItIsNot:
-      rich?.whatItIsNot ??
-      "No hay definición detallada disponible para este concepto.",
-    whatYouWouldObserve:
-      rich?.whatYouWouldObserve ??
-      "Observación no documentada aún.",
-    whereTheNameComesFrom:
-      rich?.whereTheNameComesFrom ??
-      "Origen del término no documentado aún.",
+      apiConcept.description ?? "Sin descripción corta disponible.",
+    whatItIsNot: "No hay definición detallada disponible para este concepto.",
+    whatYouWouldObserve: "Observación no documentada aún.",
+    whereTheNameComesFrom: "Origen del término no documentado aún.",
   };
 }
 
-export const getPublicTaxonomyData = cache(async (): Promise<PublicTaxonomyCategory[]> => {
-  if (!API_BASE) return taxonomyData;
+export const getPublicTaxonomyData = cache(
+  async (lang?: "es" | "en"): Promise<PublicTaxonomyCategory[]> => {
+    const targetLang = (lang ?? "es") === "en" ? "en" : "es";
 
-  try {
-    // Use getFullTaxonomy which leverages fullReport (1 call) or parallel fetches
-    const fullTaxonomy = await getFullTaxonomy("ES");
-
-    const result: PublicTaxonomyCategory[] = [];
-
-    for (const category of fullTaxonomy) {
-      const layerCode = layerCodeFor(category.name);
-
-      const concepts = (category.concepts || []).map((concept, idx) =>
-        toConcept(
-          { 
-            id: concept.id, 
-            category_id: category.id, 
-            name: concept.name, 
-            description: concept.description || "",
-            display_order: concept.display_order || idx + 1
-          } as ApiConcept,
-          layerCode,
-          category.name,
-          idx
-        ),
+    try {
+      // Sin arg → resuelve idioma desde cookie; con arg → idioma explícito.
+      const fullTaxonomy = await getFullTaxonomy(
+        lang ? (lang === "en" ? "EN" : "ES") : undefined,
       );
 
-      result.push({
-        id: category.id,
-        layerCode,
-        name: category.name,
-        description: category.description ?? "",
-        concepts,
-      });
-    }
+      // Sin datos desde la API → placeholder estructurado para garantizar la demo.
+      if (!fullTaxonomy || fullTaxonomy.length === 0) {
+        return placeholderTaxonomy[targetLang];
+      }
 
-    return result;
-  } catch (e) {
-    console.error("[Taxonomy] Unexpected error:", e);
-    return taxonomyData;
-  }
-});
+      const result: PublicTaxonomyCategory[] = [];
+
+      for (const category of fullTaxonomy) {
+        const layerCode = layerCodeFor(category.name);
+
+        const concepts = (category.concepts || []).map((concept, idx) =>
+          toConcept(
+            {
+              id: concept.id,
+              category_id: concept.category_id,
+              name: concept.name,
+              description: concept.description || "",
+              display_order: concept.display_order || idx + 1,
+            } as ApiConcept & { category_id: string; display_order: number },
+            layerCode,
+            idx,
+          ),
+        );
+
+        result.push({
+          id: category.id,
+          layerCode,
+          name: category.name,
+          description: category.description ?? "",
+          concepts,
+        });
+      }
+
+      return result.length > 0 ? result : placeholderTaxonomy[targetLang];
+    } catch (e) {
+      console.error("[Taxonomy] Unexpected error:", e);
+      return placeholderTaxonomy[targetLang];
+    }
+  },
+);
