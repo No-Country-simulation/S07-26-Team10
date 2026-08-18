@@ -8,6 +8,7 @@ import type { TaxonomyConcept } from "@/lib/taxonomy-types"
 interface TaxonomyEntryProps {
   concept: TaxonomyConcept
   open: boolean
+  revealed: boolean
   onToggle: (conceptId: string) => void
   onCite: (code: string, name: string) => void
 }
@@ -15,6 +16,7 @@ interface TaxonomyEntryProps {
 export function TaxonomyEntry({
   concept,
   open,
+  revealed,
   onToggle,
   onCite,
 }: TaxonomyEntryProps) {
@@ -22,8 +24,9 @@ export function TaxonomyEntry({
 
   return (
     <article
-      className={cn("e", open && "on")}
+      className={cn("e", revealed && "rvin", open && "on")}
       data-l={concept.layerCode}
+      data-id={concept.id}
       id={concept.itemCode}
     >
       <button className="eh" aria-expanded={open} onClick={() => onToggle(concept.id)}>

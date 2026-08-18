@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FileText, Check } from "lucide-react";
+import { normalizeSlug } from "@/lib/utils";
 
 function setCookie(name: string, value: string, days = 365) {
   const expires = new Date(Date.now() + days * 864e5).toUTCString();
@@ -23,7 +24,7 @@ export function ReportToggle() {
   }
 
   const currentReport = activeReport || baseReports[0];
-  const displayLabel = currentReport?.slug || "Reporte";
+  const displayLabel = normalizeSlug(currentReport?.slug || "") || "Reporte";
 
   const handleReportChange = (id: string) => {
     setActiveBaseReportId(id);
@@ -41,7 +42,7 @@ export function ReportToggle() {
             title="Seleccionar Reporte Base"
           >
             <FileText className="size-3.5 text-amber-600 dark:text-amber-500" />
-            <span className="max-w-[120px] truncate">{displayLabel}</span>
+            <span>{displayLabel}</span>
           </Button>
         }
       />
@@ -53,7 +54,7 @@ export function ReportToggle() {
               onClick={() => handleReportChange(b.id)}
               className="justify-between cursor-pointer font-mono text-xs font-semibold"
             >
-              <span className="truncate">{b.slug}</span>
+              <span>{normalizeSlug(b.slug)}</span>
               {currentReport?.id === b.id && <Check className="size-4 text-primary shrink-0" />}
             </DropdownMenuItem>
           ))}

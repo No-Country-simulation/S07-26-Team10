@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/context/language-context";
 import { useVersion } from "@/context/version-context";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,6 +15,12 @@ import { Globe, Check, Lock } from "lucide-react";
 export function LanguageToggle() {
   const { language, setLanguage } = useLanguage();
   const { isContentLanguageLocked } = useVersion();
+  const router = useRouter();
+
+  const handleLanguageChange = (lang: "es" | "en") => {
+    setLanguage(lang);
+    router.refresh();
+  };
 
   return (
     <DropdownMenu>
@@ -36,14 +43,14 @@ export function LanguageToggle() {
       {!isContentLanguageLocked && (
         <DropdownMenuContent align="end" className="w-36">
           <DropdownMenuItem
-            onClick={() => setLanguage("es")}
+            onClick={() => handleLanguageChange("es")}
             className="justify-between cursor-pointer"
           >
             <span>Español</span>
             {language === "es" && <Check className="size-4 text-primary" />}
           </DropdownMenuItem>
           <DropdownMenuItem
-            onClick={() => setLanguage("en")}
+            onClick={() => handleLanguageChange("en")}
             className="justify-between cursor-pointer"
           >
             <span>English</span>

@@ -3,8 +3,6 @@ import "server-only";
 import { cache } from "react";
 import {
   getPublicReportContext,
-  getPublicReportSections,
-  getPublicSectionBySlug,
 } from "@/features/public/report/queries/report";
 import {
   getReportVersionCategories,
@@ -491,7 +489,6 @@ export interface FilterOption {
  */
 export const getFilterOptions = cache(async (
   filterType: "category" | "status" | "type" | "year" | "region" | string,
-  reportId?: string
 ): Promise<FilterOption[]> => {
   if (filterType !== "category") return [];
 
@@ -596,26 +593,7 @@ export const searchReportContent = cache(async (
   return results.slice(0, limit);
 });
 
-// ============================================
-// RELATED CONTENT (no expuesto en backend real)
-// ============================================
 
-export interface RelatedContent {
-  id: string;
-  title: string;
-  type: string;
-  description?: string;
-  url: string;
-}
-
-export const getRelatedContent = cache(async (
-  reportId: string,
-  contentId: string,
-  limit = 5
-): Promise<RelatedContent[]> => {
-  // Endpoint no disponible en el backend real → sin contenido relacionado.
-  return [];
-});
 
 // ============================================
 // BATCH QUERIES (para performance)

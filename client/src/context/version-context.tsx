@@ -15,6 +15,7 @@ import type {
   BaseReport,
   ReportVersion,
 } from "@/features/admin/schemas/report-schema";
+import type { PublicReportWithVersions } from "@/features/public/report/queries/reports";
 
 export function parseReportSlug(
   input: string,
@@ -67,7 +68,15 @@ function compareVersionsDescending(a: string, b: string): number {
   return 0;
 }
 
-export function VersionProvider({ children }: { children: React.ReactNode }) {
+export function VersionProvider({
+  children,
+  publicOnly = false,
+  initialReports = [],
+}: {
+  children: React.ReactNode;
+  publicOnly?: boolean;
+  initialReports?: PublicReportWithVersions[];
+}) {
   const [version, setVersionState] = useState<string>("");
   const [contentLanguage, setContentLanguageState] = useState<Language>(() => {
     if (typeof window !== "undefined") {
@@ -105,15 +114,31 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
   };
 
 
-  const setContentLanguage = (lang: Language) => {
+  useEffect(() => {
+
+  }, [version, contentLanguage]);
+
+  const persistContentLanguage = (lang: Language) => {
     setContentLanguageState(lang);
     localStorage.setItem("app_content_lang", lang);
+    document.cookie = `app_content_lang=${lang}; path=/; SameSite=Lax; max-age=31536000`;
+  };
+
+  const setContentLanguage = (lang: Language) => {
+    persistContentLanguage(lang);
+
   };
 
   const loadReportsAndSync = useCallback(async () => {
     try {
-      // Una sola request: GET /api/v1/reports/admin/with-versions
-      const reportsWithVersions = await getReportsWithVersionsAction();
+      let reportsWithVersions;
+      if (publicOnly) {
+        // Datos ya provistos por el Server Component (layout) vía props.
+        reportsWithVersions = initialReports;
+      } else {
+        // Una sola request: GET /api/v1/reports/admin/with-versions
+        reportsWithVersions = await getReportsWithVersionsAction();
+      }
 
       const bases: BaseReport[] = reportsWithVersions.map((r) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -155,13 +180,12 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
         setVersionState(activeVer);
         const langs = langsMap[activeVer] || [];
         if (langs.length === 1) {
-          setContentLanguageState(langs[0]);
+          persistContentLanguage(langs[0]);
         }
       }
-    } catch (err) {
-      console.error("Error syncing version context with reports action:", err);
+    } catch {
     }
-  }, []);
+  }, [publicOnly, initialReports]);
 
   useEffect(() => {
     let isMounted = true;
@@ -182,7 +206,7 @@ export function VersionProvider({ children }: { children: React.ReactNode }) {
 
     const langs = versionLangsMap[ver] || [];
     if (langs.length === 1) {
-      setContentLanguageState(langs[0]);
+      persistContentLanguage(langs[0]);
     }
   };
 
@@ -284,5 +308,3 @@ export function useVersion() {
   }
   return context;
 }
-
-

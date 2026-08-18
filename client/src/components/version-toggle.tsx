@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useVersion } from "@/context/version-context";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +18,7 @@ function setCookie(name: string, value: string, days = 365) {
 
 export function VersionToggle() {
   const pathname = usePathname();
+  const router = useRouter();
   const { version, setVersion, availableVersions } = useVersion();
 
   // Hide version toggle on /admin/reports routes
@@ -33,6 +34,7 @@ export function VersionToggle() {
   const handleVersionChange = (v: string) => {
     setVersion(v);
     setCookie("app_version", v);
+    router.refresh();
   };
 
   return (
