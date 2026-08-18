@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useLanguage } from "@/context/language-context";
@@ -108,6 +108,7 @@ function SearchOverlay({
 export function NavigationHeader({ disableShrink = false }: { disableShrink?: boolean }) {
   const t = useTranslations("Nav");
   const { language, setLanguage } = useLanguage();
+  const router = useRouter();
   const { progress, shrink } = useScrollProgress({ disableShrink });
   const active = useSectionTracker(".phi section.n[data-n]");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -118,6 +119,11 @@ export function NavigationHeader({ disableShrink = false }: { disableShrink?: bo
   const shrunk = !onHome ? false : shrink;
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
+
+  const changeLanguage = (lang: "es" | "en") => {
+    setLanguage(lang);
+    router.refresh();
+  };
 
   return (
     <>
@@ -140,7 +146,7 @@ export function NavigationHeader({ disableShrink = false }: { disableShrink?: bo
             />
           </Link>
           <span className="sep" />
-          <span className="rep">{t("strandedCapacityIndex")}</span>
+          
           <div className="now">
             <span className="n" id="nn">
               {active.n}
@@ -170,21 +176,21 @@ export function NavigationHeader({ disableShrink = false }: { disableShrink?: bo
             <div className="lgs">
               <button
                 aria-current={language === "en" ? "true" : "false"}
-                onClick={() => setLanguage("en")}
+                onClick={() => changeLanguage("en")}
               >
                 EN
               </button>
               <span style={{ color: "#DADADA" }}>/</span>
               <button
                 aria-current={language === "es" ? "true" : "false"}
-                onClick={() => setLanguage("es")}
+                onClick={() => changeLanguage("es")}
               >
                 ES
               </button>
             </div>
           </div>
           <button
-            className="burger"
+            className={`burger ${mobileMenuOpen ? "on" : ""}`}
             aria-label={t("menu")}
             aria-expanded={mobileMenuOpen}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -196,7 +202,7 @@ export function NavigationHeader({ disableShrink = false }: { disableShrink?: bo
           <i id="pg" style={{ width: `${progress}%` }} />
         </div>
       </header>
-      
+
       <div className={`mmenu ${mobileMenuOpen ? "on" : ""}`} onClick={closeMobileMenu}>
         <nav>
           {NAV_LINKS.map((link) => (
@@ -208,14 +214,14 @@ export function NavigationHeader({ disableShrink = false }: { disableShrink?: bo
         <div className="mlg">
           <button
             aria-current={language === "en" ? "true" : "false"}
-            onClick={() => { setLanguage("en"); closeMobileMenu(); }}
+            onClick={() => { changeLanguage("en"); closeMobileMenu(); }}
           >
             EN
           </button>
           <span style={{ color: "#DADADA" }}>/</span>
           <button
             aria-current={language === "es" ? "true" : "false"}
-            onClick={() => { setLanguage("es"); closeMobileMenu(); }}
+            onClick={() => { changeLanguage("es"); closeMobileMenu(); }}
           >
             ES
           </button>
