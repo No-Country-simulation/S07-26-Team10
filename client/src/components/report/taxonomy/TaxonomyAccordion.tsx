@@ -19,6 +19,7 @@ export function TaxonomyAccordion({ categories }: TaxonomyAccordionProps) {
   const [filter, setFilter] = useState<LayerFilter>("ALL")
   const [query, setQuery] = useState("")
   const [openIds, setOpenIds] = useState<Set<string>>(new Set())
+  const [revealed, setRevealed] = useState<Set<string>>(new Set())
   const [toast, setToast] = useState<string | null>(null)
   const listRef = useRef<HTMLDivElement>(null)
 
@@ -91,7 +92,15 @@ export function TaxonomyAccordion({ categories }: TaxonomyAccordionProps) {
             const el = entry.target as HTMLElement
             const i = Math.max(0, els.indexOf(el))
             el.style.transitionDelay = `${(i % 8) * 70}ms`
-            el.classList.add("rvin")
+            const conceptId = el.dataset.id
+            if (conceptId) {
+              setRevealed((prev) => {
+                if (prev.has(conceptId)) return prev
+                const next = new Set(prev)
+                next.add(conceptId)
+                return next
+              })
+            }
             io.unobserve(el)
           }
         }),
@@ -182,6 +191,7 @@ export function TaxonomyAccordion({ categories }: TaxonomyAccordionProps) {
               key={concept.id}
               concept={concept}
               open={openIds.has(concept.id)}
+              revealed={revealed.has(concept.id)}
               onToggle={toggle}
               onCite={cite}
             />
