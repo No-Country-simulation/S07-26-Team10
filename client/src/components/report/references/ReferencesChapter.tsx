@@ -4,14 +4,14 @@ import Link from "next/link"
 import { useTranslations } from "next-intl"
 import { useReveal } from "@/hooks/use-reveal"
 import { ChapterMasthead } from "@/components/report/chapter/ChapterMasthead"
-import type { Reference } from "@/features/home/data/references"
+import type { PublicReference } from "@/features/public/references/types"
 
 interface ACard {
   title: string
   body: string
 }
 
-export function ReferencesChapter({ references }: { references: Reference[] }) {
+export function ReferencesChapter({ references }: { references: PublicReference[] }) {
   const t = useTranslations("Report")
 
   useReveal(".rv, .rvs")
