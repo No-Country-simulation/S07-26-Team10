@@ -15,11 +15,14 @@ interface ApiConcept {
   description: string | null;
 }
 
-function layerCodeFor(name: string): "FAC" | "IT" | "WKL" {
-  const n = name.toLowerCase();
-  if (n.includes("facility") || n.includes("instalaci") || n.includes("facilidad")) return "FAC";
-  if (n.includes("it") || n.includes("comput") || n.includes("inform")) return "IT";
-  return "WKL";
+function layerCodeFor(name: string): string {
+  if (!name) return "TAX";
+  const clean = name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .toUpperCase();
+  return clean.substring(0, 3) || "TAX";
 }
 
 function normalize(s: string): string {
@@ -33,7 +36,7 @@ function normalize(s: string): string {
 
 function toConcept(
   apiConcept: ApiConcept,
-  layerCode: "FAC" | "IT" | "WKL",
+  layerCode: string,
   index: number,
 ): PublicTaxonomyConcept {
   const label: "est" | "prop" = index % 2 === 0 ? "est" : "prop";
@@ -79,10 +82,10 @@ export const getPublicTaxonomyData = cache(
           toConcept(
             {
               id: concept.id,
-              category_id: concept.category_id,
+              category_id: (concept as ApiConcept & { category_id?: string }).category_id || category.id,
               name: concept.name,
               description: concept.description || "",
-              display_order: concept.display_order || idx + 1,
+              display_order: (concept as ApiConcept & { display_order?: number }).display_order || idx + 1,
             } as ApiConcept & { category_id: string; display_order: number },
             layerCode,
             idx,
@@ -98,7 +101,15 @@ export const getPublicTaxonomyData = cache(
         });
       }
 
-      return result.length > 0 ? result : placeholderTaxonomy[targetLang];
+      const totalConcepts = result.reduce(
+        (acc, cat) => acc + (cat.concepts?.length || 0),
+        0,
+      );
+      if (totalConcepts === 0 || result.length === 0) {
+        return placeholderTaxonomy[targetLang];
+      }
+
+      return result;
     } catch (e) {
       console.error("[Taxonomy] Unexpected error:", e);
       return placeholderTaxonomy[targetLang];

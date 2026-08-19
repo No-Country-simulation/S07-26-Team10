@@ -15,28 +15,18 @@ import {
   getReportVersionSectionBySlug,
   REPORT_SLUG,
 } from "@/lib/api/reports";
-import { calculateReadingTime } from "./chapters-utils";
+import {
+  calculateReadingTime,
+  mapPublicSection,
+  formatSectionsToChapterItems,
+} from "./chapters-utils";
+export { mapPublicSection, formatSectionsToChapterItems };
 import type {
   PublicSection,
   ChapterItem,
   ChapterDetailData,
   SectionNavigation,
 } from "./chapters-types";
-
-/**
- * Maps a raw backend section to a PublicSection.
- */
-export function mapPublicSection(raw: Record<string, unknown>): PublicSection {
-  return {
-    id: String(raw.id || ""),
-    report_version_id: String(raw.report_version_id || raw.report_id || ""),
-    title: String(raw.title || ""),
-    slug: String(raw.slug || ""),
-    content: String(raw.content || ""),
-    display_order:
-      typeof raw.display_order === "number" ? raw.display_order : 1,
-  };
-}
 
 /**
  * Resolves the active report_version_id from cookies (SSR) or falls back to published versions.
@@ -126,6 +116,8 @@ export const resolveActiveReportVersionId = cache(
   },
 );
 
+import { FALLBACK_SECTIONS } from "./data/fallback";
+
 /**
  * Server-only query to fetch public sections for a report version.
  * Next.js tags: ['sections', `sections-${versionId}`]
@@ -135,25 +127,38 @@ export const getPublicSections = cache(
     reportVersionId?: string,
     preferredLang?: "es" | "en",
   ): Promise<PublicSection[]> => {
-    const versionId =
-      reportVersionId || (await resolveActiveReportVersionId(preferredLang));
-    if (!versionId) return [];
-
+    let targetLang: "es" | "en" = preferredLang || "es";
     try {
-      const data = await getReportVersionSections(versionId);
-      if (Array.isArray(data)) {
-        return (data as unknown as Record<string, unknown>[])
-          .map(mapPublicSection)
-          .sort((a, b) => a.display_order - b.display_order);
-      }
-    } catch (error) {
-      console.error(
-        `Error fetching public sections for version ${versionId}:`,
-        error,
-      );
+      const cookieStore = await cookies();
+      const cookieLang =
+        (cookieStore.get("app_content_lang")?.value as "es" | "en") ||
+        (cookieStore.get("app_lang")?.value as "es" | "en");
+      targetLang = preferredLang || cookieLang || "es";
+    } catch {
+      // ignore
     }
 
-    return [];
+    const versionId =
+      reportVersionId || (await resolveActiveReportVersionId(targetLang));
+
+    if (versionId) {
+      try {
+        const data = await getReportVersionSections(versionId);
+        if (Array.isArray(data) && data.length > 0) {
+          return (data as unknown as Record<string, unknown>[])
+            .map(mapPublicSection)
+            .sort((a, b) => a.display_order - b.display_order);
+        }
+      } catch (error) {
+        console.error(
+          `Error fetching public sections for version ${versionId}:`,
+          error,
+        );
+      }
+    }
+
+    // Fallback if no sections in DB
+    return FALLBACK_SECTIONS[targetLang] || FALLBACK_SECTIONS.es;
   },
 );
 
@@ -179,6 +184,7 @@ async function fetchSectionByVersionAndSlug(
  * Server-only query to fetch a specific section by its exact slug.
  * 1. Tries the active version first.
  * 2. If not found in primary versionId, searches across other published report versions.
+ * 3. If still not found, searches in fallback sections.
  */
 export const getPublicSectionBySlug = cache(
   async (
@@ -227,31 +233,22 @@ export const getPublicSectionBySlug = cache(
       );
     }
 
+    // 3. Fallback search across static fallback sections
+    const fallbackEs = FALLBACK_SECTIONS.es.find(
+      (s) => s.slug === rawSlug || s.slug.toLowerCase() === rawSlug.toLowerCase(),
+    );
+    if (fallbackEs) return fallbackEs;
+
+    const fallbackEn = FALLBACK_SECTIONS.en.find(
+      (s) => s.slug === rawSlug || s.slug.toLowerCase() === rawSlug.toLowerCase(),
+    );
+    if (fallbackEn) return fallbackEn;
+
     return null;
   },
 );
 
-/**
- * Formats a list of PublicSection into ChapterItem format for UI listing.
- */
-export function formatSectionsToChapterItems(
-  sections: PublicSection[],
-): ChapterItem[] {
-  return sections.map((sec, idx) => {
-    const num = String(sec.display_order || idx + 1).padStart(2, "0");
-    return {
-      id: sec.id,
-      num,
-      displayOrder: sec.display_order || idx + 1,
-      title: sec.title,
-      slug: sec.slug,
-      time: calculateReadingTime(sec.content),
-      href: `/chapter/${sec.slug}`,
-      content: sec.content,
-      reportVersionId: sec.report_version_id,
-    };
-  });
-}
+
 
 /**
  * Server query to fetch a chapter's full detail, including prev/next navigation.

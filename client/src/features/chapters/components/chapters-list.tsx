@@ -4,6 +4,8 @@ import React, { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useVersion } from "@/context/version-context";
 import { getPublicChapterItemsAction } from "../chapters-actions";
+import { formatSectionsToChapterItems } from "../chapters-utils";
+import { FALLBACK_SECTIONS } from "../data/fallback";
 import type { ChapterItem } from "../chapters-types";
 
 interface ChaptersListProps {
@@ -62,11 +64,20 @@ export function ChaptersList({ initialItems = [] }: ChaptersListProps) {
           if (fetchedItems && fetchedItems.length > 0) {
             setItems(fetchedItems);
           } else {
-            setItems([]);
+            const fallback = formatSectionsToChapterItems(
+              FALLBACK_SECTIONS[contentLanguage || "es"] || FALLBACK_SECTIONS.es,
+            );
+            setItems(fallback);
           }
         }
       } catch (err) {
         console.error("Error loading chapter items for version:", err);
+        if (!isCancelled) {
+          const fallback = formatSectionsToChapterItems(
+            FALLBACK_SECTIONS[contentLanguage || "es"] || FALLBACK_SECTIONS.es,
+          );
+          setItems(fallback);
+        }
       } finally {
         if (!isCancelled) {
           setIsLoading(false);
@@ -84,29 +95,30 @@ export function ChaptersList({ initialItems = [] }: ChaptersListProps) {
     return <ChaptersListSkeleton />;
   }
 
-  // If there are dynamic sections from the API, render them
-  if (items.length > 0) {
-    return (
-      <div
-        className={`chap transition-opacity duration-300 ${
-          isPending ? "opacity-60" : "opacity-100"
-        }`}
-      >
-        {items.map((item) => (
-          <Link key={item.id || item.slug} href={`/chapter/${item.slug}`}>
-            <span className="n">{item.num}</span>
-            <div>
-              <h3>{item.title}</h3>
-            </div>
-            <span className="t">{item.time}</span>
-          </Link>
-        ))}
-      </div>
-    );
-  }
+  const displayItems =
+    items.length > 0
+      ? items
+      : formatSectionsToChapterItems(
+          FALLBACK_SECTIONS[contentLanguage || "es"] || FALLBACK_SECTIONS.es,
+        );
 
-  // Fallback while waiting or empty state
-  return <ChaptersListSkeleton />;
+  return (
+    <div
+      className={`chap transition-opacity duration-300 ${
+        isPending ? "opacity-60" : "opacity-100"
+      }`}
+    >
+      {displayItems.map((item) => (
+        <Link key={item.id || item.slug} href={`/chapter/${item.slug}`}>
+          <span className="n">{item.num}</span>
+          <div>
+            <h3>{item.title}</h3>
+          </div>
+          <span className="t">{item.time}</span>
+        </Link>
+      ))}
+    </div>
+  );
 }
 
 // Backward-compatibility aliases
