@@ -163,14 +163,18 @@ export function SearchResultsList({
             role="option"
             aria-selected={isSelected}
             className={`search-result-row ${isSelected ? "is-selected" : ""}`}
-            onClick={() => onSelect?.(item)}
+            onClick={(e) => {
+              if (onSelect) {
+                e.preventDefault();
+                onSelect(item);
+              }
+            }}
             onMouseEnter={() => onHoverIndex?.(index)}
           >
             <div className="search-badge-col">
-              <span className={`k search-type-pill ${badge.className}`}>
-                {badge.code}
+              <span className="k search-type-label">
+                {badge.label}
               </span>
-              <span className="search-type-name">{badge.label}</span>
             </div>
 
             <div className="search-content-col">

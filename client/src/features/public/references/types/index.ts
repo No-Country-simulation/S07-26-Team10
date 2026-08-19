@@ -1,4 +1,5 @@
 export interface PublicReference {
+  id?: string;
   authors: string;
   title: string;
   year: number;

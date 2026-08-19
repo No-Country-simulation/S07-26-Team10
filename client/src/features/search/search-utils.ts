@@ -5,20 +5,28 @@ import type { SearchResultItem, SearchResultType } from "./search-types";
  */
 const KNOWN_TITLE_SLUG_MAP: Record<string, string> = {
   "resumen ejecutivo": "resumen-ejecutivo",
-  "executive summary": "executive-summary",
+  "executive summary": "resumen-ejecutivo",
   "definición del problema": "definicion-problema",
   "definition of the problem": "definicion-problema",
+  "definicion del problema": "definicion-problema",
   "modelo operativo del data center": "modelo-operativo",
   "data center operating model": "modelo-operativo",
+  "modelo operativo": "modelo-operativo",
+  "operating model": "modelo-operativo",
   "taxonomía propuesta": "taxonomia",
   "proposed taxonomy": "taxonomia",
+  "taxonomia propuesta": "taxonomia",
+  taxonomía: "taxonomia",
+  taxonomy: "taxonomia",
   facility: "facility",
   it: "it",
   workload: "workload",
   "impacto económico": "impacto-economico",
   "economic impact": "impacto-economico",
+  "impacto economico": "impacto-economico",
   metodología: "metodologia",
   methodology: "metodologia",
+  metodologia: "metodologia",
   referencias: "referencias",
   references: "referencias",
 };
@@ -59,6 +67,23 @@ export function resolveSearchResultHref(item: SearchResultItem): string {
     }
 
     case "resource": {
+      // Limpiar prefijos de imagen / figura para asociar al slug del capítulo correspondiente
+      const cleanTitle = (item.title || "")
+        .replace(/^imagen\s+ilustrativa:\s*/i, "")
+        .replace(/^illustrative\s+image:\s*/i, "")
+        .replace(/^figura\s*\d*\s*[:\-]\s*/i, "")
+        .replace(/^figure\s*\d*\s*[:\-]\s*/i, "")
+        .toLowerCase()
+        .trim();
+
+      const resourceKnownSlug = KNOWN_TITLE_SLUG_MAP[cleanTitle];
+      if (resourceKnownSlug) {
+        if (resourceKnownSlug === "taxonomia") return "/report/taxonomy";
+        if (resourceKnownSlug === "referencias") return "/report/references";
+        if (resourceKnownSlug === "metodologia") return "/methodology";
+        return `/chapter/${resourceKnownSlug}`;
+      }
+
       if (item.location?.section) {
         return `/chapter/${item.location.section}`;
       }
@@ -97,44 +122,39 @@ export function getTypeBadgeInfo(
   switch (t) {
     case "section":
       return {
-        label: isEn ? "Section" : "Sección",
-        code: "SEC",
+        label: isEn ? "Chapter" : "Capítulo",
+        code: isEn ? "Chapter" : "Capítulo",
         className: "badge-section",
       };
     case "category":
-      return {
-        label: isEn ? "Category" : "Categoría",
-        code: "CAT",
-        className: "badge-category",
-      };
     case "concept":
       return {
-        label: isEn ? "Concept" : "Concepto",
-        code: "CON",
+        label: isEn ? "Taxonomy" : "Taxonomía",
+        code: isEn ? "Taxonomy" : "Taxonomía",
         className: "badge-concept",
       };
     case "reference":
       return {
         label: isEn ? "Reference" : "Referencia",
-        code: "REF",
+        code: isEn ? "Reference" : "Referencia",
         className: "badge-reference",
       };
     case "resource":
       return {
         label: isEn ? "Resource" : "Recurso",
-        code: "RES",
+        code: isEn ? "Resource" : "Recurso",
         className: "badge-resource",
       };
     case "report_version":
       return {
-        label: isEn ? "Report Version" : "Versión",
-        code: "VER",
+        label: isEn ? "Report" : "Reporte",
+        code: isEn ? "Report" : "Reporte",
         className: "badge-version",
       };
     default:
       return {
-        label: isEn ? "Content" : "Contenido",
-        code: "DOC",
+        label: isEn ? "Chapter" : "Capítulo",
+        code: isEn ? "Chapter" : "Capítulo",
         className: "badge-default",
       };
   }

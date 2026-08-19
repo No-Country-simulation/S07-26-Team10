@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition, useMemo, useRef, useCallback } from
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useLanguage } from "@/context/language-context";
+import { useVersion } from "@/context/version-context";
 import { searchPublicContentAction } from "../search-actions";
 import type { SearchResultItem, SearchTypeFilter } from "../search-types";
 import { resolveSearchResultHref } from "../search-utils";
@@ -63,7 +64,16 @@ function SpinnerIcon() {
 
 export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
   const t = useTranslations("Nav");
-  const { language } = useLanguage();
+  const { language, setLanguage } = useLanguage();
+  const {
+    version: currentVersion,
+    setVersion,
+    contentLanguage,
+    setContentLanguage,
+    reportVersions,
+    activeReport,
+    setActiveBaseReportId,
+  } = useVersion();
   const lang: "es" | "en" = language === "en" ? "en" : "es";
   const router = useRouter();
 
@@ -203,6 +213,64 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
     return counts;
   }, [results]);
 
+  // Sincroniza la versión/idioma del resultado seleccionado y navega a su URL
+  const handleSelectResult = useCallback(
+    (item: SearchResultItem) => {
+      const targetReportVersionId = item.location?.report_version;
+      let didChangeContext = false;
+
+      if (targetReportVersionId && reportVersions && reportVersions.length > 0) {
+        const matchingVersion = reportVersions.find(
+          (rv) => rv.id === targetReportVersionId,
+        );
+
+        if (matchingVersion) {
+          const targetLang = (matchingVersion.language || "ES").toLowerCase() as "es" | "en";
+          const targetVer = matchingVersion.version.toLowerCase().startsWith("v")
+            ? matchingVersion.version.toLowerCase()
+            : `v${matchingVersion.version.toLowerCase()}`;
+
+          if (targetLang !== language) {
+            setLanguage(targetLang);
+            didChangeContext = true;
+          }
+          if (targetLang !== contentLanguage) {
+            setContentLanguage(targetLang);
+            didChangeContext = true;
+          }
+          if (targetVer !== currentVersion) {
+            setVersion(targetVer);
+            didChangeContext = true;
+          }
+          if (matchingVersion.report_id && matchingVersion.report_id !== activeReport?.id) {
+            setActiveBaseReportId(matchingVersion.report_id);
+            didChangeContext = true;
+          }
+        }
+      }
+
+      const href = resolveSearchResultHref(item);
+      onClose();
+      router.push(href);
+      if (didChangeContext) {
+        router.refresh();
+      }
+    },
+    [
+      reportVersions,
+      language,
+      contentLanguage,
+      currentVersion,
+      activeReport,
+      setLanguage,
+      setContentLanguage,
+      setVersion,
+      setActiveBaseReportId,
+      onClose,
+      router,
+    ],
+  );
+
   // Keyboard navigation inside results list (Up/Down/Enter)
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (filteredResults.length === 0) return;
@@ -220,10 +288,7 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
     } else if (e.key === "Enter") {
       e.preventDefault();
       if (selectedIndex >= 0 && selectedIndex < filteredResults.length) {
-        const item = filteredResults[selectedIndex];
-        const href = resolveSearchResultHref(item);
-        onClose();
-        router.push(href);
+        handleSelectResult(filteredResults[selectedIndex]);
       }
     }
   };
@@ -324,7 +389,7 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
           lang={lang}
           isLoading={isLoading}
           selectedIndex={selectedIndex}
-          onSelect={() => onClose()}
+          onSelect={handleSelectResult}
           onHoverIndex={setSelectedIndex}
           onSuggestionClick={handleSuggestionClick}
         />
