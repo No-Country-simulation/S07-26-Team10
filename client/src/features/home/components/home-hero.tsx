@@ -53,7 +53,11 @@ function Block({
   );
 }
 
-export function HomeHero() {
+export function HomeHero({
+  downloadButton,
+}: {
+  downloadButton?: ReactNode;
+}) {
   const t = useTranslations("HomePage");
   const line1Count = t("heroLine1").split(" ").length;
 
@@ -83,9 +87,11 @@ export function HomeHero() {
           <a className="b solid" href="#s01">
             {t("readTheReport")} <ArrowIcon />
           </a>
-          <a className="b line" href="/report">
-            {t("downloadPdf")} <DownloadIcon />
-          </a>
+          {downloadButton ?? (
+            <a className="b line" href="/report">
+              {t("downloadPdf")} <DownloadIcon />
+            </a>
+          )}
         </Block>
         <Block className="hmono blk" delay="800ms">
           {t("heroMono")}
