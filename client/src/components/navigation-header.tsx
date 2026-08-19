@@ -8,7 +8,7 @@ import { useLanguage } from "@/context/language-context";
 import { useVersion } from "@/context/version-context";
 import { useScrollProgress } from "@/hooks/use-scroll-progress";
 import { useSectionTracker } from "@/hooks/use-section-tracker";
-import { searchIndex } from "@/features/public/home/data/search-index";
+import { SearchOverlay } from "@/features/search";
 
 import { ReportToggle } from "./report-toggle";
 import { VersionToggle } from "./version-toggle";
@@ -21,88 +21,12 @@ const NAV_LINKS = [
   { href: "/report/references", key: "references", match: "/report/references" },
 ];
 
-
 function SearchIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <circle cx="11" cy="11" r="7.2" />
       <path d="M20.5 20.5l-4-4" />
     </svg>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M6 6l12 12M18 6L6 18" />
-    </svg>
-  );
-}
-
-function SearchOverlay({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
-  const t = useTranslations("Nav");
-  const [query, setQuery] = useState("");
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return q
-      ? searchIndex.filter((i) =>
-          `${i.k} ${t(i.tKey)} ${t(i.eKey)}`.toLowerCase().includes(q),
-        )
-      : searchIndex;
-  }, [query, t]);
-
-  if (!open) return null;
-
-  return (
-    <div className="sheet on">
-      <button
-        className="sclose"
-        aria-label="Close"
-        onClick={onClose}
-      >
-        <CloseIcon />
-      </button>
-      <div className="box">
-        <input
-          autoFocus
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t("searchPlaceholder")}
-          autoComplete="off"
-        />
-        <div className="sres">
-          {results.length > 0 ? (
-            results.map((item) => (
-              <Link key={item.k} href={item.href} onClick={onClose}>
-                <span className="k">{item.k}</span>
-                <span>
-                  <span className="ti">{t(item.tKey)}</span>
-                  <span className="ex">{t(item.eKey)}</span>
-                </span>
-              </Link>
-            ))
-          ) : (
-            <div className="none">{t("noResults")}</div>
-          )}
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -121,6 +45,18 @@ export function NavigationHeader({ disableShrink = false }: { disableShrink?: bo
   const shrunk = !onHome ? false : shrink;
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
+
+  // Global keyboard shortcut: Cmd+K / Ctrl+K
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const changeLanguage = (lang: "es" | "en") => {
     setLanguage(lang);

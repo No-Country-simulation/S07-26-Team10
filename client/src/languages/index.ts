@@ -14,6 +14,8 @@ import reportEs from "./report/es.json";
 import reportEn from "./report/en.json";
 import howToCiteEs from "./howToCite/es.json";
 import howToCiteEn from "./howToCite/en.json";
+import searchEs from "./search/es.json";
+import searchEn from "./search/en.json";
 
 export const esMessages = {
   Common: commonEs,
@@ -24,6 +26,7 @@ export const esMessages = {
   AdminPage: adminEs,
   Report: reportEs,
   HowToCite: howToCiteEs,
+  Search: searchEs,
 };
 
 export const enMessages = {
@@ -35,6 +38,7 @@ export const enMessages = {
   AdminPage: adminEn,
   Report: reportEn,
   HowToCite: howToCiteEn,
+  Search: searchEn,
 };
 
 export const messagesMap = {
