@@ -45,8 +45,9 @@ export const resolveActiveReportVersionId = cache(
       const selectedBaseReportId = cookieStore.get("app_base_report_id")?.value;
       const selectedVersion = cookieStore.get("app_version")?.value;
       const selectedContentLang =
-        (cookieStore.get("app_content_lang")?.value as "es" | "en") ||
         preferredLang ||
+        (cookieStore.get("app_content_lang")?.value as "es" | "en") ||
+        (cookieStore.get("app_lang")?.value as "es" | "en") ||
         "es";
       const targetApiLang = selectedContentLang === "en" ? "EN" : "ES";
 
@@ -80,21 +81,24 @@ export const resolveActiveReportVersionId = cache(
             return cleanV === cleanSelected && langV === targetApiLang;
           });
           if (matchBoth?.id) return matchBoth.id;
+        }
 
-          // 2. Try match version only
+        // 2. Try match language (find any published version in the target language)
+        const matchLang = publishedVersions.find((v) => {
+          const langV = (v.language || "ES").toUpperCase();
+          return langV === targetApiLang;
+        });
+        if (matchLang?.id) return matchLang.id;
+
+        // 3. Try match version only
+        if (selectedVersion) {
+          const cleanSelected = selectedVersion.toLowerCase().replace(/^v/, "");
           const matchVer = publishedVersions.find((v) => {
             const cleanV = (v.version || "").toLowerCase().replace(/^v/, "");
             return cleanV === cleanSelected;
           });
           if (matchVer?.id) return matchVer.id;
         }
-
-        // 3. Try match language only
-        const matchLang = publishedVersions.find((v) => {
-          const langV = (v.language || "ES").toUpperCase();
-          return langV === targetApiLang;
-        });
-        if (matchLang?.id) return matchLang.id;
 
         // 4. Default to first published version
         return publishedVersions[0].id;
@@ -113,8 +117,12 @@ export const resolveActiveReportVersionId = cache(
  * Next.js tags: ['sections', `sections-${versionId}`]
  */
 export const getPublicSections = cache(
-  async (reportVersionId?: string): Promise<PublicSection[]> => {
-    const versionId = reportVersionId || (await resolveActiveReportVersionId());
+  async (
+    reportVersionId?: string,
+    preferredLang?: "es" | "en",
+  ): Promise<PublicSection[]> => {
+    const versionId =
+      reportVersionId || (await resolveActiveReportVersionId(preferredLang));
     if (!versionId) return [];
 
     try {

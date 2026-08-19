@@ -4,6 +4,7 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import {
   getReportById,
+  getPublishedVersions,
   getPublishedVersionByLanguage,
   getPublishedVersionByVersion,
   getFullReport,
@@ -16,8 +17,6 @@ import type { ApiReport, ApiVersion, ApiSection, FullReportData } from "@/lib/ap
 
 export type PublicLanguage = "es" | "en";
 
-
-
 async function getSelectedReportIdFromCookie(): Promise<string | null> {
   const cookieStore = cookies();
   return cookieStore.then((store) => store.get("app_base_report_id")?.value || null);
@@ -29,15 +28,15 @@ async function getSelectedVersionFromCookie(): Promise<string | null> {
 }
 
 async function getSelectedLanguageFromCookie(): Promise<PublicLanguage> {
-  const cookieStore = cookies();
-  return cookieStore.then((store) => {
-    const lang = store.get("app_content_lang")?.value;
-    return lang === "en" ? "en" : "es";
-  });
+  const cookieStore = await cookies();
+  const lang =
+    cookieStore.get("app_content_lang")?.value ||
+    cookieStore.get("app_lang")?.value;
+  return lang === "en" ? "en" : "es";
 }
 
 export const getPublicReportContext = cache(async (lang?: PublicLanguage) => {
-  const resolvedLang = lang ?? await getSelectedLanguageFromCookie();
+  const resolvedLang = lang ?? (await getSelectedLanguageFromCookie());
   const targetLang = resolvedLang === "en" ? "EN" : "ES";
 
   // Try to get selected report ID from cookie first
@@ -54,42 +53,94 @@ export const getPublicReportContext = cache(async (lang?: PublicLanguage) => {
   }
 
   if (!report) {
-    return { report: null, version: null, language: resolvedLang, fullReport: null as FullReportData | null };
+    return {
+      report: null,
+      version: null,
+      language: resolvedLang,
+      fullReport: null as FullReportData | null,
+    };
   }
 
   const versionString = await getSelectedVersionFromCookie();
   let version: ApiVersion | null = null;
   let fullReport: FullReportData | null = null;
 
-  if (versionString) {
-    //
-    try {
-      fullReport = await getFullReport(report.id, versionString, targetLang);
-      version = fullReport.version;
-    } catch {
-      // Fallback de by-version endpoint si no esta disponible el reporte completo
-      try {
-        version = await getPublishedVersionByVersion(report.id, versionString);
-      } catch {
-        version = null;
-      }
+  const publishedVersions = await getPublishedVersions(report.id).catch(
+    () => [],
+  );
+
+  if (
+    versionString &&
+    Array.isArray(publishedVersions) &&
+    publishedVersions.length > 0
+  ) {
+    const cleanSelected = versionString.toLowerCase().replace(/^v/, "");
+    // 1. Match both version AND language
+    const matchBoth = publishedVersions.find((v) => {
+      const cleanV = (v.version || "").toLowerCase().replace(/^v/, "");
+      const langV = (v.language || "ES").toUpperCase();
+      return cleanV === cleanSelected && langV === targetLang;
+    });
+
+    if (matchBoth) {
+      version = matchBoth;
     }
   }
 
+  // 2. Match language (find any published version in the requested language)
+  if (
+    !version &&
+    Array.isArray(publishedVersions) &&
+    publishedVersions.length > 0
+  ) {
+    const matchLang = publishedVersions.find((v) => {
+      const langV = (v.language || "ES").toUpperCase();
+      return langV === targetLang;
+    });
+    if (matchLang) {
+      version = matchLang;
+    }
+  }
+
+  // 3. Fallback to match version only
+  if (
+    !version &&
+    versionString &&
+    Array.isArray(publishedVersions) &&
+    publishedVersions.length > 0
+  ) {
+    const cleanSelected = versionString.toLowerCase().replace(/^v/, "");
+    const matchVer = publishedVersions.find((v) => {
+      const cleanV = (v.version || "").toLowerCase().replace(/^v/, "");
+      return cleanV === cleanSelected;
+    });
+    if (matchVer) {
+      version = matchVer;
+    }
+  }
+
+  // 4. Default to first published version
+  if (!version && Array.isArray(publishedVersions) && publishedVersions.length > 0) {
+    version = publishedVersions[0];
+  }
+
+  // Fallback if publishedVersions was empty
   if (!version) {
-    // Se usa el endpoint de by-language para obtener la version publicada mas reciente de un reporte
     try {
       version = await getPublishedVersionByLanguage(report.id, targetLang);
     } catch {
-      // Final fallback a client-side resolution
       version = await resolvePublishedVersion(report.id, resolvedLang);
     }
   }
 
-  // If we have version but no fullReport, try to get it
-  if (version && !fullReport) {
+  // If we have version, try to get fullReport for optimizations
+  if (version) {
     try {
-      fullReport = await getFullReport(report.id, version.version || "", targetLang);
+      fullReport = await getFullReport(
+        report.id,
+        version.version || "",
+        targetLang,
+      );
     } catch {
       // Full report not available, will use individual endpoints
     }

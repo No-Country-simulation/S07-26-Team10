@@ -86,9 +86,11 @@ export interface TaxonomyCategory {
  * Usa fullReport si está disponible (1 call), sino endpoint individual.
  */
 export const getTaxonomyCategories = cache(async (
-  language: "ES" | "EN" = "ES"
+  language?: "ES" | "EN"
 ): Promise<TaxonomyCategory[]> => {
-  const ctx = await resolveReportContext(language === "EN" ? "en" : "es");
+  const ctx = await resolveReportContext(
+    language ? (language === "EN" ? "en" : "es") : undefined,
+  );
   if (!ctx) return [];
 
   // Use fullReport if available (from getFullReport optimization)
@@ -128,9 +130,11 @@ export const getTaxonomyCategories = cache(async (
  */
 export const getTaxonomyConcepts = cache(async (
   categoryId: string,
-  language: "ES" | "EN" = "ES"
+  language?: "ES" | "EN"
 ): Promise<ApiConcept[]> => {
-  const ctx = await resolveReportContext(language === "EN" ? "en" : "es");
+  const ctx = await resolveReportContext(
+    language ? (language === "EN" ? "en" : "es") : undefined,
+  );
   if (!ctx) return [];
 
   // Use fullReport if available
@@ -159,9 +163,11 @@ export const getTaxonomyConcepts = cache(async (
  * Prefiere fullReport (1 call), sino hace fetches paralelos.
  */
 export const getFullTaxonomy = cache(async (
-  language: "ES" | "EN" = "ES"
+  language?: "ES" | "EN"
 ): Promise<TaxonomyCategory[]> => {
-  const ctx = await resolveReportContext(language === "EN" ? "en" : "es");
+  const ctx = await resolveReportContext(
+    language ? (language === "EN" ? "en" : "es") : undefined,
+  );
   if (!ctx) return [];
 
   // Use fullReport if available (1 call optimization)

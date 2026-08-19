@@ -79,6 +79,7 @@ export function BurgerMenu() {
             onClick={() => {
               setLanguage("en");
               setIsOpen(false);
+              router.refresh();
             }}
           >
             EN
@@ -88,6 +89,7 @@ export function BurgerMenu() {
             onClick={() => {
               setLanguage("es");
               setIsOpen(false);
+              router.refresh();
             }}
           >
             ES

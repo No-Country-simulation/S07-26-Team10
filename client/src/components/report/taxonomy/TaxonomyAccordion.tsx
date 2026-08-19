@@ -1,10 +1,13 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState, useTransition } from "react"
 import { useTranslations } from "next-intl"
 import { Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useReveal } from "@/hooks/use-reveal"
+import { useLanguage } from "@/context/language-context"
+import { useVersion } from "@/context/version-context"
+import { getPublicTaxonomyDataAction } from "@/features/public/taxonomy/taxonomy-actions"
 import type { TaxonomyCategory } from "@/lib/taxonomy-types"
 import { TaxonomyEntry } from "@/components/report/taxonomy/TaxonomyEntry"
 
@@ -14,16 +17,83 @@ interface TaxonomyAccordionProps {
   categories: TaxonomyCategory[]
 }
 
-export function TaxonomyAccordion({ categories }: TaxonomyAccordionProps) {
+export function TaxonomyAccordionSkeleton() {
+  return (
+    <div className="list animate-pulse" aria-hidden="true">
+      {Array.from({ length: 9 }).map((_, i) => (
+        <div
+          key={i}
+          className="eh"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "74px 250px 1fr 132px 26px",
+            gap: "22px",
+            alignItems: "center",
+            padding: "20px 4px",
+            borderBottom: "1px solid var(--phi-stroke, #E5E7EB)",
+          }}
+        >
+          <span className="h-4 w-12 bg-muted/70 rounded" />
+          <span className="h-4 w-44 bg-muted/60 rounded" />
+          <span className="h-3.5 w-4/5 bg-muted/50 rounded" />
+          <span className="h-5 w-24 bg-muted/40 rounded-full" />
+          <span className="h-4 w-4 bg-muted/30 rounded" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export function TaxonomyAccordion({ categories: initialCategories }: TaxonomyAccordionProps) {
   const t = useTranslations("Report")
+  const { language } = useLanguage()
+  const { contentLanguage, activeVersionId } = useVersion()
+  const currentLang = contentLanguage || language || "es"
+
+  const [categories, setCategories] = useState<TaxonomyCategory[]>(initialCategories)
+  const [isLoading, setIsLoading] = useState(false)
   const [filter, setFilter] = useState<LayerFilter>("ALL")
   const [query, setQuery] = useState("")
   const [openIds, setOpenIds] = useState<Set<string>>(new Set())
   const [revealed, setRevealed] = useState<Set<string>>(new Set())
   const [toast, setToast] = useState<string | null>(null)
   const listRef = useRef<HTMLDivElement>(null)
+  const [, startTransition] = useTransition()
 
   useReveal(".how")
+
+  // Sync with prop if it updates from SSR
+  useEffect(() => {
+    if (initialCategories && initialCategories.length > 0) {
+      setCategories(initialCategories)
+    }
+  }, [initialCategories])
+
+  // React to client language or version change
+  useEffect(() => {
+    let isCancelled = false
+    setIsLoading(true)
+    setRevealed(new Set())
+
+    startTransition(async () => {
+      try {
+        const fetched = await getPublicTaxonomyDataAction(currentLang)
+        if (!isCancelled && fetched && fetched.length > 0) {
+          setCategories(fetched as unknown as TaxonomyCategory[])
+        }
+      } catch (err) {
+        console.error("Error fetching taxonomy data for language:", err)
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false)
+        }
+      }
+    })
+
+    return () => {
+      isCancelled = true
+    }
+  }, [currentLang, activeVersionId])
 
   const total = useMemo(
     () => categories.reduce((n, c) => n + c.concepts.length, 0),
@@ -82,7 +152,7 @@ export function TaxonomyAccordion({ categories }: TaxonomyAccordionProps) {
   const visibleKey = visible.map((c) => c.id).join(",")
 
   useEffect(() => {
-    if (!listRef.current) return
+    if (!listRef.current || isLoading) return
     const els = [...listRef.current.querySelectorAll<HTMLElement>(".e")]
     if (!els.length) return
     const io = new IntersectionObserver(
@@ -108,7 +178,7 @@ export function TaxonomyAccordion({ categories }: TaxonomyAccordionProps) {
     )
     els.forEach((el) => io.observe(el))
     return () => io.disconnect()
-  }, [visibleKey])
+  }, [visibleKey, isLoading])
 
   useEffect(() => {
     const hash = window.location.hash.toUpperCase()
@@ -185,21 +255,29 @@ export function TaxonomyAccordion({ categories }: TaxonomyAccordionProps) {
             {t("legendLine", { est: estCount, prop: total - estCount, total })}
           </span>
         </div>
-        <div className="list" id="list" ref={listRef}>
-          {visible.map((concept) => (
-            <TaxonomyEntry
-              key={concept.id}
-              concept={concept}
-              open={openIds.has(concept.id)}
-              revealed={revealed.has(concept.id)}
-              onToggle={toggle}
-              onCite={cite}
-            />
-          ))}
-        </div>
-        <p className={cn("none", visible.length === 0 && "on")}>
-          {t("noEntryMatches")}
-        </p>
+
+        {isLoading ? (
+          <TaxonomyAccordionSkeleton />
+        ) : (
+          <div className="list" id="list" ref={listRef}>
+            {visible.map((concept) => (
+              <TaxonomyEntry
+                key={concept.id}
+                concept={concept}
+                open={openIds.has(concept.id)}
+                revealed={revealed.has(concept.id)}
+                onToggle={toggle}
+                onCite={cite}
+              />
+            ))}
+          </div>
+        )}
+
+        {!isLoading && (
+          <p className={cn("none", visible.length === 0 && "on")}>
+            {t("noEntryMatches")}
+          </p>
+        )}
         <div className="fsrc">{t("sourceLine")}</div>
       </div>
       <div className={cn("toast", toast && "on")}>{toast}</div>

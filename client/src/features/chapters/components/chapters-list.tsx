@@ -43,7 +43,7 @@ export function ChaptersListSkeleton() {
 }
 
 export function ChaptersList({ initialItems = [] }: ChaptersListProps) {
-  const { activeVersionId } = useVersion();
+  const { activeVersionId, contentLanguage } = useVersion();
   const [items, setItems] = useState<ChapterItem[]>(initialItems);
   const [isLoading, setIsLoading] = useState<boolean>(initialItems.length === 0);
   const [isPending, startTransition] = useTransition();
@@ -56,6 +56,7 @@ export function ChaptersList({ initialItems = [] }: ChaptersListProps) {
       try {
         const fetchedItems = await getPublicChapterItemsAction(
           activeVersionId || undefined,
+          contentLanguage,
         );
         if (!isCancelled) {
           if (fetchedItems && fetchedItems.length > 0) {
@@ -76,7 +77,7 @@ export function ChaptersList({ initialItems = [] }: ChaptersListProps) {
     return () => {
       isCancelled = true;
     };
-  }, [activeVersionId]);
+  }, [activeVersionId, contentLanguage]);
 
   // If loading and no items yet, show skeleton
   if (isLoading && items.length === 0) {

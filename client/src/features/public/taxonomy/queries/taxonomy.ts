@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
+import { cookies } from "next/headers";
 import { placeholderTaxonomy } from "@/features/public/taxonomy/data/placeholder";
 import type {
   PublicTaxonomyCategory,
@@ -54,13 +55,15 @@ function toConcept(
 
 export const getPublicTaxonomyData = cache(
   async (lang?: "es" | "en"): Promise<PublicTaxonomyCategory[]> => {
-    const targetLang = (lang ?? "es") === "en" ? "en" : "es";
+    const cookieStore = await cookies();
+    const cookieLang =
+      (cookieStore.get("app_content_lang")?.value as "es" | "en") ||
+      (cookieStore.get("app_lang")?.value as "es" | "en");
+    const targetLang = lang || cookieLang || "es";
+    const apiLang = targetLang === "en" ? "EN" : "ES";
 
     try {
-      // Sin arg → resuelve idioma desde cookie; con arg → idioma explícito.
-      const fullTaxonomy = await getFullTaxonomy(
-        lang ? (lang === "en" ? "EN" : "ES") : undefined,
-      );
+      const fullTaxonomy = await getFullTaxonomy(apiLang);
 
       // Sin datos desde la API → placeholder estructurado para garantizar la demo.
       if (!fullTaxonomy || fullTaxonomy.length === 0) {

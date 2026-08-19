@@ -18,9 +18,10 @@ import type {
  */
 export async function getPublicSectionsAction(
   reportVersionId?: string,
+  lang?: "es" | "en",
 ): Promise<PublicSection[]> {
   try {
-    return await getPublicSections(reportVersionId);
+    return await getPublicSections(reportVersionId, lang);
   } catch (error) {
     console.error("Error in getPublicSectionsAction:", error);
     return [];
@@ -32,9 +33,10 @@ export async function getPublicSectionsAction(
  */
 export async function getPublicChapterItemsAction(
   reportVersionId?: string,
+  lang?: "es" | "en",
 ): Promise<ChapterItem[]> {
   try {
-    const sections = await getPublicSections(reportVersionId);
+    const sections = await getPublicSections(reportVersionId, lang);
     return formatSectionsToChapterItems(sections);
   } catch (error) {
     console.error("Error in getPublicChapterItemsAction:", error);

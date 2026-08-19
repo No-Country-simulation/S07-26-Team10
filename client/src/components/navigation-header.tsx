@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useLanguage } from "@/context/language-context";
+import { useVersion } from "@/context/version-context";
 import { useScrollProgress } from "@/hooks/use-scroll-progress";
 import { useSectionTracker } from "@/hooks/use-section-tracker";
 import { searchIndex } from "@/features/public/home/data/search-index";
@@ -108,6 +109,7 @@ function SearchOverlay({
 export function NavigationHeader({ disableShrink = false }: { disableShrink?: boolean }) {
   const t = useTranslations("Nav");
   const { language, setLanguage } = useLanguage();
+  const { setContentLanguage } = useVersion();
   const router = useRouter();
   const { progress, shrink } = useScrollProgress({ disableShrink });
   const active = useSectionTracker(".phi section.n[data-n]");
@@ -122,6 +124,7 @@ export function NavigationHeader({ disableShrink = false }: { disableShrink?: bo
 
   const changeLanguage = (lang: "es" | "en") => {
     setLanguage(lang);
+    setContentLanguage(lang);
     router.refresh();
   };
 
