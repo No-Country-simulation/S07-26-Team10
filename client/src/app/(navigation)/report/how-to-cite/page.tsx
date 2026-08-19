@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useTranslations } from "next-intl"
 import { useReveal } from "@/hooks/use-reveal"
 import { ChapterMasthead } from "@/components/report/chapter/ChapterMasthead"
-import { CiteBlock } from "@/features/report/components/cite-block"
+import { CiteBlock } from "@/features/report-download/components/cite-block"
 
 export default function HowToCitePage() {
   const t = useTranslations("HowToCite")
