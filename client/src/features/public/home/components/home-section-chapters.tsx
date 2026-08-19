@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { ChaptersList } from "@/features/chapters";
+import { ChaptersList } from "@/features/chapters/components/chapters-list";
 
 export function HomeSectionChapters() {
   const t = useTranslations("HomePage");

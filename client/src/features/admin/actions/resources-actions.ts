@@ -1,7 +1,21 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { cookies } from "next/headers";
+
+function invalidateResourceTags(sectionId?: string) {
+  const tags = ["resources", "sections", "reports"];
+  if (sectionId) {
+    tags.push(`resources-${sectionId}`, `section-${sectionId}-resources`);
+  }
+  tags.forEach((t) => {
+    try {
+      updateTag(t);
+    } catch {
+      // ignore
+    }
+  });
+}
 import {
   createResourceSchema,
   updateResourceSchema,
@@ -168,8 +182,12 @@ export async function createResourceAction(input: CreateResourceInput): Promise<
 
       if (res.status === 201 || res.ok) {
         const data = (await res.json()) as ResourceItem;
+        invalidateResourceTags(result.data.section_id);
         revalidatePath("/admin/resources");
         revalidatePath(`/admin/sections/${result.data.section_id}`);
+        revalidatePath("/chapter");
+        revalidatePath("/chapter/[slug]", "page");
+        revalidatePath("/");
         return {
           success: true,
           data,
@@ -266,10 +284,14 @@ export async function updateResourceAction(
 
       if (res.ok) {
         const data = (await res.json()) as ResourceItem;
+        invalidateResourceTags(data.section_id || targetSectionId);
         revalidatePath("/admin/resources");
         if (data.section_id) {
           revalidatePath(`/admin/sections/${data.section_id}`);
         }
+        revalidatePath("/chapter");
+        revalidatePath("/chapter/[slug]", "page");
+        revalidatePath("/");
 
         // Automatic Cloudinary file cleanup if file was replaced
         if (
@@ -372,10 +394,14 @@ export async function deleteResourceAction(
     }
 
     if (deletedFromDb || lastRes?.status === 404) {
+      invalidateResourceTags(targetSectionId);
       revalidatePath("/admin/resources");
       if (targetSectionId) {
         revalidatePath(`/admin/sections/${targetSectionId}`);
       }
+      revalidatePath("/chapter");
+      revalidatePath("/chapter/[slug]", "page");
+      revalidatePath("/");
 
       return {
         success: true,

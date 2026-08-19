@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useLanguage } from "@/context/language-context";
 
@@ -18,6 +18,7 @@ export function BurgerMenu() {
   const t = useTranslations("Nav");
   const { language, setLanguage } = useLanguage();
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
