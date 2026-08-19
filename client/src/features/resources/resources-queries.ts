@@ -1,7 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
-import { getApiUrl } from "@/lib/api-url";
+import { getSectionResources } from "@/lib/api/reports";
 import type { PublicResource } from "./resources-types";
 
 function mapPublicResource(item: Record<string, unknown>): PublicResource {
@@ -20,26 +20,15 @@ function mapPublicResource(item: Record<string, unknown>): PublicResource {
 /**
  * Server-only query to fetch public resources for a given section.
  * Endpoint: GET /api/v1/sections/{section_id}/resources
- * Next.js Cache tags: ['resources', `resources-${sectionId}`]
  */
 export const getPublicSectionResources = cache(
   async (sectionId: string): Promise<PublicResource[]> => {
     if (!sectionId) return [];
 
     try {
-      const res = await fetch(getApiUrl(`/sections/${sectionId}/resources`), {
-        headers: { "Content-Type": "application/json" },
-        next: {
-          revalidate: 3600,
-          tags: ["resources", `resources-${sectionId}`],
-        },
-      });
-
-      if (res.ok) {
-        const data = (await res.json()) as Record<string, unknown>[];
-        if (Array.isArray(data)) {
-          return data.map(mapPublicResource);
-        }
+      const data = await getSectionResources(sectionId);
+      if (Array.isArray(data)) {
+        return (data as unknown as Record<string, unknown>[]).map(mapPublicResource);
       }
     } catch (error) {
       console.error(
