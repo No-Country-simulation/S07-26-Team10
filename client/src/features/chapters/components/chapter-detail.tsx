@@ -1,11 +1,9 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
-import { useReveal } from "@/hooks/use-reveal";
 import { ChapterMasthead } from "@/components/report/chapter/ChapterMasthead";
 import { HomeMdxContent } from "@/features/home/components/home-mdx-content";
 import { ChapterNavigation } from "./chapter-navigation";
+import { ChapterRevealObserver } from "./chapter-reveal-observer";
 import { calculateReadingTime } from "../chapters-utils";
 import type { ChapterDetailData } from "../chapters-types";
 import { Clock, ChevronRight } from "lucide-react";
@@ -16,7 +14,6 @@ interface ChapterDetailProps {
 
 export function ChapterDetail({ data }: ChapterDetailProps) {
   const { section, navigation, allSections } = data;
-  useReveal(".rv, .rvs");
 
   const currentIndex = allSections.findIndex((s) => s.slug === section.slug);
   const chapterNumber = String(
@@ -32,6 +29,7 @@ export function ChapterDetail({ data }: ChapterDetailProps) {
 
   return (
     <div className="chapter-detail-page">
+      <ChapterRevealObserver />
       <ChapterMasthead
         mono={`CAPÍTULO ${chapterNumber} // STRANDED CAPACITY`}
         title1={title1}
@@ -71,7 +69,7 @@ export function ChapterDetail({ data }: ChapterDetailProps) {
             </div>
           </div>
 
-          {/* Main MDX / Markdown Content */}
+          {/* Main MDX / Markdown Content - Server Rendered */}
           <div className="prose dark:prose-invert max-w-none text-foreground leading-relaxed">
             <HomeMdxContent content={section.content} />
           </div>

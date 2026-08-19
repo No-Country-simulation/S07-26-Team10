@@ -66,33 +66,41 @@ export const resolveActiveReportVersionId = cache(
 
       if (!reportId) return null;
 
-      if (selectedVersion) {
-        try {
-          const versionObj = await getPublishedVersionByVersion(
-            reportId,
-            selectedVersion,
-          );
-          if (versionObj?.id) return versionObj.id;
-        } catch {
-          // fallback to language query
-        }
-      }
-
-      try {
-        const versionObj = await getPublishedVersionByLanguage(
-          reportId,
-          targetApiLang,
-        );
-        if (versionObj?.id) return versionObj.id;
-      } catch {
-        // fallback to resolvePublishedVersion
-      }
-
-      const fallbackVersion = await resolvePublishedVersion(
-        reportId,
-        selectedContentLang,
+      const publishedVersions = await getPublishedVersions(reportId).catch(
+        () => [],
       );
-      return fallbackVersion?.id || null;
+
+      if (Array.isArray(publishedVersions) && publishedVersions.length > 0) {
+        // 1. Try to find an exact match for both version AND language
+        if (selectedVersion) {
+          const cleanSelected = selectedVersion.toLowerCase().replace(/^v/, "");
+          const matchBoth = publishedVersions.find((v) => {
+            const cleanV = (v.version || "").toLowerCase().replace(/^v/, "");
+            const langV = (v.language || "ES").toUpperCase();
+            return cleanV === cleanSelected && langV === targetApiLang;
+          });
+          if (matchBoth?.id) return matchBoth.id;
+
+          // 2. Try match version only
+          const matchVer = publishedVersions.find((v) => {
+            const cleanV = (v.version || "").toLowerCase().replace(/^v/, "");
+            return cleanV === cleanSelected;
+          });
+          if (matchVer?.id) return matchVer.id;
+        }
+
+        // 3. Try match language only
+        const matchLang = publishedVersions.find((v) => {
+          const langV = (v.language || "ES").toUpperCase();
+          return langV === targetApiLang;
+        });
+        if (matchLang?.id) return matchLang.id;
+
+        // 4. Default to first published version
+        return publishedVersions[0].id;
+      }
+
+      return null;
     } catch (error) {
       console.error("Error resolving active report_version_id:", error);
       return null;
