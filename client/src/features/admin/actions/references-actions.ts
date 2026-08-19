@@ -1,7 +1,21 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { cookies } from "next/headers";
+
+function invalidateReferenceTags(reportVersionId?: string) {
+  const tags = ["references", "reports"];
+  if (reportVersionId) {
+    tags.push(`references-${reportVersionId}`);
+  }
+  tags.forEach((t) => {
+    try {
+      updateTag(t);
+    } catch {
+      // ignore
+    }
+  });
+}
 import {
   createReferenceSchema,
   updateReferenceSchema,
@@ -172,7 +186,12 @@ export async function createReferenceAction(input: CreateReferenceInput): Promis
 
       if (res.status === 201 || res.ok) {
         const data = (await res.json()) as ReferenceItem;
+        invalidateReferenceTags(reportVersionId);
         revalidatePath("/admin/references");
+        revalidatePath("/report/references");
+        revalidatePath("/methodology");
+        revalidatePath("/report");
+        revalidatePath("/");
         return {
           success: true,
           data,
@@ -249,7 +268,12 @@ export async function updateReferenceAction(
 
       if (res.ok) {
         const data = (await res.json()) as ReferenceItem;
+        invalidateReferenceTags(targetVersionId);
         revalidatePath("/admin/references");
+        revalidatePath("/report/references");
+        revalidatePath("/methodology");
+        revalidatePath("/report");
+        revalidatePath("/");
         return {
           success: true,
           data,
@@ -336,7 +360,12 @@ export async function deleteReferenceAction(
     }
 
     if (deletedFromDb || lastRes?.status === 404) {
+      invalidateReferenceTags(targetVersionId);
       revalidatePath("/admin/references");
+      revalidatePath("/report/references");
+      revalidatePath("/methodology");
+      revalidatePath("/report");
+      revalidatePath("/");
       return {
         success: true,
         message: deletedFromDb

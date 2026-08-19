@@ -1,8 +1,22 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { cookies } from "next/headers";
 import { getApiUrl } from "@/lib/api-url";
+
+function invalidateTaxonomyTags(reportVersionId?: string) {
+  const tags = ["taxonomy", "categories", "concepts", "reports"];
+  if (reportVersionId) {
+    tags.push(`categories-${reportVersionId}`, `taxonomy-${reportVersionId}`);
+  }
+  tags.forEach((t) => {
+    try {
+      updateTag(t);
+    } catch {
+      // ignore
+    }
+  });
+}
 import type {
   CategoryItem,
   CreateCategoryInput,
@@ -284,7 +298,11 @@ export async function createCategoryAction(
 
       if (res.status === 201 || res.ok) {
         const data = await res.json();
+        invalidateTaxonomyTags(targetReportId);
         revalidatePath("/admin/taxonomy");
+        revalidatePath("/report/taxonomy");
+        revalidatePath("/report");
+        revalidatePath("/");
         return {
           success: true,
           data: mapCategoryResponse(data),
@@ -406,7 +424,11 @@ export async function updateCategoryAction(
 
       if (res.ok) {
         const data = await res.json();
+        invalidateTaxonomyTags(reportVersionId);
         revalidatePath("/admin/taxonomy");
+        revalidatePath("/report/taxonomy");
+        revalidatePath("/report");
+        revalidatePath("/");
         return {
           success: true,
           data: mapCategoryResponse(data),
@@ -472,7 +494,11 @@ export async function deleteCategoryAction(
       });
 
       if (res.ok || res.status === 204) {
+        invalidateTaxonomyTags(reportVersionId);
         revalidatePath("/admin/taxonomy");
+        revalidatePath("/report/taxonomy");
+        revalidatePath("/report");
+        revalidatePath("/");
         return { success: true };
       }
     }
@@ -632,7 +658,11 @@ export async function createConceptAction(input: CreateConceptInput): Promise<{
 
     if (res.status === 201 || res.ok) {
       const data = (await res.json()) as ConceptItem;
+      invalidateTaxonomyTags();
       revalidatePath("/admin/taxonomy");
+      revalidatePath("/report/taxonomy");
+      revalidatePath("/report");
+      revalidatePath("/");
       return {
         success: true,
         data,
@@ -712,7 +742,11 @@ export async function updateConceptAction(
 
       if (res.ok) {
         const data = (await res.json()) as ConceptItem;
+        invalidateTaxonomyTags();
         revalidatePath("/admin/taxonomy");
+        revalidatePath("/report/taxonomy");
+        revalidatePath("/report");
+        revalidatePath("/");
         return {
           success: true,
           data,
@@ -791,7 +825,11 @@ export async function deleteConceptAction(
     }
 
     if (deletedFromDb || lastRes?.status === 404) {
+      invalidateTaxonomyTags();
       revalidatePath("/admin/taxonomy");
+      revalidatePath("/report/taxonomy");
+      revalidatePath("/report");
+      revalidatePath("/");
       return {
         success: true,
         message: deletedFromDb
