@@ -6,6 +6,7 @@ import { HomeSectionChapters } from "@/features/home/components/home-section-cha
 import { HomeBanner } from "@/features/home/components/home-banner";
 import { HomeFunnel } from "@/features/home/components/home-funnel";
 import { HomeContinueReading } from "@/features/home/components/home-continue-reading";
+import { DownloadReportButtonServer } from "@/features/report-download/components/download-report-button-server";
 
 export const metadata: Metadata = {
   title: "PhysaFlow | Stranded Capacity Index",
@@ -17,7 +18,7 @@ export default function Home() {
   return (
     <>
       <HomeContinueReading />
-      <HomeHero />
+      <HomeHero downloadButton={<DownloadReportButtonServer />} />
       <HomeSupporters />
       <HomeSectionProblem />
       <HomeSectionChapters />

@@ -11,7 +11,11 @@ function DownloadSvg() {
   );
 }
 
-export function NavigationFooter() {
+export function NavigationFooter({
+  downloadButton,
+}: {
+  downloadButton?: React.ReactNode;
+}) {
   const t = useTranslations("Footer");
   const year = new Date().getFullYear();
 
@@ -33,9 +37,11 @@ export function NavigationFooter() {
             />
           </Link>
           <p>{t("description")}</p>
-          <a className="b line fdl-b" style={{ marginTop: 22 }} href="/report">
-            {t("downloadPdf")} <DownloadSvg />
-          </a>
+          {downloadButton ?? (
+            <a className="b line fdl-b" style={{ marginTop: 22 }} href="/report">
+              {t("downloadPdf")} <DownloadSvg />
+            </a>
+          )}
         </div>
         <div>
           <h4>{t("report")}</h4>
