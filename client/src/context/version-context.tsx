@@ -7,7 +7,7 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import { type Language } from "@/context/language-context";
+import { type Language, useLanguage } from "@/context/language-context";
 import {
   getReportsWithVersionsAction,
 } from "@/features/admin/actions/reports-actions";
@@ -77,13 +77,15 @@ export function VersionProvider({
   publicOnly?: boolean;
   initialReports?: PublicReportWithVersions[];
 }) {
+  const { language: uiLanguage, setLanguage: setUiLanguage } = useLanguage();
   const [version, setVersionState] = useState<string>("");
   const [contentLanguage, setContentLanguageState] = useState<Language>(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("app_content_lang") as Language;
+      const saved = (localStorage.getItem("app_content_lang") ||
+        localStorage.getItem("app_lang")) as Language;
       if (saved === "es" || saved === "en") return saved;
     }
-    return "es";
+    return uiLanguage || "es";
   });
 
   const [versionLangsMap, setVersionLangsMap] = useState<
@@ -91,12 +93,36 @@ export function VersionProvider({
   >({});
   const [baseReports, setBaseReports] = useState<BaseReport[]>([]);
   const [reportVersions, setReportVersions] = useState<ReportVersion[]>([]);
-  const [selectedBaseReportId, setSelectedBaseReportIdState] = useState<string | null>(() => {
+  const [selectedBaseReportId, setSelectedBaseReportIdState] = useState<
+    string | null
+  >(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("app_base_report_id");
     }
     return null;
   });
+
+  // Sync contentLanguage whenever uiLanguage changes from LanguageContext
+  useEffect(() => {
+    if (uiLanguage && uiLanguage !== contentLanguage) {
+      setContentLanguageState(uiLanguage);
+      localStorage.setItem("app_content_lang", uiLanguage);
+      document.cookie = `app_content_lang=${uiLanguage}; path=/; SameSite=Lax; max-age=31536000`;
+
+      // If current version doesn't support the new language, switch to a compatible version
+      const currentVersionLangs = versionLangsMap[version] || [];
+      if (!currentVersionLangs.includes(uiLanguage)) {
+        const compatibleVer = Object.keys(versionLangsMap).find((ver) =>
+          versionLangsMap[ver]?.includes(uiLanguage),
+        );
+        if (compatibleVer) {
+          setVersionState(compatibleVer);
+          localStorage.setItem("app_version", compatibleVer);
+          document.cookie = `app_version=${compatibleVer}; path=/; SameSite=Lax; max-age=31536000`;
+        }
+      }
+    }
+  }, [uiLanguage, contentLanguage, version, versionLangsMap]);
 
   const setActiveBaseReportId = (id: string) => {
     setSelectedBaseReportIdState(id);
@@ -113,20 +139,30 @@ export function VersionProvider({
     }
   };
 
-
-  useEffect(() => {
-
-  }, [version, contentLanguage]);
-
   const persistContentLanguage = (lang: Language) => {
     setContentLanguageState(lang);
+    setUiLanguage(lang);
     localStorage.setItem("app_content_lang", lang);
+    localStorage.setItem("app_lang", lang);
     document.cookie = `app_content_lang=${lang}; path=/; SameSite=Lax; max-age=31536000`;
+    document.cookie = `app_lang=${lang}; path=/; SameSite=Lax; max-age=31536000`;
   };
 
   const setContentLanguage = (lang: Language) => {
     persistContentLanguage(lang);
 
+    // If current version does not support this language, switch to a version that does
+    const currentVersionLangs = versionLangsMap[version] || [];
+    if (!currentVersionLangs.includes(lang)) {
+      const compatibleVer = Object.keys(versionLangsMap).find((ver) =>
+        versionLangsMap[ver]?.includes(lang),
+      );
+      if (compatibleVer) {
+        setVersionState(compatibleVer);
+        localStorage.setItem("app_version", compatibleVer);
+        document.cookie = `app_version=${compatibleVer}; path=/; SameSite=Lax; max-age=31536000`;
+      }
+    }
   };
 
   const loadReportsAndSync = useCallback(async () => {
@@ -145,7 +181,9 @@ export function VersionProvider({
         const { report_versions, ...base } = r;
         return base;
       });
-      const allVersions: ReportVersion[] = reportsWithVersions.flatMap((r) => r.report_versions);
+      const allVersions: ReportVersion[] = reportsWithVersions.flatMap(
+        (r) => r.report_versions,
+      );
 
       setBaseReports(bases);
       setReportVersions(allVersions);
@@ -153,7 +191,9 @@ export function VersionProvider({
       const vMap: Record<string, Set<Language>> = {};
 
       allVersions.forEach((rv) => {
-        const verStr = rv.version.toLowerCase().startsWith("v") ? rv.version.toLowerCase() : `v${rv.version.toLowerCase()}`;
+        const verStr = rv.version.toLowerCase().startsWith("v")
+          ? rv.version.toLowerCase()
+          : `v${rv.version.toLowerCase()}`;
         const langStr = (rv.language || "ES").toLowerCase() as Language;
         if (!vMap[verStr]) {
           vMap[verStr] = new Set();
@@ -169,19 +209,32 @@ export function VersionProvider({
 
       setVersionLangsMap(langsMap);
 
-      // Default to the most recent version if no saved choice or if invalid
-      const savedVer = localStorage.getItem("app_version");
-      const activeVer =
-        savedVer && uniqueVersions.includes(savedVer)
-          ? savedVer
-          : uniqueVersions[0] || "";
+      // Read saved language preference
+      const savedLang =
+        (typeof window !== "undefined"
+          ? (localStorage.getItem("app_content_lang") as Language) ||
+            (localStorage.getItem("app_lang") as Language)
+          : null) || "es";
+
+      const savedVer =
+        typeof window !== "undefined"
+          ? localStorage.getItem("app_version")
+          : null;
+
+      // Find a version that matches savedVer and supports savedLang, or latest version supporting savedLang
+      let activeVer = "";
+      if (savedVer && langsMap[savedVer]?.includes(savedLang)) {
+        activeVer = savedVer;
+      } else {
+        activeVer =
+          uniqueVersions.find((ver) => langsMap[ver]?.includes(savedLang)) ||
+          (savedVer && uniqueVersions.includes(savedVer) ? savedVer : "") ||
+          uniqueVersions[0] ||
+          "";
+      }
 
       if (activeVer) {
         setVersionState(activeVer);
-        const langs = langsMap[activeVer] || [];
-        if (langs.length === 1) {
-          persistContentLanguage(langs[0]);
-        }
       }
     } catch {
     }
@@ -245,7 +298,12 @@ export function VersionProvider({
       const verStr = rv.version.toLowerCase().startsWith("v") ? rv.version.toLowerCase() : `v${rv.version.toLowerCase()}`;
       const langStr = (rv.language || "ES").toLowerCase();
       return verStr === version.toLowerCase() && langStr === contentLanguage.toLowerCase();
-    }) || currentReportVersions[0] || null;
+    }) ||
+    currentReportVersions.find(
+      (rv) => (rv.language || "ES").toLowerCase() === contentLanguage.toLowerCase()
+    ) ||
+    currentReportVersions[0] ||
+    null;
 
   const activeReport = currentBaseReportId
     ? baseReports.find((b) => b.id === currentBaseReportId) || baseReports[0] || null

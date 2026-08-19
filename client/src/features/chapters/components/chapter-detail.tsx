@@ -6,6 +6,7 @@ import { ChapterNavigation } from "./chapter-navigation";
 import { ChapterRevealObserver } from "./chapter-reveal-observer";
 import { calculateReadingTime } from "../chapters-utils";
 import type { ChapterDetailData } from "../chapters-types";
+import { SectionResources } from "@/features/resources/components/section-resources";
 import { Clock, ChevronRight } from "lucide-react";
 
 interface ChapterDetailProps {
@@ -73,6 +74,9 @@ export function ChapterDetail({ data }: ChapterDetailProps) {
           <div className="prose dark:prose-invert max-w-none text-foreground leading-relaxed">
             <HomeMdxContent content={section.content} />
           </div>
+
+          {/* Section Attached Resources (Images, SVGs, Figures, Files) */}
+          <SectionResources sectionId={section.id} />
 
           {/* Navigation between chapters */}
           <ChapterNavigation navigation={navigation} />

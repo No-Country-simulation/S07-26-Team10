@@ -1,7 +1,21 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { cookies } from "next/headers";
+
+function invalidateReportTags(reportId?: string) {
+  const tags = ["reports", "sections", "categories", "taxonomy", "references"];
+  if (reportId) {
+    tags.push(`report:${reportId}`);
+  }
+  tags.forEach((t) => {
+    try {
+      updateTag(t);
+    } catch {
+      // ignore
+    }
+  });
+}
 import {
   type BaseReport,
   type ReportVersion,
@@ -167,7 +181,14 @@ export async function createReportAction(): Promise<{
 
     if (res.status === 201 || res.ok) {
       const data = (await res.json()) as BaseReport;
+      invalidateReportTags(data.id);
       revalidatePath("/admin/reports");
+      revalidatePath("/");
+      revalidatePath("/report");
+      revalidatePath("/report/taxonomy");
+      revalidatePath("/report/references");
+      revalidatePath("/chapter");
+      revalidatePath("/methodology");
       return {
         success: true,
         data,
@@ -207,7 +228,14 @@ export async function deleteReportAction(reportId: string): Promise<{ success: b
     });
 
     if (res.ok || res.status === 204) {
+      invalidateReportTags(reportId);
       revalidatePath("/admin/reports");
+      revalidatePath("/");
+      revalidatePath("/report");
+      revalidatePath("/report/taxonomy");
+      revalidatePath("/report/references");
+      revalidatePath("/chapter");
+      revalidatePath("/methodology");
       return { success: true, message: "Reporte eliminado en cascada exitosamente." };
     }
 
@@ -305,7 +333,14 @@ export async function createReportVersionAction(
 
     if (res.status === 201 || res.ok) {
       const data = (await res.json()) as ReportVersion;
+      invalidateReportTags(reportId);
       revalidatePath("/admin/reports");
+      revalidatePath("/");
+      revalidatePath("/report");
+      revalidatePath("/report/taxonomy");
+      revalidatePath("/report/references");
+      revalidatePath("/chapter");
+      revalidatePath("/methodology");
       return {
         success: true,
         data,
@@ -435,7 +470,14 @@ export async function updateReportVersionAction(
 
     if (res.ok) {
       const data = (await res.json()) as ReportVersion;
+      invalidateReportTags(reportId);
       revalidatePath("/admin/reports");
+      revalidatePath("/");
+      revalidatePath("/report");
+      revalidatePath("/report/taxonomy");
+      revalidatePath("/report/references");
+      revalidatePath("/chapter");
+      revalidatePath("/methodology");
       return {
         success: true,
         data,
@@ -483,7 +525,14 @@ export async function deleteReportVersionAction(
     });
 
     if (res.ok || res.status === 204) {
+      invalidateReportTags(reportId);
       revalidatePath("/admin/reports");
+      revalidatePath("/");
+      revalidatePath("/report");
+      revalidatePath("/report/taxonomy");
+      revalidatePath("/report/references");
+      revalidatePath("/chapter");
+      revalidatePath("/methodology");
       return { success: true, message: "Versión eliminada exitosamente." };
     }
 

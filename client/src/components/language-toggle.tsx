@@ -14,11 +14,12 @@ import { Globe, Check, Lock } from "lucide-react";
 
 export function LanguageToggle() {
   const { language, setLanguage } = useLanguage();
-  const { isContentLanguageLocked } = useVersion();
+  const { isContentLanguageLocked, setContentLanguage } = useVersion();
   const router = useRouter();
 
   const handleLanguageChange = (lang: "es" | "en") => {
     setLanguage(lang);
+    setContentLanguage(lang);
     router.refresh();
   };
 

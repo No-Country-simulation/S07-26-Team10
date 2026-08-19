@@ -20,7 +20,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [reportsLanguage, setReportsLanguageState] = useState<Language>("es");
 
   useEffect(() => {
-    const savedLang = localStorage.getItem("app_lang") as Language;
+    const savedLang =
+      (localStorage.getItem("app_lang") as Language) ||
+      (localStorage.getItem("app_content_lang") as Language);
     if (savedLang === "es" || savedLang === "en") {
       queueMicrotask(() => setLanguageState(savedLang));
     }
@@ -33,7 +35,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem("app_lang", lang);
-    // Also set cookie for SSR version resolution
+    localStorage.setItem("app_content_lang", lang);
+    document.cookie = `app_lang=${lang}; path=/; SameSite=Lax; max-age=31536000`;
     document.cookie = `app_content_lang=${lang}; path=/; SameSite=Lax; max-age=31536000`;
   };
 
