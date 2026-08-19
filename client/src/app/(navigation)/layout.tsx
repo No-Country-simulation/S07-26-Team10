@@ -3,6 +3,7 @@ import { NavigationFooter } from "@/components/navigation-footer";
 import { VersionProvider } from "@/context/version-context";
 import { NavigationHeaderWrapper } from "./navigation-header-wrapper";
 import { getPublicReportsWithVersions } from "@/features/public/report/queries/reports";
+import { DownloadReportButtonServer } from "@/features/report-download/components/download-report-button-server";
 
 export default async function NavigationLayout({
   children,
@@ -18,7 +19,7 @@ export default async function NavigationLayout({
           <NavigationHeader />
         </NavigationHeaderWrapper>
         <main className="flex-1">{children}</main>
-        <NavigationFooter />
+        <NavigationFooter downloadButton={<DownloadReportButtonServer />} />
       </div>
     </VersionProvider>
   );
