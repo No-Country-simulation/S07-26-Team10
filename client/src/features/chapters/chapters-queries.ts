@@ -2,14 +2,17 @@ import "server-only";
 
 import { cache } from "react";
 import { cookies } from "next/headers";
-import { getApiUrl } from "@/lib/api-url";
 import {
   getReportById,
   getReportBySlug,
+  getReports,
   getPublishedVersions,
   getPublishedVersionByVersion,
   getPublishedVersionByLanguage,
   resolvePublishedVersion,
+  resolveDefaultReport,
+  getReportVersionSections,
+  getReportVersionSectionBySlug,
   REPORT_SLUG,
 } from "@/lib/api/reports";
 import { calculateReadingTime } from "./chapters-utils";
@@ -55,13 +58,17 @@ export const resolveActiveReportVersionId = cache(
       if (!reportId) {
         const report = await getReportBySlug(REPORT_SLUG).catch(() => null);
         reportId = report?.id;
+        if (!reportId) {
+          const defaultReport = await resolveDefaultReport().catch(() => null);
+          reportId = defaultReport?.id;
+        }
       } else {
         const report = await getReportById(reportId).catch(() => null);
         if (!report) {
-          const defaultReport = await getReportBySlug(REPORT_SLUG).catch(
-            () => null,
-          );
-          reportId = defaultReport?.id;
+          const fallback =
+            (await getReportBySlug(REPORT_SLUG).catch(() => null)) ||
+            (await resolveDefaultReport().catch(() => null));
+          reportId = fallback?.id;
         }
       }
 
@@ -106,6 +113,13 @@ export const resolveActiveReportVersionId = cache(
 
       return null;
     } catch (error) {
+      if (
+        error instanceof Error &&
+        ((error as unknown as { digest?: string }).digest === "DYNAMIC_SERVER_USAGE" ||
+          error.message.includes("Dynamic server usage"))
+      ) {
+        throw error;
+      }
       console.error("Error resolving active report_version_id:", error);
       return null;
     }
@@ -126,24 +140,11 @@ export const getPublicSections = cache(
     if (!versionId) return [];
 
     try {
-      const res = await fetch(
-        getApiUrl(`/report-versions/${versionId}/sections`),
-        {
-          headers: { "Content-Type": "application/json" },
-          next: {
-            revalidate: 3600,
-            tags: ["sections", `sections-${versionId}`],
-          },
-        },
-      );
-
-      if (res.ok) {
-        const data = (await res.json()) as Record<string, unknown>[];
-        if (Array.isArray(data)) {
-          return data
-            .map(mapPublicSection)
-            .sort((a, b) => a.display_order - b.display_order);
-        }
+      const data = await getReportVersionSections(versionId);
+      if (Array.isArray(data)) {
+        return (data as unknown as Record<string, unknown>[])
+          .map(mapPublicSection)
+          .sort((a, b) => a.display_order - b.display_order);
       }
     } catch (error) {
       console.error(
@@ -164,24 +165,9 @@ async function fetchSectionByVersionAndSlug(
   slug: string,
 ): Promise<PublicSection | null> {
   try {
-    const res = await fetch(
-      getApiUrl(`/report-versions/${versionId}/sections/by-slug/${slug}`),
-      {
-        headers: { "Content-Type": "application/json" },
-        next: {
-          revalidate: 3600,
-          tags: [
-            "sections",
-            `sections-${versionId}`,
-            `section-${versionId}-${slug}`,
-          ],
-        },
-      },
-    );
-
-    if (res.ok) {
-      const data = (await res.json()) as Record<string, unknown>;
-      return mapPublicSection(data);
+    const data = await getReportVersionSectionBySlug(versionId, slug);
+    if (data) {
+      return mapPublicSection(data as unknown as Record<string, unknown>);
     }
   } catch {
     // ignore
@@ -212,16 +198,9 @@ export const getPublicSectionBySlug = cache(
 
     // 2. If not found in primary versionId, search across other published report versions
     try {
-      const cookieStore = await cookies();
-      const selectedBaseReportId = cookieStore.get("app_base_report_id")?.value;
-      let reportId = selectedBaseReportId;
-      if (!reportId) {
-        const report = await getReportBySlug(REPORT_SLUG).catch(() => null);
-        reportId = report?.id;
-      }
-
-      if (reportId) {
-        const publishedVersions = await getPublishedVersions(reportId).catch(
+      const reports = await getReports().catch(() => []);
+      for (const rep of reports) {
+        const publishedVersions = await getPublishedVersions(rep.id).catch(
           () => [],
         );
         for (const pubVer of publishedVersions) {
@@ -235,6 +214,13 @@ export const getPublicSectionBySlug = cache(
         }
       }
     } catch (error) {
+      if (
+        error instanceof Error &&
+        ((error as unknown as { digest?: string }).digest === "DYNAMIC_SERVER_USAGE" ||
+          error.message.includes("Dynamic server usage"))
+      ) {
+        throw error;
+      }
       console.error(
         `Error in fallback version search for section '${rawSlug}':`,
         error,
