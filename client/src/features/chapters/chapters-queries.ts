@@ -13,6 +13,7 @@ import {
   resolveDefaultReport,
   getReportVersionSections,
   getReportVersionSectionBySlug,
+  getReportVersionSection,
   REPORT_SLUG,
 } from "@/lib/api/reports";
 import {
@@ -163,20 +164,49 @@ export const getPublicSections = cache(
 );
 
 /**
- * Helper to fetch a section directly by versionId and slug.
+ * Helper to fetch a section directly by versionId and slug or ID.
  */
 async function fetchSectionByVersionAndSlug(
   versionId: string,
-  slug: string,
+  slugOrId: string,
 ): Promise<PublicSection | null> {
+  // 1. Try by slug
   try {
-    const data = await getReportVersionSectionBySlug(versionId, slug);
+    const data = await getReportVersionSectionBySlug(versionId, slugOrId);
     if (data) {
       return mapPublicSection(data as unknown as Record<string, unknown>);
     }
   } catch {
     // ignore
   }
+
+  // 2. Try by section ID
+  try {
+    const dataById = await getReportVersionSection(versionId, slugOrId);
+    if (dataById) {
+      return mapPublicSection(dataById as unknown as Record<string, unknown>);
+    }
+  } catch {
+    // ignore
+  }
+
+  // 3. Try matching across all sections of this version
+  try {
+    const allSecs = await getReportVersionSections(versionId);
+    if (Array.isArray(allSecs)) {
+      const match = allSecs.find(
+        (s) =>
+          s.slug?.toLowerCase() === slugOrId.toLowerCase() ||
+          s.id?.toLowerCase() === slugOrId.toLowerCase(),
+      );
+      if (match) {
+        return mapPublicSection(match as unknown as Record<string, unknown>);
+      }
+    }
+  } catch {
+    // ignore
+  }
+
   return null;
 }
 

@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
 import { useReveal } from "@/hooks/use-reveal"
@@ -15,6 +16,25 @@ export function ReferencesChapter({ references }: { references: PublicReference[
   const t = useTranslations("Report")
 
   useReveal(".rv, .rvs")
+
+  useEffect(() => {
+    const rawHash = decodeURIComponent(window.location.hash.replace(/^#/, "")).trim()
+    if (!rawHash) return
+
+    setTimeout(() => {
+      const el =
+        document.getElementById(rawHash) ||
+        document.querySelector(`[data-id="${rawHash}"]`)
+
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" })
+        el.classList.add("search-target-highlight")
+        setTimeout(() => {
+          el.classList.remove("search-target-highlight")
+        }, 3500)
+      }
+    }, 200)
+  }, [references])
 
   const missing = t.raw("refs.missing") as ACard[]
 
@@ -61,7 +81,12 @@ export function ReferencesChapter({ references }: { references: PublicReference[
           </div>
           <div className="ntable rv">
             {references.map((ref) => (
-              <div className="nt" key={ref.title}>
+              <div
+                className="nt"
+                key={ref.id || ref.title}
+                id={ref.id}
+                data-id={ref.id}
+              >
                 <div className="ntl">
                   <h3>{ref.title}</h3>
                   <p className="ntd">

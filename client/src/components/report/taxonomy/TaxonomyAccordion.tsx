@@ -181,29 +181,75 @@ export function TaxonomyAccordion({ categories: initialCategories }: TaxonomyAcc
   }, [visibleKey, isLoading])
 
   useEffect(() => {
-    const hash = window.location.hash.toUpperCase()
-    if (!hash) return
-    const key = hash.replace("#", "")
+    if (isLoading || concepts.length === 0) return
+
+    const rawHash = decodeURIComponent(window.location.hash.replace(/^#/, "")).trim()
+    if (!rawHash) return
+
+    const upperKey = rawHash.toUpperCase()
+    const lowerKey = rawHash.toLowerCase()
+
     const tabs: LayerFilter[] = ["FAC", "IT", "WKL"]
-    if (tabs.includes(key as LayerFilter)) {
-      requestAnimationFrame(() => setFilter(key as LayerFilter))
-    } else {
-      const concept = concepts.find((c) => c.itemCode === key)
-      if (concept) {
-        requestAnimationFrame(() => {
-          setOpenIds((prev) => {
-            if (prev.has(concept.id)) return prev
-            return new Set([...prev, concept.id])
-          })
-        })
-        requestAnimationFrame(() => {
-          document
-            .getElementById(concept.itemCode)
-            ?.scrollIntoView({ block: "center" })
-        })
-      }
+    if (tabs.includes(upperKey as LayerFilter)) {
+      setFilter(upperKey as LayerFilter)
+      return
     }
-  }, [concepts])
+
+    // 1. Buscar concepto por itemCode o por id (UUID)
+    const concept = concepts.find(
+      (c) =>
+        c.itemCode?.toUpperCase() === upperKey ||
+        c.id?.toLowerCase() === lowerKey ||
+        c.id === rawHash,
+    )
+
+    if (concept) {
+      setFilter("ALL")
+      setQuery("")
+      setOpenIds((prev) => new Set([...prev, concept.id]))
+      setRevealed((prev) => new Set([...prev, concept.id]))
+
+      setTimeout(() => {
+        const el =
+          document.getElementById(concept.itemCode) ||
+          document.getElementById(concept.id) ||
+          document.querySelector(`[data-id="${concept.id}"]`)
+
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" })
+          el.classList.add("search-target-highlight")
+          setTimeout(() => {
+            el.classList.remove("search-target-highlight")
+          }, 3500)
+        }
+      }, 200)
+      return
+    }
+
+    // 2. Buscar categoría por id o layerCode
+    const cat = categories.find(
+      (c) =>
+        c.id?.toLowerCase() === lowerKey ||
+        c.id === rawHash ||
+        c.layerCode === upperKey,
+    )
+
+    if (cat) {
+      if (cat.layerCode && tabs.includes(cat.layerCode as LayerFilter)) {
+        setFilter(cat.layerCode as LayerFilter)
+      }
+      const catConceptIds = cat.concepts.map((x) => x.id)
+      setOpenIds((prev) => new Set([...prev, ...catConceptIds]))
+      setRevealed((prev) => new Set([...prev, ...catConceptIds]))
+
+      setTimeout(() => {
+        const firstEl = listRef.current?.querySelector<HTMLElement>(".e")
+        if (firstEl) {
+          firstEl.scrollIntoView({ behavior: "smooth", block: "center" })
+        }
+      }, 200)
+    }
+  }, [concepts, categories, isLoading])
 
   const tabs: { key: LayerFilter | "ALL"; label: string; count: number }[] = [
     { key: "ALL", label: t("filterAll"), count: total },

@@ -10,6 +10,7 @@ export const getPublicReferences = cache(async (): Promise<PublicReference[]> =>
     const evidence = await getReportEvidence("");
 
     const references = evidence.map((ref) => ({
+      id: ref.id,
       authors: ref.authors || "PhysaFlow",
       title: ref.title || "Stranded Capacity Report",
       year: ref.year || new Date().getFullYear(),

@@ -1,0 +1,23 @@
+{
+  "title": "Global Search",
+  "placeholder": "Search sections, taxonomy, references, resources...",
+  "noResults": "No results found for",
+  "noResultsDesc": "Try searching for a different keyword, category or concept.",
+  "resultsCount": "results",
+  "suggestions": "Suggestions:",
+  "quickTopics": "Quick topics & suggestions",
+  "filters": {
+    "all": "All",
+    "section": "Sections",
+    "category": "Categories",
+    "concept": "Concepts",
+    "reference": "References",
+    "resource": "Resources",
+    "report_version": "Versions"
+  },
+  "hints": {
+    "navigate": "to navigate",
+    "select": "to select",
+    "close": "to close"
+  }
+}
