@@ -40,28 +40,8 @@
     "title2": "sin nombre.",
     "accent": "nombre.",
     "lead": "La industria informa cuánta capacidad está instalada y cuánta se utiliza. Ninguna de las dos cifras describe la distancia entre ambas. Este capítulo define esa distancia.",
-    "cardLabel": "La definición",
     "cardQuote": "<b>Capacidad varada</b> es capacidad que ya fue comprometida, está físicamente presente, y no puede usarse para atender una demanda que existe.",
     "src": "PhysaFlow Stranded Capacity Index · Definición v0.1 · abierta a comentarios",
-    "condLabel": "Tres condiciones",
-    "condLead": "Las tres tienen que cumplirse. Si falta una, el fenómeno pertenece a otra categoría — normalmente una que ya tiene nombre.",
-    "conditions": [
-      {
-        "n": "01",
-        "title": "Comprometida",
-        "body": "Pagada, contratada o construida. El capital ya se gastó. Un plan no es capacidad varada."
-      },
-      {
-        "n": "02",
-        "title": "Presente",
-        "body": "Existe físicamente y se puede señalar dentro de un edificio. Una proyección no es capacidad varada."
-      },
-      {
-        "n": "03",
-        "title": "Inalcanzable por la demanda",
-        "body": "Existe demanda que no puede atender. Esta es la condición que la separa de la capacidad meramente sin usar."
-      }
-    ],
     "notLabel": "Qué no es",
     "notLede": "Ya hay seis términos vecinos en uso. Ninguno describe lo mismo, y tratarlos como sinónimos es exactamente lo que mantiene invisible la brecha.",
     "not": [
@@ -143,7 +123,23 @@
     "backLabel": "Volver al índice",
     "backTitle": "Índice de Capacidad Varada",
     "nextLabel": "Siguiente capítulo",
-    "nextTitle": "La taxonomía"
+    "nextTitle": "La taxonomía",
+    "chmarkN": "01",
+    "chmarkT": "Definición",
+    "stmtStrip": [
+      {
+        "t": "Comprometida",
+        "d": "El capital ya se gastó. Un plan no es capacidad varada."
+      },
+      {
+        "t": "Presente",
+        "d": "Físicamente en un edificio, identificable. Una proyección no lo es."
+      },
+      {
+        "t": "Inalcanzable por la demanda",
+        "d": "Existe demanda que no puede atender. Esa es la condición que la separa."
+      }
+    ]
   },
   "meth": {
     "mono": "Capítulo 06 · Metodología · v0.1",
@@ -151,16 +147,7 @@
     "title2": "Y lo que no.",
     "accent": "no.",
     "lead": "Este índice nombra fenómenos que no midió. Todo este capítulo existe para mantener esa distinción a la vista.",
-    "statusLabel": "Estado actual",
-    "statusQuote": "No se recolectó ninguna medición para ninguna entrada ni ninguna figura de este índice.",
-    "lkVersion": "Versión",
-    "lkVersionVal": "0.1 · borrador",
-    "lkDefined": "Entradas definidas",
-    "lkDefinedVal": "18",
-    "lkMeasured": "Entradas medidas",
-    "lkMeasuredVal": "0",
-    "lkFigures": "Figuras publicadas",
-    "lkFiguresVal": "1 · ilustrativa",
+    "statusQuote": "No se recolectó ninguna medición para <b>ninguna entrada ni ninguna figura</b> de este índice.",
     "src": "PhysaFlow Stranded Capacity Index · Metodología v0.1 · abierta a comentarios",
     "qualifyLabel": "Cómo califica una entrada",
     "qualifyLede": "Cinco pruebas. Las tres primeras vienen de la definición. Las dos últimas son editoriales, y existen para que la taxonomía siga siendo usable a medida que crece.",
@@ -316,8 +303,25 @@
     ],
     "backLabel": "Capítulo anterior",
     "backTitle": "Volver a taxonomía",
-    "nextLabel": "Volver al índice",
-    "nextTitle": "Índice de Capacidad Varada"
+    "nextLabel": "Siguiente capítulo",
+    "nextTitle": "La lista de fuentes",
+    "chmarkN": "06",
+    "chmarkT": "Metodología",
+    "backtopText": "La taxonomía",
+    "stmtStrip": [
+      {
+        "t": "Versión",
+        "d": "0.1 · borrador"
+      },
+      {
+        "t": "Entradas definidas",
+        "d": "18"
+      },
+      {
+        "t": "Entradas medidas",
+        "d": "0"
+      }
+    ]
   },
   "refs": {
     "mono": "Capítulo 08 · Referencias · v0.1",
@@ -325,15 +329,6 @@
     "title2": "listadas y fechadas.",
     "accent": "fechadas.",
     "lead": "Esta lista es corta porque el índice es un borrador. Va a crecer solo a medida que se agreguen afirmaciones — nunca antes que ellas.",
-    "statusLabel": "Estado de esta lista",
-    "statusQuote": "Hoy ninguna entrada de la taxonomía cita una fuente específica. Los nombres se atribuyen a un campo de literatura, no a un documento.",
-    "lkEntries": "Entradas que citan una fuente específica",
-    "lkEntriesVal": "0 de 18",
-    "lkFigures": "Figuras que citan una fuente específica",
-    "lkFiguresVal": "0 de 1",
-    "lkBackground": "Fuentes de contexto listadas abajo",
-    "lkBackgroundVal": "{count}",
-    "src": "PhysaFlow Stranded Capacity Index · Referencias v0.1 · abierta a comentarios",
     "sourcesLabel": "Fuentes de contexto",
     "sourcesLede": "Consultadas al construir la definición y el embudo. Ninguna es el origen de ningún número publicado acá, porque acá no se publica ningún número.",
     "howUsed": "Cómo se usa",
@@ -358,7 +353,10 @@
     "backLabel": "Capítulo anterior",
     "backTitle": "Volver a metodología",
     "nextLabel": "Volver al índice",
-    "nextTitle": "Índice de Capacidad Varada"
+    "nextTitle": "Índice de Capacidad Varada",
+    "chmarkN": "08",
+    "chmarkT": "Referencias",
+    "backtopText": "Metodología"
   },
   "about": {
     "mono": "Capítulo 10 · Acerca de · v0.1",
@@ -395,5 +393,6 @@
     "backTitle": "Volver a referencias",
     "nextLabel": "Siguiente capítulo",
     "nextTitle": "Cómo citar este reporte"
-  }
+  },
+  "backToIndex": "El índice"
 }

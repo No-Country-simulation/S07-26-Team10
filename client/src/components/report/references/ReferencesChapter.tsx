@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useTranslations } from "next-intl"
 import { useReveal } from "@/hooks/use-reveal"
 import { ChapterMasthead } from "@/components/report/chapter/ChapterMasthead"
+import { ReadingRail } from "@/components/report/chapter/ReadingRail"
 import type { PublicReference } from "@/features/public/references/types"
 
 interface ACard {
@@ -46,29 +47,13 @@ export function ReferencesChapter({ references }: { references: PublicReference[
         title2={t("refs.title2")}
         accent={t("refs.accent")}
         lead={t("refs.lead")}
+        num={t("refs.chmarkN")}
+        name={t("refs.chmarkT")}
+        backHref="/methodology"
+        backText={t("refs.backtopText")}
       />
 
-      <section className="dfn">
-        <div className="in">
-          <div className="gc dcard rvs">
-            <span className="gt">{t("refs.statusLabel")}</span>
-            <p className="dq">{t("refs.statusQuote")}</p>
-            <div className="lk" style={{ marginTop: 18 }}>
-              <span>{t("refs.lkEntries")}</span>
-              <i>{t("refs.lkEntriesVal")}</i>
-            </div>
-            <div className="lk">
-              <span>{t("refs.lkFigures")}</span>
-              <i>{t("refs.lkFiguresVal")}</i>
-            </div>
-            <div className="lk">
-              <span>{t("refs.lkBackground")}</span>
-              <i>{t("refs.lkBackgroundVal", { count: references.length })}</i>
-            </div>
-            <div className="dsrc">{t("refs.src")}</div>
-          </div>
-        </div>
-      </section>
+      <ReadingRail />
 
       <section className="dnot">
         <div className="in">

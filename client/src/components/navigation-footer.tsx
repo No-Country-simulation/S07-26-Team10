@@ -55,14 +55,10 @@ export function NavigationFooter({
         <div>
           <h4>{t("publication")}</h4>
           <Link href="/report/how-to-cite">{t("howToCite")}</Link>
-          <span className="pending">{t("changelog")}</span>
-          <span className="pending">{t("licence")}</span>
         </div>
         <div>
           <h4>{t("contact")}</h4>
           <a href="https://www.linkedin.com/company/physaflow" target="_blank" rel="noopener noreferrer">{t("linkedin")}</a>
-          <span className="pending">{t("contactPending")}</span>
-          <span className="pending">{t("pressPending")}</span>
         </div>
       </div>
       <div className="pubmeta">

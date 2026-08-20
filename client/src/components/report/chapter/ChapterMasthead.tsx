@@ -1,6 +1,8 @@
 "use client"
 
 import type { CSSProperties } from "react"
+import Link from "next/link"
+import { useTranslations } from "next-intl"
 
 export function Words({
   text,
@@ -49,13 +51,22 @@ export function ChapterMasthead({
   title2,
   accent,
   lead,
+  num,
+  name,
+  backHref = "/",
+  backText,
 }: {
   mono: string
   title1: string
   title2: string
   accent?: string
   lead: string
+  num?: string
+  name?: string
+  backHref?: string
+  backText?: string
 }) {
+  const t = useTranslations("Report")
   const line1Count = title1.split(" ").length
 
   return (
@@ -63,9 +74,22 @@ export function ChapterMasthead({
       <div className="img" />
       <div className="fade" />
       <div className="in">
-        <div className="emono blk" style={{ "--b": "60ms" } as CSSProperties}>
-          {mono}
-        </div>
+        <Link className="backtop blk" style={{ "--b": "20ms" } as CSSProperties} href={backHref}>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19 12H6M12 6l-6 6 6 6" />
+          </svg>
+          {backText ?? t("backToIndex")}
+        </Link>
+        {num && name ? (
+          <div className="chmark blk" style={{ "--b": "40ms" } as CSSProperties}>
+            <span className="cm-n">{num}</span>
+            <span className="cm-t">{name}</span>
+          </div>
+        ) : (
+          <div className="emono blk" style={{ "--b": "40ms" } as CSSProperties}>
+            {mono}
+          </div>
+        )}
         <h1>
           <span className="ln">
             <em>

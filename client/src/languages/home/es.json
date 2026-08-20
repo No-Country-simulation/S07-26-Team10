@@ -34,44 +34,50 @@
   "steps": {
     "01": {
       "name": "Capacidad nominal",
-      "desc": "Capacidad teórica total",
+      "desc": "Para cuánto está especificado el equipo",
+      "loss": "Compra y construcción",
       "caption": "Compras y construcción. Equipamiento ordenado pero aún no montado ni puesto en servicio."
     },
     "02": {
       "name": "Capacidad instalada",
-      "desc": "Instalada físicamente",
+      "desc": "Montada y en el sitio",
+      "loss": "Demora de interconexión a la red",
       "caption": "Conexión a la red y demora de interconexión. Las líneas de transmisión tardan de cuatro a ocho años en economías avanzadas."
     },
     "03": {
       "name": "Capacidad energizada",
-      "desc": "Alimentada y energizada",
+      "desc": "Conectada y recibiendo energía",
+      "loss": "Refrigeración y distribución eléctrica",
       "caption": "Refrigeración y distribución de energía. Envolvente térmica, derrateo de UPS, límites de ramal y busway a nivel de rack."
     },
     "04": {
       "name": "Capacidad sostenible",
-      "desc": "Cumple límites térmicos y de seguridad",
+      "desc": "Dentro de los límites térmicos y eléctricos",
+      "loss": "Disponibilidad de hardware y topología",
       "caption": "Disponibilidad de hardware y topología de clúster. Nodos presentes pero fuera de la red elegible, o aún no en el pool."
     },
     "05": {
       "name": "Capacidad asignable",
-      "desc": "Tras reservas y sobrecarga",
+      "desc": "Libre y asignable como conjunto",
+      "loss": "Planificación y fragmentación",
       "caption": "Planificación y fragmentación. Aceleradores libres que no pueden ensamblarse en un conjunto contiguo asignable."
     },
     "06": {
       "name": "Capacidad utilizada",
-      "desc": "En uso activo por cargas de trabajo",
+      "desc": "Asignada a un trabajo en ejecución",
+      "loss": "Colas y reservas",
       "caption": "Colas, reservas y política de admisión. Capacidad retenida o en espera mientras hay demanda pendiente."
     },
     "07": {
       "name": "Capacidad de salida útil",
-      "desc": "Productiva, genera valor",
+      "desc": "Produciendo un resultado terminado",
       "caption": "Trabajos fallidos, reintentos y asignaciones ociosas. Horas de GPU asignadas que no producen salida."
     }
   },
   "funnelIdle": "Posá el cursor sobre un paso para ver qué le quita capacidad antes del siguiente.",
   "stepsLabel": "pasos",
   "gc1Title": "Qué muestra esta figura",
-  "gc1Body": "Un modelo de pérdida monótona. Cada paso quita capacidad por un motivo distinto — y los motivos no comparten métrica.",
+  "gc1Body": "La capacidad solo puede achicarse a medida que se baja. Cada paso pierde una parte distinta, por un motivo distinto — y por eso ningún número solo describe toda la caída.",
   "illustrativeModel": "Modelo ilustrativo",
   "gc2Title": "De dónde vienen las pérdidas",
   "facility": "Instalación",

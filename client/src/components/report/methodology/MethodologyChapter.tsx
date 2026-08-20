@@ -4,6 +4,8 @@ import Link from "next/link"
 import { useTranslations } from "next-intl"
 import { useReveal } from "@/hooks/use-reveal"
 import { ChapterMasthead } from "@/components/report/chapter/ChapterMasthead"
+import { ReadingRail } from "@/components/report/chapter/ReadingRail"
+import { Statement } from "@/components/report/chapter/Statement"
 
 interface NRow {
   title: string
@@ -36,31 +38,23 @@ export function MethodologyChapter() {
         title2={t("meth.title2")}
         accent={t("meth.accent")}
         lead={t("meth.lead")}
+        num={t("meth.chmarkN")}
+        name={t("meth.chmarkT")}
+        backHref="/report/taxonomy"
+        backText={t("meth.backtopText")}
       />
+
+      <ReadingRail />
 
       <section className="dfn">
         <div className="in">
-          <div className="gc dcard rvs">
-            <span className="gt">{t("meth.statusLabel")}</span>
-            <p className="dq">{t("meth.statusQuote")}</p>
-            <div className="lk" style={{ marginTop: 18 }}>
-              <span>{t("meth.lkVersion")}</span>
-              <i>{t("meth.lkVersionVal")}</i>
-            </div>
-            <div className="lk">
-              <span>{t("meth.lkDefined")}</span>
-              <i>{t("meth.lkDefinedVal")}</i>
-            </div>
-            <div className="lk">
-              <span>{t("meth.lkMeasured")}</span>
-              <i>{t("meth.lkMeasuredVal")}</i>
-            </div>
-            <div className="lk">
-              <span>{t("meth.lkFigures")}</span>
-              <i>{t("meth.lkFiguresVal")}</i>
-            </div>
-            <div className="dsrc">{t("meth.src")}</div>
-          </div>
+          <Statement
+            quote={t.rich("meth.statusQuote", {
+              b: (chunks) => <b>{chunks}</b>,
+            })}
+            strip={t.raw("meth.stmtStrip")}
+            src={t("meth.src")}
+          />
         </div>
       </section>
 
@@ -194,7 +188,7 @@ export function MethodologyChapter() {
             <span>{t("meth.backLabel")}</span>
             <b>{t("meth.backTitle")}</b>
           </Link>
-          <Link className="cnav next" href="/">
+          <Link className="cnav next" href="/report/references">
             <svg viewBox="0 0 24 24">
               <path d="M7 17L17 7M8 7h9v9" />
             </svg>

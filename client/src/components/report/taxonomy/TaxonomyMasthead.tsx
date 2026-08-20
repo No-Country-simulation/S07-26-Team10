@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useTranslations } from "next-intl"
 import type { CSSProperties } from "react"
 
@@ -56,6 +57,12 @@ export function TaxonomyMasthead() {
       <div className="img" />
       <div className="fade" />
       <div className="in">
+        <Link className="backtop blk" style={{ "--b": "20ms" } as CSSProperties} href="/">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19 12H6M12 6l-6 6 6 6" />
+          </svg>
+          {t("backToIndex")}
+        </Link>
         <div className="emono blk" style={{ "--b": "60ms" } as CSSProperties}>
           {t("taxonomyMono", { count: 18 })}
         </div>

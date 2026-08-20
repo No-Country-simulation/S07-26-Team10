@@ -4,6 +4,8 @@ import Link from "next/link"
 import { useTranslations } from "next-intl"
 import { useReveal } from "@/hooks/use-reveal"
 import { ChapterMasthead } from "@/components/report/chapter/ChapterMasthead"
+import { ReadingRail } from "@/components/report/chapter/ReadingRail"
+import { Statement } from "@/components/report/chapter/Statement"
 
 interface ARow {
   t: string
@@ -29,11 +31,6 @@ export function DefinitionChapter() {
 
   useReveal(".rv, .rvs")
 
-  const conditions = t.raw("def.conditions") as {
-    n: string
-    title: string
-    body: string
-  }[]
   const notRows = t.raw("def.not") as ARow[]
   const why = t.raw("def.why") as ACard[]
   const layers = t.raw("def.where") as ALayer[]
@@ -46,35 +43,22 @@ export function DefinitionChapter() {
         title2={t("def.title2")}
         accent={t("def.accent")}
         lead={t("def.lead")}
+        num={t("def.chmarkN")}
+        name={t("def.chmarkT")}
       />
+
+      <ReadingRail />
 
       <section className="dfn">
         <div className="in">
-          <div className="gc dcard rvs">
-            <span className="gt">{t("def.cardLabel")}</span>
-            <p className="dq">
-              {t.rich("def.cardQuote", {
-                b: (chunks) => <b>{chunks}</b>,
-              })}
-            </p>
-            <div className="dsrc">{t("def.src")}</div>
-          </div>
-
-          <div className="cond rv">
-            <div className="ch">
-              <span className="cn">{t("def.condLabel")}</span>
-              <p>{t("def.condLead")}</p>
-            </div>
-            <div className="cg">
-              {conditions.map((c) => (
-                <div className="cc" key={c.n}>
-                  <span className="ci">{c.n}</span>
-                  <h3>{c.title}</h3>
-                  <p>{c.body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+          <Statement
+            quote={t.rich("def.cardQuote", {
+              b: (chunks) => <b>{chunks}</b>,
+            })}
+            strip={t.raw("def.stmtStrip")}
+            src={t("def.src")}
+            words
+          />
         </div>
       </section>
 
