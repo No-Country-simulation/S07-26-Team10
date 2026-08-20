@@ -20,9 +20,9 @@ export function ChaptersListSkeleton() {
           key={i}
           style={{
             display: "grid",
-            gridTemplateColumns: "32px 1fr 60px",
+            gridTemplateColumns: "32px 1fr 34px",
             gap: "14px",
-            alignItems: "center",
+            alignItems: "start",
             padding: "16px 0",
             borderTop: "1px solid var(--phi-gline, #E5E7EB)",
           }}
@@ -36,8 +36,12 @@ export function ChaptersListSkeleton() {
                 height: "18px",
               }}
             />
+            <div
+              className="bg-muted/50 rounded"
+              style={{ width: "42px", height: "11px", marginTop: "6px" }}
+            />
           </div>
-          <span className="h-3.5 w-12 bg-muted/50 rounded justify-self-end" />
+          <span className="h-5 w-5 bg-muted/50 rounded justify-self-end" />
         </div>
       ))}
     </div>
@@ -109,12 +113,17 @@ export function ChaptersList({ initialItems = [] }: ChaptersListProps) {
       }`}
     >
       {displayItems.map((item) => (
-        <Link key={item.id || item.slug} href={`/chapter/${item.slug}`}>
+        <Link key={item.id || item.slug} href={item.href}>
           <span className="n">{item.num}</span>
           <div>
             <h3>{item.title}</h3>
+            <span className="chd">{item.time}</span>
           </div>
-          <span className="t">{item.time}</span>
+          <span className="chx">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 17L17 7M8 7h9v9" />
+            </svg>
+          </span>
         </Link>
       ))}
     </div>

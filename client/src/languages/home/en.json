@@ -11,6 +11,8 @@
   "problemLede": "Megawatts contracted, racks installed, accelerators delivered. Those figures describe what exists. They do not describe what can be used.",
   "problemBody": "Between the two sits a set of constraints — electrical, thermal, topological, temporal and organizational — that keeps installed infrastructure from converting into work. This index proposes a single vocabulary for that distance.",
   "readTheDefinition": "Read the definition",
+  "browseTaxonomy": "Browse the taxonomy",
+  "startReading": "Start reading — Definition",
   "chaptersLede": "Each chapter is its own page, so it can be linked and cited on its own.",
   "chapters": {
     "theCapacityFunnel": "The capacity funnel",
@@ -83,5 +85,6 @@
   "source": "Source: PhysaFlow Stranded Capacity Index",
   "version": "Definition of each step pending validation · v0.1",
   "downloadTable": "Table",
-  "citeFigure": "Cite this figure"
+  "citeFigure": "Cite this figure",
+  "downloadsPending": "PNG · SVG · Table — pending"
 }

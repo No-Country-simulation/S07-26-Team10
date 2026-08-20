@@ -19,24 +19,6 @@ function DownloadIcon() {
   );
 }
 
-function Words({ text, base = 0 }: { text: string; base?: number }) {
-  const words = text.split(" ");
-  return (
-    <>
-      {words.map((word, i) => (
-        <span
-          key={i}
-          className="wr"
-          style={{ "--i": base + i } as CSSProperties}
-        >
-          {word}
-          {i < words.length - 1 ? " " : ""}
-        </span>
-      ))}
-    </>
-  );
-}
-
 function Block({
   delay,
   className,
@@ -59,7 +41,6 @@ export function HomeHero({
   downloadButton?: ReactNode;
 }) {
   const t = useTranslations("HomePage");
-  const line1Count = t("heroLine1").split(" ").length;
 
   return (
     <section className="hero">
@@ -68,14 +49,10 @@ export function HomeHero({
       <div className="in">
         <h1>
           <span className="ln">
-            <em>
-              <Words text={t("heroLine1")} />
-            </em>
+            <em>{t("heroLine1")}</em>
           </span>
           <span className="ln">
-            <em className="soft">
-              <Words text={t("heroLine2")} base={line1Count} />
-            </em>
+            <em className="soft">{t("heroLine2")}</em>
           </span>
         </h1>
         <p className="sub blk" style={{ "--b": "520ms" } as CSSProperties}>

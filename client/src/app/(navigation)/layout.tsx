@@ -1,5 +1,6 @@
 import { NavigationHeader } from "@/components/navigation-header";
 import { NavigationFooter } from "@/components/navigation-footer";
+import { BackToTop } from "@/components/back-to-top";
 import { VersionProvider } from "@/context/version-context";
 import { NavigationHeaderWrapper } from "./navigation-header-wrapper";
 import { getPublicReportsWithVersions } from "@/features/public/report/queries/reports";
@@ -20,6 +21,7 @@ export default async function NavigationLayout({
         </NavigationHeaderWrapper>
         <main className="flex-1">{children}</main>
         <NavigationFooter downloadButton={<DownloadReportButtonServer />} />
+        <BackToTop />
       </div>
     </VersionProvider>
   );
