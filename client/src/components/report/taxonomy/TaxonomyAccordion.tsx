@@ -83,7 +83,10 @@ export function TaxonomyAccordion({ categories: initialCategories }: TaxonomyAcc
 
     startTransition(async () => {
       try {
-        const fetched = await getPublicTaxonomyDataAction(currentLang)
+        const fetched = await getPublicTaxonomyDataAction(
+          currentLang,
+          activeVersionId || undefined,
+        )
         if (!isCancelled && fetched && fetched.length > 0) {
           setCategories(fetched as unknown as TaxonomyCategory[])
         }

@@ -160,31 +160,42 @@ export const getTaxonomyConcepts = cache(async (
 
 /**
  * Obtiene taxonomía completa (categorías + conceptos) en una sola operación.
- * Prefiere fullReport (1 call), sino hace fetches paralelos.
+ * Si se pasa versionId, consulta directamente dicha versión; sino resuelve por contexto.
  */
 export const getFullTaxonomy = cache(async (
-  language?: "ES" | "EN"
+  language?: "ES" | "EN",
+  versionId?: string
 ): Promise<TaxonomyCategory[]> => {
-  const ctx = await resolveReportContext(
-    language ? (language === "EN" ? "en" : "es") : undefined,
-  );
-  if (!ctx) return [];
+  let targetVersionId = versionId;
+  let fullReportCategories: (ApiCategory & { concepts: ApiConcept[] })[] | undefined = undefined;
 
-  // Use fullReport if available (1 call optimization)
-  if (ctx.fullReport?.categories) {
-    return ctx.fullReport.categories.map((cat) => ({
-      id: cat.id,
-      name: cat.name,
-      description: cat.description || "",
-      conceptCount: cat.concepts?.length || 0,
-      slug: cat.name.toLowerCase().replace(/\s+/g, "-"),
-      concepts: cat.concepts || [],
-    }));
+  if (!targetVersionId) {
+    const ctx = await resolveReportContext(
+      language ? (language === "EN" ? "en" : "es") : undefined,
+    );
+    if (!ctx) return [];
+    targetVersionId = ctx.versionId;
+    fullReportCategories = ctx.fullReport?.categories;
   }
 
-  // Fallback: parallel fetch categories + concepts
+  // Use fullReport if available and has concepts
+  if (fullReportCategories && fullReportCategories.length > 0) {
+    const hasConcepts = fullReportCategories.some((c) => c.concepts && c.concepts.length > 0);
+    if (hasConcepts) {
+      return fullReportCategories.map((cat) => ({
+        id: cat.id,
+        name: cat.name,
+        description: cat.description || "",
+        conceptCount: cat.concepts?.length || 0,
+        slug: cat.name.toLowerCase().replace(/\s+/g, "-"),
+        concepts: cat.concepts || [],
+      }));
+    }
+  }
+
+  // Direct fetch categories + concepts for this versionId
   try {
-    const categories = await getReportVersionCategories(ctx.versionId);
+    const categories = await getReportVersionCategories(targetVersionId);
     if (!Array.isArray(categories) || !categories.length) return [];
 
     const categoriesWithConcepts = await Promise.all(

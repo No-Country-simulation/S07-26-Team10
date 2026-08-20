@@ -75,11 +75,15 @@ export const getPublicReportContext = cache(async (lang?: PublicLanguage) => {
     publishedVersions.length > 0
   ) {
     const cleanSelected = versionString.toLowerCase().replace(/^v/, "");
-    // 1. Match both version AND language
+    // 1. Match both version (or ID) AND language
     const matchBoth = publishedVersions.find((v) => {
       const cleanV = (v.version || "").toLowerCase().replace(/^v/, "");
       const langV = (v.language || "ES").toUpperCase();
-      return cleanV === cleanSelected && langV === targetLang;
+      const isVerMatch =
+        v.id === versionString ||
+        cleanV === cleanSelected ||
+        cleanV.split(".")[0] === cleanSelected.split(".")[0];
+      return isVerMatch && langV === targetLang;
     });
 
     if (matchBoth) {
@@ -87,7 +91,28 @@ export const getPublicReportContext = cache(async (lang?: PublicLanguage) => {
     }
   }
 
-  // 2. Match language (find any published version in the requested language)
+  // 2. Match version only (prioritizing the requested version across languages if needed)
+  if (
+    !version &&
+    versionString &&
+    Array.isArray(publishedVersions) &&
+    publishedVersions.length > 0
+  ) {
+    const cleanSelected = versionString.toLowerCase().replace(/^v/, "");
+    const matchVer = publishedVersions.find((v) => {
+      const cleanV = (v.version || "").toLowerCase().replace(/^v/, "");
+      return (
+        v.id === versionString ||
+        cleanV === cleanSelected ||
+        cleanV.split(".")[0] === cleanSelected.split(".")[0]
+      );
+    });
+    if (matchVer) {
+      version = matchVer;
+    }
+  }
+
+  // 3. Match language (find any published version in the requested language)
   if (
     !version &&
     Array.isArray(publishedVersions) &&
@@ -99,23 +124,6 @@ export const getPublicReportContext = cache(async (lang?: PublicLanguage) => {
     });
     if (matchLang) {
       version = matchLang;
-    }
-  }
-
-  // 3. Fallback to match version only
-  if (
-    !version &&
-    versionString &&
-    Array.isArray(publishedVersions) &&
-    publishedVersions.length > 0
-  ) {
-    const cleanSelected = versionString.toLowerCase().replace(/^v/, "");
-    const matchVer = publishedVersions.find((v) => {
-      const cleanV = (v.version || "").toLowerCase().replace(/^v/, "");
-      return cleanV === cleanSelected;
-    });
-    if (matchVer) {
-      version = matchVer;
     }
   }
 

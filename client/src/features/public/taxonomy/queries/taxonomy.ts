@@ -7,7 +7,11 @@ import type {
   PublicTaxonomyCategory,
   PublicTaxonomyConcept,
 } from "@/features/public/taxonomy/types";
-import { getFullTaxonomy } from "@/features/public/components-queries";
+import {
+  getReportVersionCategories,
+  getCategoryConcepts,
+} from "@/lib/api/reports";
+import { resolveActiveReportVersionId } from "@/features/chapters/chapters-queries";
 
 interface ApiConcept {
   id: string;
@@ -17,19 +21,34 @@ interface ApiConcept {
   display_order?: number;
 }
 
-function layerCodeFor(name?: string | null): string {
-  if (!name) return "TAX";
+function layerCodeFor(name?: string | null, index = 0): string {
+  if (!name || !name.trim()) return `CAT${index + 1}`;
+
   const clean = name
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9]/g, "")
-    .toUpperCase();
+    .trim();
 
-  if (clean.includes("FACIL") || clean.includes("INSTAL") || clean.includes("INFRA")) return "FAC";
-  if (clean === "IT" || clean.includes("TECNOL") || clean.includes("HARDWARE")) return "IT";
-  if (clean.includes("WORK") || clean.includes("CARGA") || clean.includes("OPERAC") || clean.includes("WKL")) return "WKL";
+  const words = clean.split(/\s+/).filter(Boolean);
 
-  return clean.substring(0, 3) || "TAX";
+  // Si tiene múltiples palabras (ej. "Machine Learning", "Cargas de Trabajo", "Redes y Sistemas"), usar iniciales
+  if (words.length >= 2) {
+    const initials = words
+      .map((w) => w.replace(/[^a-zA-Z0-9]/g, "")[0] || "")
+      .join("")
+      .toUpperCase();
+    if (initials.length >= 2 && initials.length <= 4) {
+      return initials;
+    }
+  }
+
+  // Para una sola palabra, tomar los primeros 3 caracteres alfanuméricos en mayúsculas
+  const alphanumeric = clean.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  if (alphanumeric.length >= 2) {
+    return alphanumeric.substring(0, Math.min(3, alphanumeric.length));
+  }
+
+  return `CAT${index + 1}`;
 }
 
 function normalize(s?: string | null): string {
@@ -68,63 +87,70 @@ function toConcept(
 }
 
 export const getPublicTaxonomyData = cache(
-  async (lang?: "es" | "en"): Promise<PublicTaxonomyCategory[]> => {
-    const cookieStore = await cookies();
-    const cookieLang =
-      (cookieStore.get("app_content_lang")?.value as "es" | "en") ||
-      (cookieStore.get("app_lang")?.value as "es" | "en");
-    const targetLang: "es" | "en" = lang === "en" || cookieLang === "en" ? "en" : "es";
-    const apiLang = targetLang === "en" ? "EN" : "ES";
-
+  async (
+    preferredLang?: "es" | "en",
+    reportVersionId?: string,
+  ): Promise<PublicTaxonomyCategory[]> => {
+    let targetLang: "es" | "en" = preferredLang || "es";
     try {
-      const fullTaxonomy = await getFullTaxonomy(apiLang);
-
-      // Sin datos desde la API → placeholder estructurado para garantizar la demo.
-      if (!fullTaxonomy || fullTaxonomy.length === 0) {
-        return placeholderTaxonomy[targetLang] || placeholderTaxonomy.es;
-      }
-
-      const result: PublicTaxonomyCategory[] = [];
-
-      for (const category of fullTaxonomy) {
-        const layerCode = layerCodeFor(category.name);
-
-        const concepts = (category.concepts || []).map((concept, idx) =>
-          toConcept(
-            {
-              id: concept.id,
-              category_id: (concept as ApiConcept).category_id || category.id,
-              name: concept.name,
-              description: concept.description || "",
-              display_order: (concept as ApiConcept).display_order || idx + 1,
-            },
-            layerCode,
-            category.id,
-            idx,
-          ),
-        );
-
-        result.push({
-          id: category.id,
-          layerCode,
-          name: category.name || "Sin nombre",
-          description: category.description ?? "",
-          concepts,
-        });
-      }
-
-      const totalConcepts = result.reduce(
-        (acc, cat) => acc + (cat.concepts?.length || 0),
-        0,
-      );
-      if (totalConcepts === 0 || result.length === 0) {
-        return placeholderTaxonomy[targetLang] || placeholderTaxonomy.es;
-      }
-
-      return result;
-    } catch (e) {
-      console.error("[Taxonomy] Unexpected error:", e);
-      return placeholderTaxonomy[targetLang] || placeholderTaxonomy.es;
+      const cookieStore = await cookies();
+      const cookieLang =
+        (cookieStore.get("app_content_lang")?.value as "es" | "en") ||
+        (cookieStore.get("app_lang")?.value as "es" | "en");
+      targetLang = preferredLang || cookieLang || "es";
+    } catch {
+      // ignore
     }
+
+    const versionId =
+      reportVersionId || (await resolveActiveReportVersionId(targetLang));
+
+    if (versionId) {
+      try {
+        const categories = await getReportVersionCategories(versionId);
+        if (Array.isArray(categories) && categories.length > 0) {
+          const categoriesWithConcepts = await Promise.all(
+            categories.map(async (cat, catIdx) => {
+              const concepts = await getCategoryConcepts(cat.id).catch(() => []);
+              const layerCode = layerCodeFor(cat.name, catIdx);
+
+              const mappedConcepts = (Array.isArray(concepts) ? concepts : []).map(
+                (concept, idx) =>
+                  toConcept(
+                    {
+                      id: concept.id,
+                      category_id: concept.category_id || cat.id,
+                      name: concept.name,
+                      description: concept.description || "",
+                      display_order: concept.display_order || idx + 1,
+                    },
+                    layerCode,
+                    cat.id,
+                    idx,
+                  ),
+              );
+
+              return {
+                id: cat.id,
+                layerCode,
+                name: cat.name || "Sin nombre",
+                description: cat.description ?? "",
+                concepts: mappedConcepts,
+              };
+            }),
+          );
+
+          return categoriesWithConcepts;
+        }
+      } catch (error) {
+        console.error(
+          `Error fetching public taxonomy for version ${versionId}:`,
+          error,
+        );
+      }
+    }
+
+    // Fallback if no categories in DB
+    return placeholderTaxonomy[targetLang] || placeholderTaxonomy.es;
   },
 );
