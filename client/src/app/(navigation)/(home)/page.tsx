@@ -1,42 +1,31 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
-import { getHomeIntrosMap } from "@/features/home/home-queries";
-import {
-  HomeHero,
-  HomeHeroSkeleton,
-} from "@/features/home/components/home-hero";
-import {
-  ExecutiveSummarySection,
-  ExecutiveSummarySkeleton,
-} from "@/features/home/components/executive-summary";
+import { HomeHero } from "@/features/home/components/home-hero";
+import { HomeSupporters } from "@/features/home/components/home-supporters";
+import { HomeSectionProblem } from "@/features/home/components/home-section-problem";
+import { HomeSectionChapters } from "@/features/home/components/home-section-chapters";
+import { HomeBanner } from "@/features/home/components/home-banner";
+import { HomeFunnel } from "@/features/home/components/home-funnel";
+import { HomeContinueReading } from "@/features/home/components/home-continue-reading";
+import { HomeChapterNav } from "@/features/home/components/home-chapter-nav";
+import { DownloadReportButtonServer } from "@/features/report-download/components/download-report-button-server";
 
 export const metadata: Metadata = {
-  title: "PhysaFlow Report | Stranded Capacity Report",
+  title: "PhysaFlow | Stranded Capacity Index",
   description:
-    "Official research insight report on AI infrastructure bottleneck and stranded capacity in modern data centers.",
+    "Stranded Capacity Index — installed, energized and paid for, yet unable to do work.",
 };
-
-async function HomeContainer() {
-  const reportsMap = await getHomeIntrosMap();
-  return (
-    <>
-      <HomeHero reportsMap={reportsMap} />
-      <ExecutiveSummarySection reportsMap={reportsMap} />
-    </>
-  );
-}
 
 export default function Home() {
   return (
-    <Suspense
-      fallback={
-        <>
-          <HomeHeroSkeleton />
-          <ExecutiveSummarySkeleton />
-        </>
-      }
-    >
-      <HomeContainer />
-    </Suspense>
+    <>
+      <HomeContinueReading />
+      <HomeHero downloadButton={<DownloadReportButtonServer />} />
+      <HomeSupporters />
+      <HomeSectionProblem />
+      <HomeSectionChapters />
+      <HomeBanner />
+      <HomeFunnel />
+      <HomeChapterNav />
+    </>
   );
 }

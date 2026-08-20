@@ -1,0 +1,158 @@
+/* ------------------------------------------------------------------
+   PhysaFlow — tokens
+   REEMPLAZA client/src/styles/tokens.css
+
+   Qué cambia respecto de la versión actual:
+   La capa semántica de shadcn (--primary, --background, --foreground…)
+   apuntaba todavía a la paleta vieja: papel cálido #fcf9f5 y forest
+   #012d1d. Por eso todo lo que no es la landing —botones, formularios,
+   admin, cards de shadcn— seguía renderizando con la marca anterior.
+   Ahora esas mismas variables apuntan a la paleta del índice, así que
+   los componentes cambian solos sin tocar una línea de JSX.
+   ------------------------------------------------------------------ */
+
+@theme {
+  --font-sans: 'Inter Tight', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  /* ---- escala tipográfica ---- */
+  --text-display: clamp(2.6rem, 6.6vw, 84px);
+  --text-num:     clamp(3rem, 6.4vw, 84px);
+  --text-h1:      clamp(2.4rem, 6vw, 80px);
+  --text-h2:      clamp(1.9rem, 3.9vw, 44px);
+  --text-quote:   clamp(1.35rem, 2.9vw, 34px);
+  --text-h3:      24px;
+  --text-h3-sm:   20px;
+  --text-lead:    21px;
+  --text-lead-sm: 18px;
+  --text-card:    17px;
+  --text-body:    16px;
+  --text-sm:      15px;
+  --text-ui:      14px;
+  --text-meta:    12.5px;
+  --text-micro:   11px;
+
+  --tracking-t1: -.01em;
+  --tracking-t2: -.02em;
+  --tracking-t3: -.03em;
+
+  /* ---- paleta del índice. Todos los de texto pasan WCAG AA ---- */
+  --color-ink:      #08090A;   /* texto principal                  */
+  --color-grey:     #706F6F;   /* texto secundario     5.01:1      */
+  --color-meta:     #6F6F6F;   /* metadatos y pies     5.02:1      */
+  --color-stroke:   #EBEBEB;
+  --color-off:      #FAFAFA;
+  --color-green:    #00603A;   /* acento único         7.68:1      */
+  --color-green-dp: #0E4A2E;
+  --color-gold:     #C9A961;   /* SOLO sobre oscuro                */
+  --color-gold-dk:  #7A6630;   /* dorado sobre claro   5.57:1      */
+  --color-cream:    #F0EDE4;
+
+  --radius-card: 16px;
+  --radius-box:  12px;
+  --radius-bar:  4px;
+
+  --ease-in-soft:  cubic-bezier(.16, 1, .3, 1);
+  --ease-out-soft: cubic-bezier(.22, .61, .36, 1);
+}
+
+/* ------------------------------------------------------------------
+   Capa semántica. ESTO es lo que consumen los componentes de shadcn.
+   Antes apuntaba a la paleta vieja; ahora apunta a la del índice.
+   ------------------------------------------------------------------ */
+:root {
+  --surface:     #FFFFFF;
+  --surface-low: var(--color-off);
+  --on-surface:  var(--color-ink);
+
+  --background: var(--surface);
+  --foreground: var(--on-surface);
+  --card: var(--surface);
+  --card-foreground: var(--on-surface);
+  --popover: var(--surface);
+  --popover-foreground: var(--on-surface);
+
+  --primary: var(--color-green);
+  --primary-foreground: #FFFFFF;
+  --primary-container: var(--color-green-dp);
+  --on-primary-container: var(--color-cream);
+
+  --secondary: var(--color-gold-dk);
+  --secondary-foreground: #FFFFFF;
+  --secondary-fixed: var(--color-gold);
+  --secondary-container: var(--color-cream);
+  --on-secondary-container: var(--color-ink);
+
+  --muted: var(--color-off);
+  --muted-foreground: var(--color-meta);
+  --accent: var(--color-off);
+  --accent-foreground: var(--color-green);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: var(--color-stroke);
+  --input:  var(--color-stroke);
+  --ring:   var(--color-green);
+
+  --chart-1: var(--color-green);
+  --chart-2: var(--color-gold-dk);
+  --chart-3: #565758;
+  --chart-4: #A3A3A3;
+  --chart-5: var(--color-ink);
+
+  --radius: 0.625rem;
+
+  --sidebar: var(--color-off);
+  --sidebar-foreground: var(--on-surface);
+  --sidebar-primary: var(--color-green);
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: var(--color-off);
+  --sidebar-accent-foreground: var(--color-green);
+  --sidebar-border: var(--color-stroke);
+  --sidebar-ring: var(--color-green);
+}
+
+/* El índice es un documento impreso: no tiene modo oscuro.
+   Se deja definido para que el admin no se rompa si alguien
+   activa la clase .dark, pero no es una variante de marca. */
+.dark {
+  --surface:     var(--color-ink);
+  --surface-low: #131415;
+  --on-surface:  #FFFFFF;
+
+  --background: var(--surface);
+  --foreground: var(--on-surface);
+  --card: var(--surface-low);
+  --card-foreground: var(--on-surface);
+  --popover: var(--surface-low);
+  --popover-foreground: var(--on-surface);
+
+  --primary: #3FBF83;
+  --primary-foreground: var(--color-ink);
+  --secondary: var(--color-gold);
+  --secondary-foreground: var(--color-ink);
+
+  --muted: #1B1C1D;
+  --muted-foreground: #A8A8A8;
+  --accent: #1B1C1D;
+  --accent-foreground: #3FBF83;
+
+  --border: rgba(255,255,255,.14);
+  --input:  rgba(255,255,255,.18);
+  --ring:   #3FBF83;
+
+  --sidebar: var(--surface-low);
+  --sidebar-foreground: var(--on-surface);
+  --sidebar-primary: #3FBF83;
+  --sidebar-primary-foreground: var(--color-ink);
+  --sidebar-accent: #1B1C1D;
+  --sidebar-accent-foreground: #3FBF83;
+  --sidebar-border: rgba(255,255,255,.12);
+  --sidebar-ring: #3FBF83;
+}
+
+/* Foco visible: obligatorio, no opcional. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-green);
+  outline-offset: 3px;
+  border-radius: 4px;
+}

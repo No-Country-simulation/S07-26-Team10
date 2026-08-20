@@ -2,5 +2,65 @@
   "report": "Reporte",
   "methodology": "Metodología",
   "about": "Acerca de PhysaFlow",
-  "logoSubtitle": "Reporte"
+  "logoSubtitle": "Reporte",
+  "definition": "Definición",
+  "chapters": "Capítulos",
+  "taxonomy": "Taxonomía",
+  "references": "Referencias",
+  "searchPlaceholder": "Buscar en el índice…",
+  "noResults": "Sin resultados. El índice sigue siendo un borrador — la mayoría de los capítulos están pendientes.",
+  "menu": "Menú",
+  "close": "Cerrar",
+  "theProblem": "El problema",
+  "theCapacityFunnel": "El embudo de capacidad",
+  "s": {
+    "c1": {
+      "t": "Definición",
+      "e": "Qué es la capacidad varada, y qué términos no es."
+    },
+    "c2": {
+      "t": "El embudo de capacidad",
+      "e": "Siete pasos desde la capacidad nominal hasta la salida útil."
+    },
+    "c3": {
+      "t": "Capa de instalación",
+      "e": "Restricciones eléctricas, térmicas y espaciales."
+    },
+    "c4": {
+      "t": "Capa de IT",
+      "e": "Hardware presente pero no alcanzable como conjunto."
+    },
+    "c5": {
+      "t": "Capa de carga de trabajo y operaciones",
+      "e": "Comportamiento de admisión, ubicación y reserva."
+    },
+    "fac01": {
+      "t": "Potencia varada",
+      "e": "Capacidad contratada o de UPS que no puede admitir nueva carga crítica."
+    },
+    "fac02": {
+      "t": "Refrigeración varada",
+      "e": "Capacidad térmica activa que no refrigera carga de IT útil."
+    },
+    "it03": {
+      "t": "Fragmentación de GPU",
+      "e": "Aceleradores disponibles individualmente pero no como conjunto contiguo."
+    },
+    "it05": {
+      "t": "Cómputo limitado por topología",
+      "e": "Aceleradores presentes pero no elegibles para ciertos entrenamientos."
+    },
+    "wkl02": {
+      "t": "Ineficiencia de cola",
+      "e": "Capacidad ociosa conviviendo con una cola no vacía."
+    },
+    "fig01": {
+      "t": "Embudo de capacidad — de nominal a salida útil",
+      "e": "Modelo ilustrativo. Fuente: PhysaFlow Stranded Capacity Index."
+    },
+    "meth": {
+      "t": "Estados de evidencia",
+      "e": "Siete estados, de documentado a pregunta abierta."
+    }
+  }
 }

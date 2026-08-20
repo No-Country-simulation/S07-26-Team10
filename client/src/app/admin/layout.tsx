@@ -1,9 +1,26 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/features/auth/auth-queries";
-import { logoutAction } from "@/features/auth/auth-actions";
-import { Button } from "@/components/ui/button";
-import { ShieldCheck, LogOut, User } from "lucide-react";
-import { LanguageToggle } from "@/components/language-toggle";
+import { AdminHeader } from "@/features/admin/components/admin-header";
+import { AdminSidebar } from "@/features/admin/components/admin-sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AdminVersionProvider as VersionProvider,
+  AdminLanguageProvider as LanguageProvider,
+} from "@/features/admin/context";
+import { SidebarProvider } from "@/components/ui/sidebar";
+
+function AdminLayoutSkeleton() {
+  return (
+    <div className="flex flex-col gap-6 p-6">
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-64 rounded-xl" />
+        <Skeleton className="h-4 w-96 rounded-md" />
+      </div>
+      <Skeleton className="h-80 w-full rounded-2xl" />
+    </div>
+  );
+}
 
 export default async function AdminLayout({
   children,
@@ -12,64 +29,42 @@ export default async function AdminLayout({
 }) {
   const user = await getCurrentUser();
 
+  if (!user) {
+    redirect("/login?expired=true");
+  }
+
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
-      {/* Header Admin */}
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-md px-4 sm:px-8 py-3 flex items-center justify-between shadow-xs">
-        <div className="flex items-center gap-3">
-          <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold shadow-inner">
-            <ShieldCheck className="size-5" />
-          </div>
-          <div>
-            <h1 className="font-bold text-base tracking-tight leading-tight">
-              PhysaFlow Admin
-            </h1>
-            <p className="text-xs text-muted-foreground hidden sm:block">
-              Gestión de contenido y reportes
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <LanguageToggle />
-          {user && (
-            <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-2xl border border-border/50 text-xs">
-              <User className="size-3.5 text-primary" />
-              <span className="font-medium text-foreground max-w-[140px] truncate">
-                {user.email}
-              </span>
-              <span className="bg-primary/20 text-primary px-1.5 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-wide">
-                {user.role}
-              </span>
-            </div>
-          )}
-
-          <form action={logoutAction}>
-            <Button
-              type="submit"
-              variant="outline"
-              size="sm"
-              className="rounded-xl gap-1.5 border-border/80 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-colors"
-            >
-              <LogOut className="size-3.5" />
-              <span className="hidden sm:inline">Cerrar Sesión</span>
-            </Button>
-          </form>
-        </div>
-      </header>
-
-      {/* Main Admin Content */}
-      <main className="flex-1 flex flex-col p-4 sm:p-8 max-w-7xl w-full mx-auto">
-        <Suspense
-          fallback={
-            <div className="p-8 text-center text-muted-foreground">
-              Cargando panel...
-            </div>
-          }
+    <LanguageProvider>
+      <VersionProvider>
+        {/*
+          Estructura igual al prototipo:
+          .app { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh }
+          .side = sidebar (izquierda, altura completa)
+          .main = columna derecha: header arriba + contenido abajo
+        */}
+        <SidebarProvider
+          className="admin-theme min-h-screen flex bg-[#FCFCFC] text-foreground"
+          style={{ "--sidebar-width": "250px" } as React.CSSProperties}
         >
-          {children}
-        </Suspense>
-      </main>
-    </div>
+          {/* Sidebar — columna izquierda, altura completa */}
+          <AdminSidebar />
+
+          {/* Columna derecha: header sticky + contenido (.main del prototipo) */}
+          <div className="main flex-1 flex flex-col min-w-0 bg-[#FCFCFC]">
+            <AdminHeader
+              userRole={user.role}
+              userName={user.name || user.email}
+            />
+
+            {/* Contenido del módulo — .body del prototipo con resplandor ambiental */}
+            <div className="flex-1 min-w-0 overflow-y-auto">
+              <main className="body relative w-full max-w-[1200px] px-[22px] py-[30px] pb-[70px]">
+                <Suspense fallback={<AdminLayoutSkeleton />}>{children}</Suspense>
+              </main>
+            </div>
+          </div>
+        </SidebarProvider>
+      </VersionProvider>
+    </LanguageProvider>
   );
 }

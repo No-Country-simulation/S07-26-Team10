@@ -4,8 +4,9 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { refresh } from "next/cache";
 import { z } from "zod";
-import { ActionResult, LoginCredentials } from "./auth-types";
-import { env } from "@/lib/env";
+import { AUTH_LOGIN_PATH, parseApiErrorMessage } from "./auth-api";
+import { getApiUrl } from "@/lib/api-url";
+import { ActionResult, LoginCredentials, LoginTokenResponse } from "./auth-types";
 
 const loginSchema = z.object({
   email: z
@@ -15,27 +16,8 @@ const loginSchema = z.object({
   password: z
     .string()
     .min(1, "La contraseña es requerida")
-    .min(6, "La contraseña debe tener al menos 6 caracteres"),
+    .min(8, "La contraseña debe tener al menos 8 caracteres"),
 });
-
-/**
- * Creates a mock JWT token string for fallback authentication
- */
-function createMockJwtToken(email: string): string {
-  const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
-  const payload = Buffer.from(
-    JSON.stringify({
-      sub: "admin-1",
-      email,
-      name: "Administrador PhysaFlow",
-      role: "admin",
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 86400,
-    })
-  ).toString("base64url");
-  const signature = Buffer.from(env.jwtSecret).toString("base64url");
-  return `${header}.${payload}.${signature}`;
-}
 
 export async function loginAction(credentials: LoginCredentials): Promise<ActionResult> {
   const validation = loginSchema.safeParse(credentials);
@@ -48,38 +30,25 @@ export async function loginAction(credentials: LoginCredentials): Promise<Action
   let token: string | null = null;
   let errorMessage: string | null = null;
 
-  if (env.apiUrl) {
-    try {
-      const response = await fetch(`${env.apiUrl}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-        cache: "no-store",
-      });
+  try {
+    const response = await fetch(getApiUrl(AUTH_LOGIN_PATH), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+      cache: "no-store",
+    });
 
-      if (response.ok) {
-        const data = await response.json();
-        token = data.token || data.accessToken || data.jwt || data.data?.token;
-      } else {
-        const errorData = await response.json().catch(() => null);
-        errorMessage =
-          errorData?.message ||
-          errorData?.error ||
-          "Credenciales inválidas. Revisa tu correo y contraseña.";
-      }
-    } catch (err) {
-      console.warn("API Server not reachable, attempting fallback validation", err);
+    if (response.ok) {
+      const data = (await response.json()) as LoginTokenResponse;
+      token = data.access_token;
+    } else {
+      const errorData = await response.json().catch(() => null);
+      errorMessage = parseApiErrorMessage(errorData);
     }
-  }
-
-  // Fallback environment credentials validation if API URL is not set or server couldn't be reached
-  if (!token) {
-    if (email === env.adminEmail && password === env.adminPassword) {
-      token = createMockJwtToken(email);
-      errorMessage = null;
-    } else if (!errorMessage) {
-      errorMessage = "Credenciales inválidas. Por favor verifica tu correo y contraseña.";
-    }
+  } catch (err) {
+    console.error("Error al conectar con el servidor de autenticación:", err);
+    errorMessage =
+      "No se pudo conectar con el servidor. Verifica que la API esté en ejecución.";
   }
 
   if (!token || errorMessage) {

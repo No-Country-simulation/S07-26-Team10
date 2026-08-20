@@ -3,6 +3,18 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface LoginTokenResponse {
+  access_token: string;
+  token_type: string;
+}
+
+export interface CurrentUserResponse {
+  id: string;
+  name: string;
+  email: string;
+  is_active: boolean;
+}
+
 export interface AuthUser {
   id: string;
   email: string;

@@ -1,11 +1,20 @@
 {
-  "title": "Admin Panel",
-  "description": "Enter your authorized credentials to access report management",
-  "emailLabel": "Email Address",
+  "title": "Administrative Access",
+  "descriptionPrefix": "Enter your credentials to manage the content of ",
+  "descriptionHighlight": "Stranded Capacity Index",
+  "descriptionSuffix": ".",
+  "emailLabel": "Email",
+  "emailPlaceholder": "admin@physaflow.com",
   "passwordLabel": "Password",
+  "forgotPassword": "Forgot your password?",
+  "rememberMe": "Keep me signed in",
   "signIn": "Sign In",
   "signingIn": "Signing in...",
   "authError": "Authentication Error",
   "showPassword": "Show password",
-  "hidePassword": "Hide password"
+  "hidePassword": "Hide password",
+  "footerVersion": "Version 1.0",
+  "footerSystemTitle": "PhysaFlow — administration system",
+  "footerSsl": "Encrypted connection",
+  "footerRestricted": "Restricted access"
 }

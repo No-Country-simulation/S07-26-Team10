@@ -16,6 +16,12 @@ export function proxy(request: NextRequest) {
 
   // Redirect authenticated users trying to access /login to /admin
   if (pathname === "/login") {
+    if (request.nextUrl.searchParams.has("expired")) {
+      const response = NextResponse.next();
+      response.cookies.delete("auth_token");
+      return response;
+    }
+
     if (token) {
       return NextResponse.redirect(new URL("/admin", request.url));
     }

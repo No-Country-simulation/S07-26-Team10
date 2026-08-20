@@ -1,13 +1,90 @@
 {
-  "badge": "RESEARCH INSIGHT",
-  "title": "Stranded Capacity: The Silent Bottleneck of AI Infrastructure.",
-  "description": "As the deployment of large language models scales exponentially, physical infrastructure is failing to keep pace. We identify the hidden inefficiencies creating operational waste in modern data centers.",
-  "startReading": "START READING",
-  "viewMethodology": "VIEW METHODOLOGY",
-  "scrollToExplore": "Scroll to explore",
-  "officialReport": "OFFICIAL REPORT",
+  "heroLine1": "Installed. Energized. Paid for.",
+  "heroLine2": "And still unable to do work.",
+  "heroSub": "Between what a facility holds and what it can deliver, <b>there is no agreed name.</b> This index proposes one — and a taxonomy of the eighteen forms it takes across facility, IT and workload.",
+  "readTheReport": "Read the report",
+  "downloadPdf": "Download PDF",
+  "heroMono": "Methodological benchmarking · Publicly accessible telemetry · No partnership implied",
+  "continueReading": "Continue reading",
+  "supportersNote": "Built with support from the institutions backing the next generation of AI infrastructure.",
+  "problemTitle": "Capacity is reported at the top and consumed at the bottom",
+  "problemLede": "Megawatts contracted, racks installed, accelerators delivered. Those figures describe what exists. They do not describe what can be used.",
+  "problemBody": "Between the two sits a set of constraints — electrical, thermal, topological, temporal and organizational — that keeps installed infrastructure from converting into work. This index proposes a single vocabulary for that distance.",
+  "readTheDefinition": "Read the definition",
+  "browseTaxonomy": "Browse the taxonomy",
+  "startReading": "Start reading — Definition",
+  "chaptersLede": "Each chapter is its own page, so it can be linked and cited on its own.",
+  "chapters": {
+    "theCapacityFunnel": "The capacity funnel",
+    "facilityLayer": "Facility layer",
+    "itLayer": "IT layer",
+    "workloadAndOperationsLayer": "Workload and operations layer",
+    "measurementApproach": "Measurement approach",
+    "whatThisIndexDoesNotClaim": "What this index does not claim"
+  },
+  "milestoneTag": "Milestone 01 / 04",
+  "bannerText": "Benchmarked against publicly accessible supercomputing telemetry — not private deployments.",
+  "bannerFoot": "NERSC · Berkeley Lab · Perlmutter — no partnership implied",
+  "funnelTitle": "The capacity funnel",
+  "funnelLede": "Seven steps from nameplate to useful output. The industry communicates the first three well. The last two decide whether the investment produced anything.",
+  "figureNum": "Figure 01",
+  "figureTitle": "Capacity funnel — nameplate to useful output",
+  "illustrative": "Illustrative",
+  "expand": "Expand",
+  "steps": {
+    "01": {
+      "name": "Nameplate capacity",
+      "desc": "Total theoretical capacity",
+      "caption": "Procurement and build-out. Equipment ordered but not yet racked and commissioned."
+    },
+    "02": {
+      "name": "Installed capacity",
+      "desc": "Physical installed",
+      "caption": "Grid connection and interconnection delay. Transmission lines take four to eight years in advanced economies."
+    },
+    "03": {
+      "name": "Energized capacity",
+      "desc": "Powered and energised",
+      "caption": "Cooling and power distribution. Thermal envelope, UPS derating, branch and busway limits at rack level."
+    },
+    "04": {
+      "name": "Supportable capacity",
+      "desc": "Meets thermal and safety limits",
+      "caption": "Hardware availability and cluster topology. Nodes present but outside the eligible fabric, or not yet in the pool."
+    },
+    "05": {
+      "name": "Allocatable capacity",
+      "desc": "After reservations and overhead",
+      "caption": "Scheduling and fragmentation. Free accelerators that cannot be assembled into a contiguous allocatable set."
+    },
+    "06": {
+      "name": "Utilized capacity",
+      "desc": "Actively used by workloads",
+      "caption": "Queues, reservations and admission policy. Capacity held or waiting while demand is pending."
+    },
+    "07": {
+      "name": "Useful output capacity",
+      "desc": "Productive, value-generating",
+      "caption": "Failed jobs, retries and idle allocation. GPU-hours assigned that produce no output."
+    }
+  },
+  "funnelIdle": "Hover a step to see what removes capacity before the next one.",
+  "stepsLabel": "steps",
+  "gc1Title": "What this figure shows",
+  "gc1Body": "A monotonic loss model. Each step removes capacity for a different reason — and the reasons do not share a metric.",
+  "illustrativeModel": "Illustrative model",
+  "gc2Title": "Where the losses come from",
+  "facility": "Facility",
+  "it": "IT",
+  "workload": "Workload and operations",
+  "gc2Foot": "18 named phenomena across three layers.",
+  "gc3Title": "Methodology",
+  "gc3Body": "The seven steps are defined. The measurement is not. Definitions and boundaries are open for comment before any figure is published.",
+  "exploreMethodology": "Explore methodology",
+  "disc": "Proportions are illustrative. No measurement has been collected for any step.",
   "source": "Source: PhysaFlow Stranded Capacity Index",
-  "allRightsReserved": "All Rights Reserved.",
-  "privacyPolicy": "Privacy Policy",
-  "termsOfService": "Terms of Service"
+  "version": "Definition of each step pending validation · v0.1",
+  "downloadTable": "Table",
+  "citeFigure": "Cite this figure",
+  "downloadsPending": "PNG · SVG · Table — pending"
 }

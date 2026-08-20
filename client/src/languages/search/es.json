@@ -1,0 +1,23 @@
+{
+  "title": "Buscador Global",
+  "placeholder": "Buscar en secciones, taxonomía, referencias, recursos...",
+  "noResults": "Sin resultados para",
+  "noResultsDesc": "Intenta buscar con otra palabra clave, categoría o concepto.",
+  "resultsCount": "resultados",
+  "suggestions": "Sugerencias:",
+  "quickTopics": "Temas rápidos y sugerencias",
+  "filters": {
+    "all": "Todos",
+    "section": "Secciones",
+    "category": "Categorías",
+    "concept": "Conceptos",
+    "reference": "Referencias",
+    "resource": "Recursos",
+    "report_version": "Versiones"
+  },
+  "hints": {
+    "navigate": "para navegar",
+    "select": "para seleccionar",
+    "close": "para cerrar"
+  }
+}

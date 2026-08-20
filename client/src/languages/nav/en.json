@@ -2,5 +2,66 @@
   "report": "Report",
   "methodology": "Methodology",
   "about": "About PhysaFlow",
-  "logoSubtitle": "Report"
+  "logoSubtitle": "Report",
+  "definition": "Definition",
+  "chapters": "Chapters",
+  "taxonomy": "Taxonomy",
+  "references": "References",
+ 
+  "searchPlaceholder": "Search the index…",
+  "noResults": "No results. The index is still a draft — most chapters are pending.",
+  "menu": "Menu",
+  "close": "Close",
+  "theProblem": "The problem",
+  "theCapacityFunnel": "The capacity funnel",
+  "s": {
+    "c1": {
+      "t": "Definition",
+      "e": "What stranded capacity is, and which terms it is not."
+    },
+    "c2": {
+      "t": "The capacity funnel",
+      "e": "Seven steps from nameplate to useful output."
+    },
+    "c3": {
+      "t": "Facility layer",
+      "e": "Electrical, thermal and spatial constraints."
+    },
+    "c4": {
+      "t": "IT layer",
+      "e": "Hardware that is present but not reachable as a set."
+    },
+    "c5": {
+      "t": "Workload and operations layer",
+      "e": "Admission, placement and reservation behaviour."
+    },
+    "fac01": {
+      "t": "Stranded power",
+      "e": "Contracted or UPS capacity that cannot admit new critical load."
+    },
+    "fac02": {
+      "t": "Stranded cooling",
+      "e": "Active thermal capacity that is not cooling useful IT load."
+    },
+    "it03": {
+      "t": "GPU fragmentation",
+      "e": "Accelerators available individually but not as a contiguous set."
+    },
+    "it05": {
+      "t": "Topology-bottlenecked compute",
+      "e": "Accelerators present but not eligible for certain training runs."
+    },
+    "wkl02": {
+      "t": "Queue inefficiency",
+      "e": "Idle capacity coexisting with a non-empty queue."
+    },
+    "fig01": {
+      "t": "Capacity funnel — nameplate to useful output",
+      "e": "Illustrative model. Source: PhysaFlow Stranded Capacity Index."
+    },
+    "meth": {
+      "t": "Evidence states",
+      "e": "Seven states, from documented to open question."
+    }
+  }
 }

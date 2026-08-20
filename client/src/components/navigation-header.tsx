@@ -1,117 +1,247 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { LanguageToggle } from "@/components/language-toggle";
-import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { useLanguage } from "@/context/language-context";
+import { useVersion } from "@/context/version-context";
+import { useScrollProgress } from "@/hooks/use-scroll-progress";
+import { useSectionTracker } from "@/hooks/use-section-tracker";
+import { SearchOverlay } from "@/features/search";
 
-export function NavigationHeader() {
+import { ReportToggle } from "./report-toggle";
+import { VersionToggle } from "./version-toggle";
+
+const NAV_LINKS = [
+  { href: "/report", key: "definition" },
+  { href: "/#s02", key: "chapters", match: "/" },
+  { href: "/report/taxonomy", key: "taxonomy", match: "/report/taxonomy" },
+  { href: "/methodology", key: "methodology", match: "/methodology" },
+  { href: "/report/references", key: "references", match: "/report/references" },
+];
+
+function CloseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="11" cy="11" r="7.2" />
+      <path d="M20.5 20.5l-4-4" />
+    </svg>
+  );
+}
+
+export function NavigationHeader({ disableShrink = false }: { disableShrink?: boolean }) {
   const t = useTranslations("Nav");
-  const pathname = usePathname();
+  const { language, setLanguage } = useLanguage();
+  const { setContentLanguage } = useVersion();
+  const router = useRouter();
+  const { progress, shrink } = useScrollProgress({ disableShrink });
+  const active = useSectionTracker(".phi section.n[data-n]");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const isReportActive = pathname.startsWith("/report");
-  const isMethodologyActive = pathname.startsWith("/methodology");
-  const isAboutActive = pathname.startsWith("/about");
+  const pathname = usePathname();
+  const onHome = pathname === "/";
+  const shrunk = !onHome ? false : shrink;
 
-  const getLinkClasses = (isActive: boolean) =>
-    isActive
-      ? "text-foreground font-semibold border-b-2 border-foreground pb-0.5 transition-colors"
-      : "text-muted-foreground hover:text-foreground transition-colors";
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+
+  const isNavActive = (href: string, match?: string) => {
+    if (match) return pathname === match;
+    return pathname.startsWith(href);
+  };
+
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeMobileMenu();
+    };
+
+    const handleResize = () => {
+      if (window.innerWidth > 900) closeMobileMenu();
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [mobileMenuOpen]);
+
+  // Global keyboard shortcut: Cmd+K / Ctrl+K
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const changeLanguage = (lang: "es" | "en") => {
+    setLanguage(lang);
+    setContentLanguage(lang);
+    router.refresh();
+  };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur-md transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 sm:h-20 flex items-center justify-between">
-        {/* Brand / Logo */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <span className="font-serif font-bold text-lg sm:text-xl tracking-wider text-foreground">
-            PHYSAFLOW
-          </span>
-          <span className="hidden sm:inline-block text-xs font-serif italic text-muted-foreground border-l border-border pl-3 py-0.5">
-            {t("logoSubtitle")}
-          </span>
-        </Link>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-8 font-mono text-xs uppercase tracking-wider">
-          <Link href="/report" className={getLinkClasses(isReportActive)}>
-            {t("report")}
-          </Link>
-          <Link
-            href="/methodology"
-            className={getLinkClasses(isMethodologyActive)}
-          >
-            {t("methodology")}
-          </Link>
-          <Link href="/about" className={getLinkClasses(isAboutActive)}>
-            {t("about")}
-          </Link>
-        </nav>
-
-        {/* Right Controls */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          <LanguageToggle />
-
-          {/* Mobile Menu Toggle Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
+    <>
+      <header id="hd" className={shrunk ? "sm" : undefined}>
+        <div className="hr">
+          <button
+            type="button"
+            className={`burger ${mobileMenuOpen ? "on" : ""}`}
+            aria-label={mobileMenuOpen ? t("close") : t("menu")}
+            aria-expanded={mobileMenuOpen}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle Menu"
           >
-            {mobileMenuOpen ? (
-              <X className="size-5" />
-            ) : (
-              <Menu className="size-5" />
-            )}
-          </Button>
+            <span className="burger-box" aria-hidden="true">
+              <span className="burger-line" />
+              <span className="burger-line" />
+              <span className="burger-line" />
+            </span>
+          </button>
+          <Link href="/" className="lock">
+            <img
+              className="iso"
+              src="/physaflow-isotipo.png"
+              alt="PhysaFlow"
+              width="44"
+              height="44"
+            />
+            <img
+              className="wmk"
+              src="/physaflow-wordmark-black.png"
+              alt="PhysaFlow"
+              width="154"
+              height="26"
+            />
+          </Link>
+          <span className="sep" />
+          
+          <div className="now">
+            <span className="n" id="nn">
+              {active.n}
+            </span>
+            <span className="t" id="nt">
+              {active.t ? t(active.t) : ""}
+            </span>
+          </div>
+          <nav>
+            {NAV_LINKS.map((link) => (
+              <Link key={link.key} href={link.href} onClick={closeMobileMenu}>
+                {t(link.key)}
+              </Link>
+            ))}
+          </nav>
+          <div className="tools flex items-center gap-2">
+            <div className="hdr-toggle">
+              <ReportToggle />
+            </div>
+            <div className="hdr-toggle">
+              <VersionToggle />
+            </div>
+            <button
+              className="ic"
+              id="sbtn"
+              aria-label="Search"
+              onClick={() => setSearchOpen(true)}
+            >
+              <SearchIcon />
+            </button>
+            <div className="lgs">
+              <button
+                aria-current={language === "en" ? "true" : "false"}
+                onClick={() => changeLanguage("en")}
+              >
+                EN
+              </button>
+              <span style={{ color: "#DADADA" }}>/</span>
+              <button
+                aria-current={language === "es" ? "true" : "false"}
+                onClick={() => changeLanguage("es")}
+              >
+                ES
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="prog">
+          <i id="pg" style={{ width: `${progress}%` }} />
+        </div>
+      </header>
+
+      <div className={`mmenu ${mobileMenuOpen ? "on" : ""}`} onClick={closeMobileMenu}>
+        <div className="mmenu-panel" onClick={(event) => event.stopPropagation()}>
+          <div className="mmenu-head">
+            <span className="mmenu-title">{t("menu")}</span>
+            <button
+              type="button"
+              className="mmenu-close"
+              aria-label={t("close")}
+              onClick={closeMobileMenu}
+            >
+              <CloseIcon />
+            </button>
+          </div>
+          <nav aria-label={t("menu")}>
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.key}
+                href={link.href}
+                className={isNavActive(link.href, link.match) ? "cur" : undefined}
+                onClick={closeMobileMenu}
+              >
+                {t(link.key)}
+              </Link>
+            ))}
+          </nav>
+          <div className="mmenu-tools">
+            <div className="hdr-toggle">
+              <ReportToggle />
+            </div>
+            <div className="hdr-toggle">
+              <VersionToggle />
+            </div>
+          </div>
+          <div className="mlg">
+            <button
+              aria-current={language === "en" ? "true" : "false"}
+              onClick={() => { changeLanguage("en"); closeMobileMenu(); }}
+            >
+              EN
+            </button>
+            <span style={{ color: "#DADADA" }}>/</span>
+            <button
+              aria-current={language === "es" ? "true" : "false"}
+              onClick={() => { changeLanguage("es"); closeMobileMenu(); }}
+            >
+              ES
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Mobile Navigation Dropdown */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-b border-border bg-background px-4 py-6 space-y-4 font-mono text-xs uppercase tracking-wider animate-in slide-in-from-top-2">
-          <nav className="flex flex-col space-y-3">
-            <Link
-              href="/report"
-              onClick={() => setMobileMenuOpen(false)}
-              className={
-                isReportActive
-                  ? "text-foreground font-semibold py-1"
-                  : "text-muted-foreground hover:text-foreground py-1"
-              }
-            >
-              {t("report")}
-            </Link>
-            <Link
-              href="/methodology"
-              onClick={() => setMobileMenuOpen(false)}
-              className={
-                isMethodologyActive
-                  ? "text-foreground font-semibold py-1"
-                  : "text-muted-foreground hover:text-foreground py-1"
-              }
-            >
-              {t("methodology")}
-            </Link>
-            <Link
-              href="/about"
-              onClick={() => setMobileMenuOpen(false)}
-              className={
-                isAboutActive
-                  ? "text-foreground font-semibold py-1"
-                  : "text-muted-foreground hover:text-foreground py-1"
-              }
-            >
-              {t("about")}
-            </Link>
-          </nav>
-        </div>
-      )}
-    </header>
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+    </>
   );
 }

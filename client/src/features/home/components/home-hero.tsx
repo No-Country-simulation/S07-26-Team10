@@ -1,82 +1,79 @@
 "use client";
 
-import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useLanguage } from "@/context/language-context";
-import { ArrowDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { HomeIntroData } from "../home-types";
+import type { CSSProperties, ReactNode } from "react";
 
-interface HomeHeroProps {
-  introData?: HomeIntroData;
-  reportsMap?: Record<"es" | "en", HomeIntroData>;
-}
-
-export function HomeHero({ introData, reportsMap }: HomeHeroProps) {
-  const { language } = useLanguage();
-  const t = useTranslations("HomePage");
-
-  const activeIntro = reportsMap ? reportsMap[language] : introData;
-
-  const titleText = activeIntro?.title || t("title");
-  const descriptionText = activeIntro?.description || t("description");
-
+function ArrowIcon() {
   return (
-    <section className="relative flex flex-col items-center justify-center text-center px-4 py-16 sm:py-24 md:py-32 max-w-5xl mx-auto">
-      {/* Main Headline Title */}
-      <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif font-bold tracking-tight text-foreground max-w-4xl leading-[1.15] sm:leading-[1.12]">
-        {titleText}
-      </h1>
-
-      {/* Subtitle / Introduction */}
-      <p className="mt-6 text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl font-sans font-normal leading-relaxed">
-        {descriptionText}
-      </p>
-
-      {/* Action Buttons */}
-      <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
-        <Button
-          render={<Link href="/report" />}
-          size="lg"
-          className="w-full sm:w-auto h-12 px-8 font-mono text-xs font-bold tracking-wider uppercase rounded-xs shadow-xs transition-transform active:scale-[0.99]"
-        >
-          {t("startReading")}
-        </Button>
-
-        <Button
-          render={<a href="#executive-summary" />}
-          variant="outline"
-          size="lg"
-          className="w-full sm:w-auto h-12 px-8 font-mono text-xs font-bold tracking-wider uppercase rounded-xs border-input hover:bg-accent transition-transform active:scale-[0.99]"
-        >
-          {t("viewMethodology")}
-        </Button>
-      </div>
-
-      {/* Scroll to Explore */}
-      <div className="mt-16 sm:mt-24 flex flex-col items-center gap-2 opacity-70 hover:opacity-100 transition-opacity">
-        <span className="text-[10px] uppercase font-mono tracking-widest text-muted-foreground">
-          {t("scrollToExplore")}
-        </span>
-        <ArrowDown className="size-4 text-muted-foreground animate-bounce stroke-[1.5]" />
-      </div>
-    </section>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 17L17 7M8 7h9v9" />
+    </svg>
   );
 }
 
-export function HomeHeroSkeleton() {
+function DownloadIcon() {
   return (
-    <section className="flex flex-col items-center justify-center text-center px-4 py-16 sm:py-24 md:py-32 max-w-5xl mx-auto">
-      <Skeleton className="h-7 w-48 rounded-full mb-8" />
-      <Skeleton className="h-14 sm:h-20 w-3/4 max-w-3xl mb-4" />
-      <Skeleton className="h-10 sm:h-12 w-2/3 max-w-2xl mb-6" />
-      <Skeleton className="h-6 w-full max-w-xl mb-10" />
-      <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-        <Skeleton className="h-12 w-full sm:w-48 rounded-xs" />
-        <Skeleton className="h-12 w-full sm:w-48 rounded-xs" />
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 4v12M7 12l5 5 5-5M5 20h14" />
+    </svg>
+  );
+}
+
+function Block({
+  delay,
+  className,
+  children,
+}: {
+  delay: string;
+  className: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className={className} style={{ "--b": delay } as CSSProperties}>
+      {children}
+    </div>
+  );
+}
+
+export function HomeHero({
+  downloadButton,
+}: {
+  downloadButton?: ReactNode;
+}) {
+  const t = useTranslations("HomePage");
+
+  return (
+    <section className="hero">
+      <div className="img" />
+      <div className="fade" />
+      <div className="in">
+        <h1>
+          <span className="ln">
+            <em>{t("heroLine1")}</em>
+          </span>
+          <span className="ln">
+            <em className="soft">{t("heroLine2")}</em>
+          </span>
+        </h1>
+        <p className="sub blk" style={{ "--b": "520ms" } as CSSProperties}>
+          {t.rich("heroSub", {
+            b: (chunks) => <b>{chunks}</b>,
+          })}
+        </p>
+        <Block className="hbtn blk" delay="680ms">
+          <a className="b solid" href="#s01">
+            {t("readTheReport")} <ArrowIcon />
+          </a>
+          {downloadButton ?? (
+            <a className="b line" href="/report">
+              {t("downloadPdf")} <DownloadIcon />
+            </a>
+          )}
+        </Block>
+        <Block className="hmono blk" delay="800ms">
+          {t("heroMono")}
+        </Block>
       </div>
-      <Skeleton className="h-10 w-28 mt-20" />
     </section>
   );
 }

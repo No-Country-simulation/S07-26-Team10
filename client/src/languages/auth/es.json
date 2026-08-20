@@ -1,11 +1,20 @@
 {
-  "title": "Panel de Administración",
-  "description": "Ingresa tus credenciales autorizadas para acceder a la gestión de reportes",
-  "emailLabel": "Correo Electrónico",
+  "title": "Acceso administrativo",
+  "descriptionPrefix": "Ingresá tus credenciales para gestionar el contenido de ",
+  "descriptionHighlight": "Stranded Capacity Index",
+  "descriptionSuffix": ".",
+  "emailLabel": "Correo",
+  "emailPlaceholder": "admin@physaflow.com",
   "passwordLabel": "Contraseña",
-  "signIn": "Iniciar Sesión",
-  "signingIn": "Iniciando sesión...",
+  "forgotPassword": "¿Olvidaste tu contraseña?",
+  "rememberMe": "Mantener la sesión iniciada",
+  "signIn": "Ingresar",
+  "signingIn": "Ingresando...",
   "authError": "Error de autenticación",
   "showPassword": "Mostrar contraseña",
-  "hidePassword": "Ocultar contraseña"
+  "hidePassword": "Ocultar contraseña",
+  "footerVersion": "Versión 1.0",
+  "footerSystemTitle": "PhysaFlow — sistema de administración",
+  "footerSsl": "Conexión cifrada",
+  "footerRestricted": "Acceso restringido"
 }

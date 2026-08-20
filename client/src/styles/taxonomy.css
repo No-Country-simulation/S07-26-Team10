@@ -1,0 +1,479 @@
+/* ============================================================
+   Stranded Capacity Taxonomy — accordion page.
+   Ported from design/prototype/taxonomy.html. Scoped under `.phi`.
+   ============================================================ */
+
+/* ===== MAST ===== */
+.phi .mast {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(120px, 17vh, 190px) 0 clamp(56px, 7vh, 84px);
+  border-bottom: 1px solid var(--phi-gline);
+}
+.phi .mast .img {
+  position: absolute;
+  inset: 0;
+  background-image: var(--phi-img);
+  background-size: cover;
+  background-position: center 38%;
+  opacity: 0.17;
+  filter: grayscale(1) contrast(1.3);
+}
+.phi .mast .fade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, #fff 0%, rgba(255, 255, 255, 0.72) 30%, rgba(255, 255, 255, 0.66) 56%, rgba(255, 255, 255, 0.95) 88%, #fff 100%),
+    radial-gradient(74% 62% at 42% 46%, rgba(255, 255, 255, 0.46) 0%, rgba(255, 255, 255, 0) 74%);
+}
+.phi .mast .in {
+  position: relative;
+  max-width: var(--phi-max);
+  margin-inline: auto;
+  padding-inline: var(--phi-gut);
+}
+.phi .emono {
+  font-family: var(--phi-m);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  color: var(--phi-green);
+}
+.phi .mast h1 {
+  font-size: clamp(2.3rem, 5.6vw, 76px);
+  line-height: 1.03;
+  letter-spacing: var(--phi-t3);
+  font-weight: 500;
+  margin-top: 24px;
+  max-width: 17ch;
+}
+.phi .mast h1 .ln {
+  display: block;
+}
+.phi .mast h1 .ln em {
+  font-style: normal;
+  display: block;
+}
+.phi .au {
+  color: #a68e4e;
+}
+.phi .mast .lead {
+  font-size: 21px;
+  line-height: 29px;
+  letter-spacing: var(--phi-t1);
+  color: var(--phi-grey);
+  max-width: 58ch;
+  margin-top: 28px;
+}
+
+/* ===== reveal (scroll) ===== */
+.phi .rv {
+  opacity: 0;
+  transform: translateY(30px);
+  filter: blur(9px);
+}
+.phi .rv.in {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+  transition: opacity 1.15s cubic-bezier(0.16, 1, 0.3, 1), transform 1.15s cubic-bezier(0.16, 1, 0.3, 1), filter 1.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ===== HOW (3 columns) ===== */
+.phi .how {
+  border-bottom: 1px solid var(--phi-gline);
+  background: var(--phi-off, #fafafa);
+}
+.phi .how .in {
+  max-width: var(--phi-max);
+  margin-inline: auto;
+  padding: clamp(30px, 4vh, 44px) var(--phi-gut);
+}
+.phi .hg {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 44px;
+}
+.phi .hn {
+  font-family: var(--phi-m);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--phi-green);
+  display: block;
+  margin-bottom: 10px;
+}
+.phi .hc p {
+  font-size: 15px;
+  line-height: 23px;
+  letter-spacing: var(--phi-t1);
+  color: var(--phi-grey);
+  max-width: 40ch;
+}
+.phi .hc em {
+  font-style: normal;
+  color: var(--phi-dark);
+}
+.phi .es.mini {
+  display: inline-block;
+  vertical-align: baseline;
+  margin: 0 2px;
+  font-weight: 400;
+}
+@media (max-width: 900px) {
+  .phi .hg {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+/* ===== TAXONOMY SECTION ===== */
+.phi .tx {
+  padding: clamp(30px, 4vh, 44px) 0 clamp(80px, 10vh, 120px);
+}
+.phi .tx .in {
+  max-width: var(--phi-max);
+  margin-inline: auto;
+  padding-inline: var(--phi-gut);
+}
+.phi .bar {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 70px;
+  z-index: 20;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--phi-stroke);
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.phi .fts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.phi .ft {
+  font: inherit;
+  font-size: 14px;
+  letter-spacing: var(--phi-t1);
+  color: var(--phi-dark);
+  background: none;
+  border: 1px solid var(--phi-dark);
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.22s;
+}
+.phi .ft::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.22s, box-shadow 0.22s;
+  flex: none;
+}
+.phi .ft i {
+  font-style: normal;
+  font-family: var(--phi-m);
+  font-size: 11px;
+  opacity: 0.6;
+  margin-left: 5px;
+}
+.phi .ft:hover {
+  border-color: var(--phi-green);
+  color: var(--phi-green);
+}
+.phi .ft:hover::before {
+  background: var(--phi-green);
+}
+.phi .ft.on {
+  background: var(--phi-dark);
+  border-color: var(--phi-dark);
+  color: #fff;
+}
+.phi .ft.on::before {
+  background: #3fbf83;
+  box-shadow: 0 0 0 3px rgba(63, 191, 131, 0.22);
+}
+.phi .ft.on:hover {
+  border-color: var(--phi-dark);
+  color: #fff;
+}
+.phi .fq {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--phi-dark);
+  border-radius: 999px;
+  padding: 8px 16px;
+  min-width: 230px;
+  background: #fff;
+  transition: border-color 0.22s;
+}
+.phi .fq:focus-within {
+  border-color: var(--phi-green);
+  box-shadow: 0 0 0 3px rgba(0, 96, 58, 0.12);
+}
+.phi .fq:focus-within svg {
+  stroke: var(--phi-green);
+}
+.phi .fq svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--phi-dark);
+  stroke-width: 1.8;
+  flex: none;
+  transition: stroke 0.22s;
+}
+.phi .fq input {
+  font: inherit;
+  font-size: 14px;
+  letter-spacing: var(--phi-t1);
+  border: 0;
+  outline: 0;
+  width: 100%;
+  background: none;
+}
+.phi .lg {
+  padding: 18px 0 2px;
+}
+.phi .lgn {
+  font-family: var(--phi-m);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--color-meta);
+  line-height: 17px;
+}
+
+/* ===== label chips ===== */
+.phi .es {
+  font-family: var(--phi-m);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--phi-stroke);
+  color: var(--phi-grey);
+  white-space: nowrap;
+}
+.phi .es.est {
+  border-color: rgba(0, 96, 58, 0.3);
+  color: var(--phi-green);
+}
+.phi .es.prop {
+  border-style: dashed;
+  border-color: rgba(166, 142, 78, 0.5);
+  color: #a68e4e;
+}
+
+/* ===== accordion list ===== */
+.phi .list {
+  margin-top: 14px;
+  border-top: 1px solid var(--phi-stroke);
+}
+.phi .e {
+  border-bottom: 1px solid var(--phi-stroke);
+  opacity: 0;
+  transform: translateY(26px);
+  filter: blur(8px);
+  will-change: opacity, transform, filter;
+}
+.phi .e.rvin {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+  transition: opacity 1.05s cubic-bezier(0.16, 1, 0.3, 1), transform 1.05s cubic-bezier(0.16, 1, 0.3, 1), filter 1.05s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.phi .e[hidden] {
+  display: none;
+}
+.phi .eh {
+  display: grid;
+  grid-template-columns: 74px 250px 1fr 132px 26px;
+  gap: 22px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  font: inherit;
+  padding: 20px 4px;
+  cursor: pointer;
+  transition: background 0.2s, padding-left 0.2s;
+}
+.phi .eh:hover {
+  background: var(--phi-off, #fafafa);
+  padding-left: 12px;
+}
+.phi .ec {
+  font-family: var(--phi-m);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  color: var(--phi-green);
+}
+.phi .en {
+  font-size: 17px;
+  letter-spacing: var(--phi-t2);
+  font-weight: 500;
+}
+.phi .ed {
+  font-size: 15px;
+  line-height: 21px;
+  letter-spacing: var(--phi-t1);
+  color: var(--phi-grey);
+}
+.phi .eh .es {
+  justify-self: start;
+}
+.phi .ei svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: var(--phi-grey);
+  stroke-width: 1.7;
+  transition: transform 0.3s;
+}
+.phi .e.on .ei svg {
+  transform: rotate(180deg);
+}
+.phi .e.on .eh {
+  background: var(--phi-off, #fafafa);
+}
+.phi .eb {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.36s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.phi .e.on .eb {
+  grid-template-rows: 1fr;
+}
+.phi .ebin {
+  overflow: hidden;
+  min-height: 0;
+}
+.phi .e.on .ebin {
+  padding: 2px 4px 26px 96px;
+}
+.phi .f {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 22px;
+  padding: 13px 0;
+  border-top: 1px solid var(--phi-stroke);
+}
+.phi .fl {
+  font-family: var(--phi-m);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--color-meta);
+  padding-top: 3px;
+}
+.phi .f p {
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: var(--phi-t1);
+  max-width: 64ch;
+}
+.phi .cite {
+  margin-top: 16px;
+  font-family: var(--phi-m);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--color-meta);
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.phi .cb {
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--phi-green);
+  border-bottom: 1px solid rgba(0, 96, 58, 0.3);
+  padding: 0 0 2px;
+}
+.phi .cb:hover {
+  border-bottom-color: var(--phi-green);
+}
+.phi .none {
+  display: none;
+  padding: 52px 4px;
+  font-size: 16px;
+  color: var(--phi-grey);
+}
+.phi .none.on {
+  display: block;
+}
+.phi .fsrc {
+  margin-top: 34px;
+  padding-top: 18px;
+  border-top: 1px solid var(--phi-gline);
+  font-family: var(--phi-m);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--color-meta);
+}
+.phi .toast {
+  position: fixed;
+  left: 50%;
+  bottom: 34px;
+  transform: translate(-50%, 18px);
+  opacity: 0;
+  pointer-events: none;
+  background: var(--phi-dark);
+  color: #fff;
+  font-family: var(--phi-m);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  padding: 11px 20px;
+  border-radius: 999px;
+  transition: 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+  z-index: 80;
+}
+.phi .toast.on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 900px) {
+  .phi .eh {
+    grid-template-columns: 64px 1fr 26px;
+    gap: 14px;
+    row-gap: 6px;
+  }
+  .phi .ed,
+  .phi .eh .es {
+    grid-column: 2/4;
+  }
+  .phi .e.on .ebin {
+    padding-left: 4px;
+  }
+  .phi .f {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phi .rv,
+  .phi .e,
+  .phi .wr,
+  .phi .blk {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}

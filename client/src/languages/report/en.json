@@ -1,0 +1,399 @@
+{
+  "taxonomyTitle": "Stranded Capacity Taxonomy",
+  "taxonomyBadge": "TAXONOMY",
+  "strandedCapacityReport": "Stranded Capacity Report",
+  "taxonomyMono": "Taxonomy · v0.1 · {count} entries",
+  "downloadPdf": "Download PDF",
+  "downloading": "Downloading…",
+  "downloadFailed": "The report could not be downloaded. Please try again.",
+  "mastTitle1": "Eighteen forms",
+  "mastTitle2Pre": "the same",
+  "mastTitleAccent": "problem",
+  "mastTitle2Post": "takes.",
+  "mastLead": "Stranded capacity is not one failure. It is a family of them, spread across three layers — and each one is invisible to the metrics that watch the other two.",
+  "entryIsTitle": "What an entry is",
+  "entryIsBody": "A name, a boundary and a signal. What the phenomenon is, what it is <em>not</em>, and what you would have to observe to say it is present.",
+  "entryIsNotTitle": "What an entry is not",
+  "entryIsNotBody": "A measurement. Nothing on this page is derived from data collected for this index. Naming has to come before counting.",
+  "twoLabelsTitle": "The two labels",
+  "twoLabelsBody": "<est>Established term</est> means the name already exists in public literature and we adopt it. <prop>Proposed here</prop> means we found no agreed name and are proposing one.",
+  "establishedTerm": "Established term",
+  "proposedHere": "Proposed here",
+  "filterAll": "All",
+  "filterFacility": "Facility",
+  "filterIT": "IT",
+  "filterWorkload": "Workload and operations",
+  "filterEntries": "Filter entries",
+  "legendLine": "{est} of {total} names come from existing literature. {prop} are proposed by this index and are open for comment.",
+  "whatItIsNot": "What it is not",
+  "whatYouWouldObserve": "What you would observe",
+  "whereTheNameComesFrom": "Where the name comes from",
+  "entryCitationPrefix": "Entry {code} · Taxonomy v0.1 · no measurement collected",
+  "citeThisEntry": "Cite this entry",
+  "citationCopied": "Citation copied — {code}",
+  "noEntryMatches": "No entry matches that filter.",
+  "sourceLine": "Source: PhysaFlow Stranded Capacity Index · Taxonomy v0.1 · Naming and boundaries open for comment",
+  "failedToLoad": "Failed to load taxonomy data. Please try again.",
+  "def": {
+    "mono": "Chapter 01 · Definition · v0.1",
+    "title1": "A gap with",
+    "title2": "no name.",
+    "accent": "name.",
+    "lead": "The industry reports how much capacity is installed and how much is utilized. Neither number describes the distance between them. This chapter defines that distance.",
+    "cardLabel": "The definition",
+    "cardQuote": "<b>Stranded capacity</b> is capacity that has been committed, is physically present, and cannot be used to serve demand that exists.",
+    "src": "PhysaFlow Stranded Capacity Index · Definition v0.1 · open for comment",
+    "condLabel": "Three conditions",
+    "condLead": "All three must hold. Drop any one and the phenomenon belongs to a different category — usually one that already has a name.",
+    "conditions": [
+      {
+        "n": "01",
+        "title": "Committed",
+        "body": "Paid for, contracted or built. Capital has already been spent. A plan is not stranded capacity."
+      },
+      {
+        "n": "02",
+        "title": "Present",
+        "body": "It exists physically and can be pointed at in a building. A forecast is not stranded capacity."
+      },
+      {
+        "n": "03",
+        "title": "Unreachable by demand",
+        "body": "There is demand it cannot serve. This is the condition that separates it from capacity that is merely unused."
+      }
+    ],
+    "notLabel": "What it is not",
+    "notLede": "Six adjacent terms are already in use. None of them describes the same thing, and treating them as synonyms is how the gap stays invisible.",
+    "not": [
+      {
+        "t": "Idle capacity",
+        "d": "Capacity that is not in use right now.",
+        "w": "Why it is different",
+        "b": "Stranded capacity is always idle. Idle capacity is not always stranded — if no demand exists, the capacity is simply unused, and nothing is being lost."
+      },
+      {
+        "t": "Underutilization",
+        "d": "A ratio between what is used and what is available.",
+        "w": "Why it is different",
+        "b": "A measurement, not a cause. Stranded capacity is one of several things that can produce a low ratio, and the ratio alone does not tell you which."
+      },
+      {
+        "t": "Overprovisioning",
+        "d": "A deliberate decision to build beyond expected demand.",
+        "w": "Why it is different",
+        "b": "Intentional and planned for. Stranded capacity is the unintended residue that appears after the decision, often for reasons unrelated to it."
+      },
+      {
+        "t": "Spare or reserve capacity",
+        "d": "Capacity held on purpose for resilience or growth.",
+        "w": "Why it is different",
+        "b": "Working exactly as designed. Part of it still never produces output, so this index names it (FAC-05) instead of excluding it — but it is not a failure."
+      },
+      {
+        "t": "Stranded assets",
+        "d": "In finance and energy: assets written down early due to market or regulatory change.",
+        "w": "Why it is different",
+        "b": "A different field and a different mechanism. This index borrows the adjective because it is precise, not the underlying model."
+      },
+      {
+        "t": "Curtailment",
+        "d": "In power systems: deliberately reducing available generation.",
+        "w": "Why it is different",
+        "b": "Supply-side and voluntary. Stranded capacity is involuntary and sits on the demand-facing side of the meter."
+      }
+    ],
+    "whyLabel": "Why it needs a name",
+    "whyLede": "Naming is not a formality. It is the precondition for everything that follows.",
+    "why": [
+      {
+        "title": "You cannot measure what you cannot name",
+        "body": "There is no field in any standard reporting format for the capacity described above. It is absorbed into utilization, where it becomes indistinguishable from low demand."
+      },
+      {
+        "title": "You cannot compare across facilities",
+        "body": "Two sites reporting the same utilization can have entirely different amounts of capacity they cannot reach. Without a shared name, the comparison is not possible."
+      },
+      {
+        "title": "You cannot price it",
+        "body": "Capacity that cannot be named cannot be written into a contract, a service level or a valuation. It stays a private operational problem instead of a market one."
+      }
+    ],
+    "whereLabel": "Where it appears",
+    "whereLede": "The definition holds across three layers. Eighteen named phenomena satisfy all three conditions — seven in the facility, six in IT, five in workload and operations.",
+    "where": [
+      {
+        "name": "Facility",
+        "count": "7 entries",
+        "body": "Electrical, thermal and spatial limits of the building itself.",
+        "href": "/report/taxonomy#FAC"
+      },
+      {
+        "name": "IT",
+        "count": "6 entries",
+        "body": "Hardware present in the building but not reachable as a usable set.",
+        "href": "/report/taxonomy#IT"
+      },
+      {
+        "name": "Workload and operations",
+        "count": "5 entries",
+        "body": "Admission, placement and reservation behaviour once hardware is reachable.",
+        "href": "/report/taxonomy#WKL"
+      }
+    ],
+    "backLabel": "Back to the index",
+    "backTitle": "Stranded Capacity Index",
+    "nextLabel": "Next chapter",
+    "nextTitle": "The taxonomy"
+  },
+  "meth": {
+    "mono": "Chapter 06 · Methodology · v0.1",
+    "title1": "What we can say.",
+    "title2": "And what we cannot.",
+    "accent": "cannot.",
+    "lead": "This index names phenomena it has not measured. Everything in this chapter exists to keep that distinction visible.",
+    "statusLabel": "Current status",
+    "statusQuote": "No measurement has been collected for any entry or any figure in this index.",
+    "lkVersion": "Version",
+    "lkVersionVal": "0.1 · draft",
+    "lkDefined": "Entries defined",
+    "lkDefinedVal": "18",
+    "lkMeasured": "Entries measured",
+    "lkMeasuredVal": "0",
+    "lkFigures": "Figures published",
+    "lkFiguresVal": "1 · illustrative",
+    "src": "PhysaFlow Stranded Capacity Index · Methodology v0.1 · open for comment",
+    "qualifyLabel": "How an entry qualifies",
+    "qualifyLede": "Five tests. The first three come from the definition. The last two are editorial, and exist so the taxonomy stays usable as it grows.",
+    "qualify": [
+      {
+        "title": "01 · Committed",
+        "def": "Capital has already been spent.",
+        "why": "Why it matters",
+        "body": "A plan or a budget line does not qualify. The money has to be out the door."
+      },
+      {
+        "title": "02 · Present",
+        "def": "Physically in a building and identifiable.",
+        "why": "Why it matters",
+        "body": "A forecast does not qualify. Someone has to be able to point at it."
+      },
+      {
+        "title": "03 · Unreachable by demand",
+        "def": "Demand exists that this capacity cannot serve.",
+        "why": "Why it matters",
+        "body": "This is the condition that separates stranded capacity from capacity that is merely unused."
+      },
+      {
+        "title": "04 · Distinguishable",
+        "def": "It can be told apart from the entries next to it.",
+        "why": "Why it matters",
+        "body": "If two entries always appear together and never apart, they are one entry with two names."
+      },
+      {
+        "title": "05 · Falsifiable",
+        "def": "At least one observable signal could confirm or deny it.",
+        "why": "Why it matters",
+        "body": "Without a signal, the entry cannot ever be tested — and an untestable entry has no place in an index."
+      }
+    ],
+    "labelsLabel": "Evidence labels",
+    "labelsLede": "Six labels, two for names and four for figures. They exist so no reader has to guess how much weight a statement carries.",
+    "labels": [
+      {
+        "title": "Established term",
+        "def": "Used on names. Thirteen of eighteen entries.",
+        "why": "What it means",
+        "body": "The name already exists in public literature. This index adopts it and defines its boundary more tightly."
+      },
+      {
+        "title": "Proposed here",
+        "def": "Used on names. Five of eighteen entries.",
+        "why": "What it means",
+        "body": "No agreed name was identified in public sources. This index proposes one, and it is open for comment."
+      },
+      {
+        "title": "Illustrative model",
+        "def": "Used on figures. One figure carries it today.",
+        "why": "What it means",
+        "body": "The shape is a hypothesis. Proportions carry no information and must not be read as quantities."
+      },
+      {
+        "title": "Conceptual example",
+        "def": "Used on figures. Not in use yet.",
+        "why": "What it means",
+        "body": "A worked case built to explain a mechanism. Not drawn from any real facility."
+      },
+      {
+        "title": "Modelled",
+        "def": "Used on figures. Not in use yet.",
+        "why": "What it means",
+        "body": "Derived from published inputs through a stated calculation. Nothing has reached this label."
+      },
+      {
+        "title": "Measured",
+        "def": "Used on figures. Not in use yet.",
+        "why": "What it means",
+        "body": "Built from telemetry collected under a published protocol. Nothing has reached this label."
+      }
+    ],
+    "measureLabel": "What would have to be measured",
+    "measureLede": "Each layer needs a different dataset, held by a different party, hard to obtain for a different reason.",
+    "measure": [
+      {
+        "title": "Facility",
+        "def": "Building management and DCIM records, plus utility interconnection filings.",
+        "why": "Who holds it",
+        "body": "Operators and utilities. DCIM data is commercially sensitive, and interconnection queues are public in some jurisdictions and not in others."
+      },
+      {
+        "title": "IT",
+        "def": "Scheduler inventory, node health state and fabric topology.",
+        "why": "Who holds it",
+        "body": "Cluster operators. Rarely published, and the schema differs between schedulers, so comparing across sites needs a mapping that does not yet exist."
+      },
+      {
+        "title": "Workload and operations",
+        "def": "Job accounting logs: requests, allocations, runtimes and exit states.",
+        "why": "Who holds it",
+        "body": "The same operators. Publicly accessible supercomputing facilities are the only class that publishes this openly, which is why the index starts there."
+      }
+    ],
+    "claimsLabel": "What this index does not claim",
+    "claimsLede": "Stated up front, because an index of things nobody has counted is easy to misread — and easier to misquote.",
+    "claims": [
+      {
+        "title": "No global figure",
+        "def": "This index does not estimate how much capacity is stranded anywhere.",
+        "why": "In practice",
+        "body": "No such number is published here. Any figure attributed to this index that does not appear on this site did not come from it."
+      },
+      {
+        "title": "No judgement of any operator",
+        "def": "Naming a phenomenon is not an accusation.",
+        "why": "In practice",
+        "body": "Most entries describe constraints that competent operators manage deliberately, and several describe systems working exactly as designed."
+      },
+      {
+        "title": "No claim about relative size",
+        "def": "The eighteen entries are not ranked.",
+        "why": "In practice",
+        "body": "Nothing here suggests fragmentation matters more than interconnection delay, or the reverse. The order is structural, not hierarchical."
+      },
+      {
+        "title": "No claim of completeness",
+        "def": "Eighteen is what we could define and defend.",
+        "why": "In practice",
+        "body": "The taxonomy is expected to grow, and entries are expected to merge or split as their boundaries get tested."
+      },
+      {
+        "title": "No causal model",
+        "def": "The funnel shows seven steps in sequence, not a chain of causes.",
+        "why": "In practice",
+        "body": "It does not claim that each step causes the next, or that removing one constraint releases capacity downstream."
+      },
+      {
+        "title": "No institutional endorsement",
+        "def": "Institutions are cited or acknowledged, never claimed as reviewers.",
+        "why": "In practice",
+        "body": "None of the institutions named anywhere on this site has reviewed, approved or endorsed this index."
+      }
+    ],
+    "versioningLabel": "Versioning",
+    "versioningLede": "Every version is dated and kept. Nothing is edited silently.",
+    "versioning": [
+      {
+        "title": "What moves 0.1 to 0.2",
+        "body": "Any entry added, removed or merged. Any change to a boundary. Any figure that moves from illustrative to modelled."
+      },
+      {
+        "title": "What moves 0.x to 1.0",
+        "body": "At least one figure supported by measurement collected under a published protocol, and a taxonomy that has survived external review."
+      },
+      {
+        "title": "How to comment",
+        "body": "Entries can be cited individually from the taxonomy. Disagreement about a boundary is the most useful comment this draft can receive."
+      }
+    ],
+    "backLabel": "Previous chapter",
+    "backTitle": "Back to taxonomy",
+    "nextLabel": "Back to the index",
+    "nextTitle": "Stranded Capacity Index"
+  },
+  "refs": {
+    "mono": "Chapter 08 · References · v0.1",
+    "title1": "Every source,",
+    "title2": "listed and dated.",
+    "accent": "dated.",
+    "lead": "This list is short because the index is a draft. It will grow only as claims are added — never ahead of them.",
+    "statusLabel": "Status of this list",
+    "statusQuote": "No entry in the taxonomy currently cites a specific source. Names are attributed to a field of literature, not to a document.",
+    "lkEntries": "Entries citing a specific source",
+    "lkEntriesVal": "0 of 18",
+    "lkFigures": "Figures citing a specific source",
+    "lkFiguresVal": "0 of 1",
+    "lkBackground": "Background sources listed below",
+    "lkBackgroundVal": "{count}",
+    "src": "PhysaFlow Stranded Capacity Index · References v0.1 · open for comment",
+    "sourcesLabel": "Background sources",
+    "sourcesLede": "Consulted while building the definition and the funnel. Neither is the origin of any number published here, because no number is published here.",
+    "howUsed": "How it is used",
+    "ioUsage": "Used as background on grid interconnection timelines and data-centre electricity demand. No figure from this report is reproduced in the index.",
+    "stanfordUsage": "Used as background on training scale and compute growth. No figure from this report is reproduced in the index.",
+    "missingLabel": "What is missing",
+    "missingLede": "Named openly, so nobody has to discover it by looking.",
+    "missing": [
+      {
+        "title": "Per-entry citations",
+        "body": "Each of the thirteen established terms should point to a document where the term is used, not only to a field. That work has not been done."
+      },
+      {
+        "title": "A measurement protocol",
+        "body": "No source here describes how any of the eighteen phenomena would be measured. That protocol does not exist yet, in this index or elsewhere."
+      },
+      {
+        "title": "Peer review",
+        "body": "Nothing on this site has been reviewed outside the team that wrote it."
+      }
+    ],
+    "backLabel": "Previous chapter",
+    "backTitle": "Back to methodology",
+    "nextLabel": "Back to the index",
+    "nextTitle": "Stranded Capacity Index"
+  },
+  "about": {
+    "mono": "Chapter 10 · About · v0.1",
+    "title1": "About",
+    "title2": "PhysaFlow.",
+    "accent": "PhysaFlow.",
+    "lead": "Pioneers in the analysis of physical infrastructure for the generative AI era.",
+    "cardLabel": "Our mission",
+    "cardQuote": "Untangling the most complex operational challenges facing modern data centers as the compute scale of AI models expands globally.",
+    "src": "PhysaFlow Research · Public report",
+    "missionLabel": "What we do",
+    "missionLede": "Independent research for technology leaders, facility engineers and decision makers.",
+    "missionTitle": "Independent research",
+    "missionBody": "Our reports and research provide analytical clarity to optimize performance and reduce infrastructure waste.",
+    "missionTag": "Approach",
+    "missionNote": "Open data, replicable metrics and mandatory attribution of figures.",
+    "pillarsLabel": "How we work",
+    "pillarsLede": "Three principles back every report in the Stranded Capacity Index.",
+    "pillars": [
+      {
+        "title": "Replicable metrics",
+        "body": "Every published figure can be recomputed from the source data."
+      },
+      {
+        "title": "Cited sources",
+        "body": "No claim enters the index without a specific, dated source."
+      },
+      {
+        "title": "Open attribution",
+        "body": "Figures are open material; citing them is mandatory and free."
+      }
+    ],
+    "backLabel": "Previous chapter",
+    "backTitle": "Back to references",
+    "nextLabel": "Next chapter",
+    "nextTitle": "How to cite this report"
+  }
+}

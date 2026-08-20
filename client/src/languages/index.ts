@@ -4,24 +4,45 @@ import homeEs from "./home/es.json";
 import homeEn from "./home/en.json";
 import navEs from "./nav/es.json";
 import navEn from "./nav/en.json";
+import footerEs from "./footer/es.json";
+import footerEn from "./footer/en.json";
 import authEs from "./auth/es.json";
 import authEn from "./auth/en.json";
+import adminEs from "./admin/es.json";
+import adminEn from "./admin/en.json";
+import reportEs from "./report/es.json";
+import reportEn from "./report/en.json";
+import howToCiteEs from "./howToCite/es.json";
+import howToCiteEn from "./howToCite/en.json";
+import searchEs from "./search/es.json";
+import searchEn from "./search/en.json";
 
 export const esMessages = {
   Common: commonEs,
   HomePage: homeEs,
   Nav: navEs,
+  Footer: footerEs,
   LoginPage: authEs,
+  AdminPage: adminEs,
+  Report: reportEs,
+  HowToCite: howToCiteEs,
+  Search: searchEs,
 };
 
 export const enMessages = {
   Common: commonEn,
   HomePage: homeEn,
   Nav: navEn,
+  Footer: footerEn,
   LoginPage: authEn,
+  AdminPage: adminEn,
+  Report: reportEn,
+  HowToCite: howToCiteEn,
+  Search: searchEn,
 };
 
 export const messagesMap = {
   es: esMessages,
   en: enMessages,
 };
+
