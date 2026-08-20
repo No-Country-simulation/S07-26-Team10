@@ -179,8 +179,10 @@ header.sm .lock .wmk {
   }
 }
 
-.burger {
-  display: none;
+.burger{
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 44px;
   height: 44px;
   border: 1px solid var(--stroke);
@@ -189,9 +191,13 @@ header.sm .lock .wmk {
   cursor: pointer;
   position: relative;
   flex: none;
-  place-items: center;
-  transition: background .22s var(--ease-out), border-color .22s var(--ease-out), box-shadow .22s var(--ease-out), transform .18s var(--ease-out)
+  transition:
+    background .22s var(--ease-out),
+    border-color .22s var(--ease-out),
+    box-shadow .22s var(--ease-out),
+    transform .18s var(--ease-out);
 }
+
 
 .burger:hover {
   background: var(--light);
@@ -564,8 +570,9 @@ header.sm .sep {
   font-family: var(--m);
   font-size: var(--text-ui);
   letter-spacing: var(--t3);
-  color: var(--color-meta);
-  flex: none
+  color: var(--green);
+  flex: none;
+  font-weight: 500
 }
 
 .now .t {
@@ -1160,7 +1167,7 @@ header.sm .sep {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 15px 26px;
+  padding: 25px 26px;
   border-radius: 999px;
   font-size: var(--text-body);
   font-weight: 500;
@@ -1337,6 +1344,18 @@ header.sm .sep {
   margin-top: 38px;
   flex-wrap: wrap;
   justify-content: center
+}
+
+.hbtn .b {
+  font-size: var(--text-card);
+  padding: 25px 26px;
+  gap: 12px;
+  border-radius: 999px
+}
+
+.hbtn .b svg {
+  width: 17px;
+  height: 17px
 }
 
 /* continue reading */
@@ -2579,6 +2598,17 @@ section.n.cur .snum {
 
 .fn .r.key .vl {
   color: var(--green)
+}
+
+.fn .vl em {
+  display: block;
+  font-style: normal;
+  font-family: var(--f);
+  font-size: var(--text-micro);
+  letter-spacing: var(--t1);
+  color: var(--color-meta);
+  margin-top: 4px;
+  white-space: normal
 }
 
 .fn .bar {
