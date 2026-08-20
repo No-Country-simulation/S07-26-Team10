@@ -34,44 +34,50 @@
   "steps": {
     "01": {
       "name": "Nameplate capacity",
-      "desc": "Total theoretical capacity",
+      "desc": "What the equipment is rated for",
+      "loss": "Procurement and build-out",
       "caption": "Procurement and build-out. Equipment ordered but not yet racked and commissioned."
     },
     "02": {
       "name": "Installed capacity",
-      "desc": "Physical installed",
+      "desc": "Racked and on site",
+      "loss": "Grid interconnection delay",
       "caption": "Grid connection and interconnection delay. Transmission lines take four to eight years in advanced economies."
     },
     "03": {
       "name": "Energized capacity",
-      "desc": "Powered and energised",
+      "desc": "Connected and receiving power",
+      "loss": "Cooling and power distribution",
       "caption": "Cooling and power distribution. Thermal envelope, UPS derating, branch and busway limits at rack level."
     },
     "04": {
       "name": "Supportable capacity",
-      "desc": "Meets thermal and safety limits",
+      "desc": "Within thermal and electrical limits",
+      "loss": "Hardware availability and topology",
       "caption": "Hardware availability and cluster topology. Nodes present but outside the eligible fabric, or not yet in the pool."
     },
     "05": {
       "name": "Allocatable capacity",
-      "desc": "After reservations and overhead",
+      "desc": "Free and schedulable as a set",
+      "loss": "Scheduling and fragmentation",
       "caption": "Scheduling and fragmentation. Free accelerators that cannot be assembled into a contiguous allocatable set."
     },
     "06": {
       "name": "Utilized capacity",
-      "desc": "Actively used by workloads",
+      "desc": "Assigned to a running job",
+      "loss": "Queues and reservations",
       "caption": "Queues, reservations and admission policy. Capacity held or waiting while demand is pending."
     },
     "07": {
       "name": "Useful output capacity",
-      "desc": "Productive, value-generating",
+      "desc": "Producing a completed result",
       "caption": "Failed jobs, retries and idle allocation. GPU-hours assigned that produce no output."
     }
   },
   "funnelIdle": "Hover a step to see what removes capacity before the next one.",
   "stepsLabel": "steps",
   "gc1Title": "What this figure shows",
-  "gc1Body": "A monotonic loss model. Each step removes capacity for a different reason — and the reasons do not share a metric.",
+  "gc1Body": "Capacity can only shrink as you go down. Each step loses a different share, for a different reason — which is why no single number describes the whole drop.",
   "illustrativeModel": "Illustrative model",
   "gc2Title": "Where the losses come from",
   "facility": "Facility",
