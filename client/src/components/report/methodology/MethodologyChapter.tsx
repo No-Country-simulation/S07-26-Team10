@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl"
 import { useReveal } from "@/hooks/use-reveal"
 import { ChapterMasthead } from "@/components/report/chapter/ChapterMasthead"
 import { ReadingRail } from "@/components/report/chapter/ReadingRail"
+import { Statement } from "@/components/report/chapter/Statement"
 
 interface NRow {
   title: string
@@ -47,28 +48,13 @@ export function MethodologyChapter() {
 
       <section className="dfn">
         <div className="in">
-          <div className="stmt rv">
-            <p className="stmt-t">
-              {t.rich("meth.statusQuote", {
-                b: (chunks) => <b>{chunks}</b>,
-              })}
-            </p>
-            <div className="strip">
-              <div>
-                <span>{t("meth.lkVersion")}</span>
-                <b>{t("meth.lkVersionVal")}</b>
-              </div>
-              <div>
-                <span>{t("meth.lkDefined")}</span>
-                <b>{t("meth.lkDefinedVal")}</b>
-              </div>
-              <div>
-                <span>{t("meth.lkMeasured")}</span>
-                <b>{t("meth.lkMeasuredVal")}</b>
-              </div>
-            </div>
-            <div className="stmt-src">{t("meth.src")}</div>
-          </div>
+          <Statement
+            quote={t.rich("meth.statusQuote", {
+              b: (chunks) => <b>{chunks}</b>,
+            })}
+            strip={t.raw("meth.stmtStrip")}
+            src={t("meth.src")}
+          />
         </div>
       </section>
 
