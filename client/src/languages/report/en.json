@@ -40,28 +40,8 @@
     "title2": "no name.",
     "accent": "name.",
     "lead": "The industry reports how much capacity is installed and how much is utilized. Neither number describes the distance between them. This chapter defines that distance.",
-    "cardLabel": "The definition",
     "cardQuote": "<b>Stranded capacity</b> is capacity that has been committed, is physically present, and cannot be used to serve demand that exists.",
     "src": "PhysaFlow Stranded Capacity Index · Definition v0.1 · open for comment",
-    "condLabel": "Three conditions",
-    "condLead": "All three must hold. Drop any one and the phenomenon belongs to a different category — usually one that already has a name.",
-    "conditions": [
-      {
-        "n": "01",
-        "title": "Committed",
-        "body": "Paid for, contracted or built. Capital has already been spent. A plan is not stranded capacity."
-      },
-      {
-        "n": "02",
-        "title": "Present",
-        "body": "It exists physically and can be pointed at in a building. A forecast is not stranded capacity."
-      },
-      {
-        "n": "03",
-        "title": "Unreachable by demand",
-        "body": "There is demand it cannot serve. This is the condition that separates it from capacity that is merely unused."
-      }
-    ],
     "notLabel": "What it is not",
     "notLede": "Six adjacent terms are already in use. None of them describes the same thing, and treating them as synonyms is how the gap stays invisible.",
     "not": [
@@ -143,7 +123,23 @@
     "backLabel": "Back to the index",
     "backTitle": "Stranded Capacity Index",
     "nextLabel": "Next chapter",
-    "nextTitle": "The taxonomy"
+    "nextTitle": "The taxonomy",
+    "chmarkN": "01",
+    "chmarkT": "Definition",
+    "stmtStrip": [
+      {
+        "t": "Committed",
+        "d": "Capital has already been spent. A plan is not stranded capacity."
+      },
+      {
+        "t": "Present",
+        "d": "Physically in a building, identifiable. A forecast is not."
+      },
+      {
+        "t": "Unreachable by demand",
+        "d": "Demand exists that it cannot serve. That is the condition that separates it."
+      }
+    ]
   },
   "meth": {
     "mono": "Chapter 06 · Methodology · v0.1",
@@ -151,16 +147,13 @@
     "title2": "And what we cannot.",
     "accent": "cannot.",
     "lead": "This index names phenomena it has not measured. Everything in this chapter exists to keep that distinction visible.",
-    "statusLabel": "Current status",
-    "statusQuote": "No measurement has been collected for any entry or any figure in this index.",
+    "statusQuote": "No measurement has been collected for <b>any entry or any figure</b> in this index.",
     "lkVersion": "Version",
     "lkVersionVal": "0.1 · draft",
     "lkDefined": "Entries defined",
     "lkDefinedVal": "18",
     "lkMeasured": "Entries measured",
     "lkMeasuredVal": "0",
-    "lkFigures": "Figures published",
-    "lkFiguresVal": "1 · illustrative",
     "src": "PhysaFlow Stranded Capacity Index · Methodology v0.1 · open for comment",
     "qualifyLabel": "How an entry qualifies",
     "qualifyLede": "Five tests. The first three come from the definition. The last two are editorial, and exist so the taxonomy stays usable as it grows.",
@@ -316,8 +309,11 @@
     ],
     "backLabel": "Previous chapter",
     "backTitle": "Back to taxonomy",
-    "nextLabel": "Back to the index",
-    "nextTitle": "Stranded Capacity Index"
+    "nextLabel": "Next chapter",
+    "nextTitle": "The source list",
+    "chmarkN": "06",
+    "chmarkT": "Methodology",
+    "backtopText": "Taxonomy"
   },
   "refs": {
     "mono": "Chapter 08 · References · v0.1",
@@ -325,15 +321,6 @@
     "title2": "listed and dated.",
     "accent": "dated.",
     "lead": "This list is short because the index is a draft. It will grow only as claims are added — never ahead of them.",
-    "statusLabel": "Status of this list",
-    "statusQuote": "No entry in the taxonomy currently cites a specific source. Names are attributed to a field of literature, not to a document.",
-    "lkEntries": "Entries citing a specific source",
-    "lkEntriesVal": "0 of 18",
-    "lkFigures": "Figures citing a specific source",
-    "lkFiguresVal": "0 of 1",
-    "lkBackground": "Background sources listed below",
-    "lkBackgroundVal": "{count}",
-    "src": "PhysaFlow Stranded Capacity Index · References v0.1 · open for comment",
     "sourcesLabel": "Background sources",
     "sourcesLede": "Consulted while building the definition and the funnel. Neither is the origin of any number published here, because no number is published here.",
     "howUsed": "How it is used",
@@ -358,7 +345,10 @@
     "backLabel": "Previous chapter",
     "backTitle": "Back to methodology",
     "nextLabel": "Back to the index",
-    "nextTitle": "Stranded Capacity Index"
+    "nextTitle": "Stranded Capacity Index",
+    "chmarkN": "08",
+    "chmarkT": "References",
+    "backtopText": "Methodology"
   },
   "about": {
     "mono": "Chapter 10 · About · v0.1",
@@ -395,5 +385,6 @@
     "backTitle": "Back to references",
     "nextLabel": "Next chapter",
     "nextTitle": "How to cite this report"
-  }
+  },
+  "backToIndex": "The index"
 }
