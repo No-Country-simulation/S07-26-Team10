@@ -1,5 +1,6 @@
 export interface PublicTaxonomyConcept {
   id: string;
+  categoryId?: string;
   itemCode: string;
   layerCode: string;
   slug: string;
