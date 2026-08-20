@@ -38,6 +38,47 @@
   letter-spacing: 0.05em;
   color: var(--phi-green);
 }
+.phi .backtop {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+  font-size: var(--text-card);
+  letter-spacing: var(--phi-t1);
+  color: var(--color-meta);
+  transition: color 0.2s, gap 0.2s;
+}
+.phi .backtop svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+}
+.phi .backtop:hover {
+  color: var(--phi-green);
+  gap: 13px;
+}
+.phi .chmark {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--phi-gline);
+}
+.phi .cm-n {
+  font-family: var(--phi-m);
+  font-size: var(--text-h2);
+  line-height: 0.9;
+  font-weight: 500;
+  letter-spacing: var(--phi-t3);
+  color: var(--phi-green);
+}
+.phi .cm-t {
+  font-size: var(--text-h3);
+  letter-spacing: var(--phi-t2);
+  font-weight: 500;
+}
 .phi .mast h1 {
   font-size: clamp(2.3rem, 5.6vw, 76px);
   line-height: 1.03;
@@ -113,10 +154,22 @@
   color: var(--phi-dark);
 }
 .phi .es.mini {
-  display: inline-block;
-  vertical-align: baseline;
-  margin: 0 2px;
-  font-weight: 400;
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none !important;
+  border-radius: 0;
+  font-family: var(--phi-f);
+  font-size: inherit;
+  font-weight: 500;
+  letter-spacing: inherit;
+  box-shadow: inset 0 -1px 0 currentColor;
+}
+.phi .es.est.mini {
+  color: var(--phi-green) !important;
+}
+.phi .es.prop.mini {
+  color: var(--color-gold-dk) !important;
 }
 @media (max-width: 900px) {
   .phi .hg {
@@ -134,7 +187,7 @@
   margin-inline: auto;
   padding-inline: var(--phi-gut);
 }
-.phi .bar {
+.phi .fbar {
   display: flex;
   gap: 20px;
   justify-content: space-between;
@@ -142,12 +195,19 @@
   flex-wrap: wrap;
   position: sticky;
   top: 70px;
-  z-index: 20;
-  padding: 14px 0;
+  z-index: 45;
+  padding: 14px 0 13px;
   border-bottom: 1px solid var(--phi-stroke);
-  background: rgba(255, 255, 255, 0.86);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: #fff;
+  box-shadow: 0 10px 18px -14px rgba(8, 9, 10, 0.18);
+}
+.phi .fbar::before {
+  content: "";
+  position: absolute;
+  inset: 0 calc(var(--phi-gut) * -1);
+  background: #fff;
+  z-index: -1;
+  border-bottom: 1px solid var(--phi-stroke);
 }
 .phi .fts {
   display: flex;
