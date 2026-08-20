@@ -161,6 +161,29 @@
     text-overflow: ellipsis;
     white-space: nowrap
   }
+
+  .burger {
+    display: none;
+  }
+}
+
+@media(min-width:1101px) {
+  .burger {
+    display: none;
+  }
+}
+
+@media(max-width:760px) {
+  .phi .strip > div {
+    padding: 18px 0 16px;
+    border-right: 0;
+    border-bottom: 1px solid var(--phi-stroke)
+  }
+
+  .phi .strip > div:last-child {
+    border-bottom: 0;
+    padding-bottom: 0
+  }
 }
 
 @media(max-width:900px) {
