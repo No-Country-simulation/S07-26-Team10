@@ -2,6 +2,7 @@ export type TaxonomyLabel = "est" | "prop"
 
 export interface TaxonomyConcept {
   id: string
+  categoryId?: string
   itemCode: string
   layerCode: string
   slug: string
