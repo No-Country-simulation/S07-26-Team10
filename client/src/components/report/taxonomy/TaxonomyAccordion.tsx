@@ -11,8 +11,6 @@ import { getPublicTaxonomyDataAction } from "@/features/public/taxonomy/taxonomy
 import type { TaxonomyCategory } from "@/lib/taxonomy-types"
 import { TaxonomyEntry } from "@/components/report/taxonomy/TaxonomyEntry"
 
-type LayerFilter = "ALL" | "FAC" | "IT" | "WKL"
-
 interface TaxonomyAccordionProps {
   categories: TaxonomyCategory[]
 }
@@ -44,15 +42,24 @@ export function TaxonomyAccordionSkeleton() {
   )
 }
 
+function normalizeText(str?: string | null): string {
+  if (!str) return ""
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+}
+
 export function TaxonomyAccordion({ categories: initialCategories }: TaxonomyAccordionProps) {
   const t = useTranslations("Report")
   const { language } = useLanguage()
   const { contentLanguage, activeVersionId } = useVersion()
   const currentLang = contentLanguage || language || "es"
 
-  const [categories, setCategories] = useState<TaxonomyCategory[]>(initialCategories)
+  const [categories, setCategories] = useState<TaxonomyCategory[]>(initialCategories || [])
   const [isLoading, setIsLoading] = useState(false)
-  const [filter, setFilter] = useState<LayerFilter>("ALL")
+  const [filter, setFilter] = useState<string>("ALL")
   const [query, setQuery] = useState("")
   const [openIds, setOpenIds] = useState<Set<string>>(new Set())
   const [revealed, setRevealed] = useState<Set<string>>(new Set())
@@ -73,7 +80,6 @@ export function TaxonomyAccordion({ categories: initialCategories }: TaxonomyAcc
   useEffect(() => {
     let isCancelled = false
     setIsLoading(true)
-    setRevealed(new Set())
 
     startTransition(async () => {
       try {
@@ -96,36 +102,70 @@ export function TaxonomyAccordion({ categories: initialCategories }: TaxonomyAcc
   }, [currentLang, activeVersionId])
 
   const total = useMemo(
-    () => categories.reduce((n, c) => n + c.concepts.length, 0),
+    () => categories.reduce((n, c) => n + (c.concepts?.length || 0), 0),
     [categories],
   )
+
   const estCount = useMemo(
     () =>
       categories.reduce(
-        (n, c) => n + c.concepts.filter((x) => x.label === "est").length,
+        (n, c) =>
+          n + (c.concepts || []).filter((x) => x.label === "est").length,
         0,
       ),
     [categories],
   )
 
   const concepts = useMemo(
-    () => categories.flatMap((c) => c.concepts),
+    () =>
+      categories.flatMap((c) =>
+        (c.concepts || []).map((item) => ({
+          ...item,
+          categoryId: item.categoryId || c.id,
+        })),
+      ),
     [categories],
   )
 
+  // Ensure all concepts are revealed so they are never hidden with opacity: 0
+  useEffect(() => {
+    if (concepts.length > 0) {
+      setRevealed((prev) => {
+        const next = new Set(prev)
+        concepts.forEach((c) => next.add(c.id))
+        return next
+      })
+    }
+  }, [concepts])
+
   const visible = useMemo(() => {
-    const s = query.trim().toLowerCase()
+    const s = normalizeText(query)
     return concepts.filter((c) => {
-      const okLayer = filter === "ALL" || c.layerCode === filter
+      const okCategory =
+        filter === "ALL" ||
+        c.categoryId === filter ||
+        c.layerCode?.toUpperCase() === filter.toUpperCase() ||
+        (categories.find((cat) => cat.id === filter)?.concepts || []).some(
+          (item) => item.id === c.id,
+        )
+
       const okQuery =
         !s ||
-        [c.itemCode, c.name, c.shortDescription, c.whatItIsNot]
+        [
+          c.itemCode,
+          c.name,
+          c.shortDescription,
+          c.whatItIsNot,
+          c.whatYouWouldObserve,
+          c.whereTheNameComesFrom,
+        ]
+          .map((field) => normalizeText(field))
           .join(" ")
-          .toLowerCase()
           .includes(s)
-      return okLayer && okQuery
+
+      return okCategory && okQuery
     })
-  }, [concepts, filter, query])
+  }, [concepts, filter, query, categories])
 
   const toggle = (id: string) => {
     setOpenIds((prev) => {
@@ -155,6 +195,7 @@ export function TaxonomyAccordion({ categories: initialCategories }: TaxonomyAcc
     if (!listRef.current || isLoading) return
     const els = [...listRef.current.querySelectorAll<HTMLElement>(".e")]
     if (!els.length) return
+
     const io = new IntersectionObserver(
       (entries) =>
         entries.forEach((entry) => {
@@ -174,12 +215,13 @@ export function TaxonomyAccordion({ categories: initialCategories }: TaxonomyAcc
             io.unobserve(el)
           }
         }),
-      { rootMargin: "0px 0px -12% 0px", threshold: 0.06 },
+      { rootMargin: "50px 0px 50px 0px", threshold: 0.01 },
     )
     els.forEach((el) => io.observe(el))
     return () => io.disconnect()
   }, [visibleKey, isLoading])
 
+  // Hash navigation (#FAC, #IT, #WKL, #category_id, #concept_id, #itemCode)
   useEffect(() => {
     if (isLoading || concepts.length === 0) return
 
@@ -188,12 +230,6 @@ export function TaxonomyAccordion({ categories: initialCategories }: TaxonomyAcc
 
     const upperKey = rawHash.toUpperCase()
     const lowerKey = rawHash.toLowerCase()
-
-    const tabs: LayerFilter[] = ["FAC", "IT", "WKL"]
-    if (tabs.includes(upperKey as LayerFilter)) {
-      setFilter(upperKey as LayerFilter)
-      return
-    }
 
     // 1. Buscar concepto por itemCode o por id (UUID)
     const concept = concepts.find(
@@ -226,19 +262,18 @@ export function TaxonomyAccordion({ categories: initialCategories }: TaxonomyAcc
       return
     }
 
-    // 2. Buscar categoría por id o layerCode
+    // 2. Buscar categoría por id, layerCode o nombre
     const cat = categories.find(
       (c) =>
         c.id?.toLowerCase() === lowerKey ||
         c.id === rawHash ||
-        c.layerCode === upperKey,
+        c.layerCode?.toUpperCase() === upperKey ||
+        normalizeText(c.name) === normalizeText(rawHash),
     )
 
     if (cat) {
-      if (cat.layerCode && tabs.includes(cat.layerCode as LayerFilter)) {
-        setFilter(cat.layerCode as LayerFilter)
-      }
-      const catConceptIds = cat.concepts.map((x) => x.id)
+      setFilter(cat.id)
+      const catConceptIds = (cat.concepts || []).map((x) => x.id)
       setOpenIds((prev) => new Set([...prev, ...catConceptIds]))
       setRevealed((prev) => new Set([...prev, ...catConceptIds]))
 
@@ -251,24 +286,17 @@ export function TaxonomyAccordion({ categories: initialCategories }: TaxonomyAcc
     }
   }, [concepts, categories, isLoading])
 
-  const tabs: { key: LayerFilter | "ALL"; label: string; count: number }[] = [
-    { key: "ALL", label: t("filterAll"), count: total },
-    {
-      key: "FAC",
-      label: t("filterFacility"),
-      count: categories.find((c) => c.layerCode === "FAC")?.concepts.length ?? 0,
-    },
-    {
-      key: "IT",
-      label: t("filterIT"),
-      count: categories.find((c) => c.layerCode === "IT")?.concepts.length ?? 0,
-    },
-    {
-      key: "WKL",
-      label: t("filterWorkload"),
-      count: categories.find((c) => c.layerCode === "WKL")?.concepts.length ?? 0,
-    },
-  ]
+  // Pestañas dinámicas a partir de las categorías reales
+  const tabs = useMemo(() => {
+    return [
+      { key: "ALL", label: t("filterAll"), count: total },
+      ...categories.map((cat) => ({
+        key: cat.id,
+        label: cat.name,
+        count: cat.concepts?.length || 0,
+      })),
+    ]
+  }, [categories, total, t])
 
   return (
     <section className="tx">
