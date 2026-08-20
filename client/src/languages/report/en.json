@@ -148,12 +148,6 @@
     "accent": "cannot.",
     "lead": "This index names phenomena it has not measured. Everything in this chapter exists to keep that distinction visible.",
     "statusQuote": "No measurement has been collected for <b>any entry or any figure</b> in this index.",
-    "lkVersion": "Version",
-    "lkVersionVal": "0.1 · draft",
-    "lkDefined": "Entries defined",
-    "lkDefinedVal": "18",
-    "lkMeasured": "Entries measured",
-    "lkMeasuredVal": "0",
     "src": "PhysaFlow Stranded Capacity Index · Methodology v0.1 · open for comment",
     "qualifyLabel": "How an entry qualifies",
     "qualifyLede": "Five tests. The first three come from the definition. The last two are editorial, and exist so the taxonomy stays usable as it grows.",
@@ -313,7 +307,21 @@
     "nextTitle": "The source list",
     "chmarkN": "06",
     "chmarkT": "Methodology",
-    "backtopText": "Taxonomy"
+    "backtopText": "Taxonomy",
+    "stmtStrip": [
+      {
+        "t": "Version",
+        "d": "0.1 · draft"
+      },
+      {
+        "t": "Entries defined",
+        "d": "18"
+      },
+      {
+        "t": "Entries measured",
+        "d": "0"
+      }
+    ]
   },
   "refs": {
     "mono": "Chapter 08 · References · v0.1",
