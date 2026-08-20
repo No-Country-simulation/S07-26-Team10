@@ -104,6 +104,11 @@
   position: relative;
 }
 
+/* ===== HEADER NAV ADMIN (Preservar en mobile y desktop) ===== */
+.admin-theme header nav {
+  display: flex !important;
+}
+
 /* ===== CARDS Y STATS EXACTOS DE ADMIN.HTML ===== */
 .card,
 .stats,
