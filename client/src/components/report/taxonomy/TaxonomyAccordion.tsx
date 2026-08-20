@@ -304,7 +304,7 @@ export function TaxonomyAccordion({ categories: initialCategories }: TaxonomyAcc
   return (
     <section className="tx">
       <div className="in">
-        <div className="bar">
+        <div className="fbar">
           <div className="fts">
             {tabs.map((tab) => (
               <button
