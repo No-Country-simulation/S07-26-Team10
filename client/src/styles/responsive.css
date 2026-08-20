@@ -140,11 +140,11 @@
     gap: 16px
   }
 
-  header nav {
+  body:not(:has(.admin-theme)) header nav {
     gap: 18px
   }
 
-  header nav a {
+  body:not(:has(.admin-theme)) header nav a {
     font-size: var(--text-sm)
   }
 
@@ -307,7 +307,7 @@
     display: flex
   }
 
-  header nav {
+  body:not(:has(.admin-theme)) header nav {
     display: none
   }
 

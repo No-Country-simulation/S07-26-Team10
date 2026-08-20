@@ -114,6 +114,7 @@ export function AdminHeader({
         <nav
           className="flex items-center overflow-x-auto flex-nowrap w-full md:w-auto flex-1 md:flex-none min-w-0"
           style={{
+            display: "flex",
             gap: 4,
             scrollbarWidth: "none",
             margin: 0,
