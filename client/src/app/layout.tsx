@@ -14,8 +14,40 @@ const mono = IBM_Plex_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "PhysaFlow",
-  description: "Stranded Capacity Index Report",
+  metadataBase: new URL("https://physaflow-t10.vercel.app"),
+  title: {
+    default: "PhysaFlow — Stranded Capacity Index",
+    template: "%s | PhysaFlow",
+  },
+  description:
+    "Stranded Capacity Index — installed, energized and paid for, yet unable to do work.",
+  openGraph: {
+    title: "PhysaFlow — Stranded Capacity Index",
+    description:
+      "Stranded Capacity Index — installed, energized and paid for, yet unable to do work.",
+    url: "https://physaflow-t10.vercel.app",
+    siteName: "PhysaFlow",
+    locale: "es_ES",
+    type: "website",
+    images: [
+      {
+        url: "/og-banner.png",
+        width: 1200,
+        height: 630,
+        alt: "PhysaFlow — Stranded Capacity Index",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PhysaFlow — Stranded Capacity Index",
+    description:
+      "Stranded Capacity Index — installed, energized and paid for, yet unable to do work.",
+    images: ["/og-banner.png"],
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
