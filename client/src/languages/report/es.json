@@ -148,12 +148,6 @@
     "accent": "no.",
     "lead": "Este índice nombra fenómenos que no midió. Todo este capítulo existe para mantener esa distinción a la vista.",
     "statusQuote": "No se recolectó ninguna medición para <b>ninguna entrada ni ninguna figura</b> de este índice.",
-    "lkVersion": "Versión",
-    "lkVersionVal": "0.1 · borrador",
-    "lkDefined": "Entradas definidas",
-    "lkDefinedVal": "18",
-    "lkMeasured": "Entradas medidas",
-    "lkMeasuredVal": "0",
     "src": "PhysaFlow Stranded Capacity Index · Metodología v0.1 · abierta a comentarios",
     "qualifyLabel": "Cómo califica una entrada",
     "qualifyLede": "Cinco pruebas. Las tres primeras vienen de la definición. Las dos últimas son editoriales, y existen para que la taxonomía siga siendo usable a medida que crece.",
@@ -313,7 +307,21 @@
     "nextTitle": "La lista de fuentes",
     "chmarkN": "06",
     "chmarkT": "Metodología",
-    "backtopText": "La taxonomía"
+    "backtopText": "La taxonomía",
+    "stmtStrip": [
+      {
+        "t": "Versión",
+        "d": "0.1 · borrador"
+      },
+      {
+        "t": "Entradas definidas",
+        "d": "18"
+      },
+      {
+        "t": "Entradas medidas",
+        "d": "0"
+      }
+    ]
   },
   "refs": {
     "mono": "Capítulo 08 · Referencias · v0.1",
