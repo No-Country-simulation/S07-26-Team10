@@ -161,13 +161,9 @@
     text-overflow: ellipsis;
     white-space: nowrap
   }
-
-  .burger {
-    display: none;
-  }
 }
 
-@media(min-width:1101px) {
+@media(min-width:901px) {
   .burger {
     display: none;
   }
