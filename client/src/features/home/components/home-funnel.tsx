@@ -52,7 +52,10 @@ function FunnelRows({
         <div
           key={step.id}
           className={`r${step.key ? " key" : ""}`}
+          tabIndex={0}
           onMouseEnter={() => onHover(i)}
+          onFocus={() => onHover(i)}
+          onBlur={onLeave}
         >
           <span className="st">{step.id}</span>
           <span className="nm">
@@ -73,7 +76,12 @@ function FunnelRows({
               }
             />
           </span>
-          <span className="vl">{step.value}</span>
+          <span className="vl">
+            {step.value}
+            {t.has(`${step.tKey}.loss`) && (
+              <em>− {t(`${step.tKey}.loss`)}</em>
+            )}
+          </span>
         </div>
       ))}
     </div>
@@ -112,7 +120,9 @@ function FunnelMobile({ animated }: { animated: boolean }) {
           <div className="fnm-body">
             <div className="fnm-in">
               <p className="fnm-s">{t(`${step.tKey}.desc`)}</p>
-              <p className="fnm-l">{t(`${step.tKey}.caption`)}</p>
+              {t.has(`${step.tKey}.loss`) && (
+                <p className="fnm-l">− {t(`${step.tKey}.loss`)}</p>
+              )}
             </div>
           </div>
         </li>
