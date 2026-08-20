@@ -113,7 +113,7 @@ export function ChaptersList({ initialItems = [] }: ChaptersListProps) {
       }`}
     >
       {displayItems.map((item) => (
-        <Link key={item.id || item.slug} href={item.href}>
+        <Link key={item.id || item.slug} href={`/chapter/${item.slug}`}>
           <span className="n">{item.num}</span>
           <div>
             <h3>{item.title}</h3>
