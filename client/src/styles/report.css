@@ -64,7 +64,7 @@
   font-family: var(--phi-m);
   font-size: 11px;
   letter-spacing: 0.04em;
-  color: #b4b4b4;
+  color: var(--color-meta);
 }
 
 /* ===== THREE CONDITIONS ===== */
@@ -103,7 +103,7 @@
   font-family: var(--phi-m);
   font-size: 12px;
   letter-spacing: 0.04em;
-  color: #c4c4c4;
+  color: var(--color-meta);
 }
 .phi .cc h3 {
   font-size: 20px;
@@ -294,7 +294,7 @@
   font-family: var(--phi-m);
   font-size: 11px;
   letter-spacing: 0.05em;
-  color: #b4b4b4;
+  color: var(--color-meta);
 }
 .phi .cnav b {
   font-size: 17px;

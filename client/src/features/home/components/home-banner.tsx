@@ -36,7 +36,6 @@ export function HomeBanner() {
           ))}
         </svg>
         <div className="btx">
-          <span className="tag">{t("milestoneTag")}</span>
           <p>{t("bannerText")}</p>
         </div>
         <span className="foot">{t("bannerFoot")}</span>

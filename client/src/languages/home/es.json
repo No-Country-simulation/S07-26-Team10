@@ -11,6 +11,8 @@
   "problemLede": "Megavatios contratados, racks instalados, aceleradores entregados. Esas cifras describen lo que existe. No describen lo que se puede usar.",
   "problemBody": "Entre ambas hay un conjunto de restricciones —eléctricas, térmicas, topológicas, temporales y organizativas— que impide que la infraestructura instalada se convierta en trabajo. Este índice propone un vocabulario único para esa distancia.",
   "readTheDefinition": "Leer la definición",
+  "browseTaxonomy": "Explorar la taxonomía",
+  "startReading": "Empezar a leer — Definición",
   "chaptersLede": "Cada capítulo es su propia página, para poder enlazarlo y citarlo por separado.",
   "chapters": {
     "theCapacityFunnel": "El embudo de capacidad",
@@ -83,5 +85,6 @@
   "source": "Fuente: PhysaFlow Stranded Capacity Index",
   "version": "Definición de cada paso pendiente de validación · v0.1",
   "downloadTable": "Tabla",
-  "citeFigure": "Citar esta figura"
+  "citeFigure": "Citar esta figura",
+  "downloadsPending": "PNG · SVG · Tabla — pendiente"
 }

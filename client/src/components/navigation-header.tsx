@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useLanguage } from "@/context/language-context";
 import { useVersion } from "@/context/version-context";
@@ -20,6 +20,14 @@ const NAV_LINKS = [
   { href: "/methodology", key: "methodology", match: "/methodology" },
   { href: "/report/references", key: "references", match: "/report/references" },
 ];
+
+function CloseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  );
+}
 
 function SearchIcon() {
   return (
@@ -46,6 +54,37 @@ export function NavigationHeader({ disableShrink = false }: { disableShrink?: bo
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
+  const isNavActive = (href: string, match?: string) => {
+    if (match) return pathname === match;
+    return pathname.startsWith(href);
+  };
+
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeMobileMenu();
+    };
+
+    const handleResize = () => {
+      if (window.innerWidth > 900) closeMobileMenu();
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [mobileMenuOpen]);
+
   // Global keyboard shortcut: Cmd+K / Ctrl+K
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -68,6 +107,19 @@ export function NavigationHeader({ disableShrink = false }: { disableShrink?: bo
     <>
       <header id="hd" className={shrunk ? "sm" : undefined}>
         <div className="hr">
+          <button
+            type="button"
+            className={`burger ${mobileMenuOpen ? "on" : ""}`}
+            aria-label={mobileMenuOpen ? t("close") : t("menu")}
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <span className="burger-box" aria-hidden="true">
+              <span className="burger-line" />
+              <span className="burger-line" />
+              <span className="burger-line" />
+            </span>
+          </button>
           <Link href="/" className="lock">
             <img
               className="iso"
@@ -102,8 +154,12 @@ export function NavigationHeader({ disableShrink = false }: { disableShrink?: bo
             ))}
           </nav>
           <div className="tools flex items-center gap-2">
-            <ReportToggle />
-            <VersionToggle />
+            <div className="hdr-toggle">
+              <ReportToggle />
+            </div>
+            <div className="hdr-toggle">
+              <VersionToggle />
+            </div>
             <button
               className="ic"
               id="sbtn"
@@ -128,14 +184,6 @@ export function NavigationHeader({ disableShrink = false }: { disableShrink?: bo
               </button>
             </div>
           </div>
-          <button
-            className={`burger ${mobileMenuOpen ? "on" : ""}`}
-            aria-label={t("menu")}
-            aria-expanded={mobileMenuOpen}
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            <i />
-          </button>
         </div>
         <div className="prog">
           <i id="pg" style={{ width: `${progress}%` }} />
@@ -143,27 +191,53 @@ export function NavigationHeader({ disableShrink = false }: { disableShrink?: bo
       </header>
 
       <div className={`mmenu ${mobileMenuOpen ? "on" : ""}`} onClick={closeMobileMenu}>
-        <nav>
-          {NAV_LINKS.map((link) => (
-            <Link key={link.key} href={link.href} onClick={closeMobileMenu}>
-              {t(link.key)}
-            </Link>
-          ))}
-        </nav>
-        <div className="mlg">
-          <button
-            aria-current={language === "en" ? "true" : "false"}
-            onClick={() => { changeLanguage("en"); closeMobileMenu(); }}
-          >
-            EN
-          </button>
-          <span style={{ color: "#DADADA" }}>/</span>
-          <button
-            aria-current={language === "es" ? "true" : "false"}
-            onClick={() => { changeLanguage("es"); closeMobileMenu(); }}
-          >
-            ES
-          </button>
+        <div className="mmenu-panel" onClick={(event) => event.stopPropagation()}>
+          <div className="mmenu-head">
+            <span className="mmenu-title">{t("menu")}</span>
+            <button
+              type="button"
+              className="mmenu-close"
+              aria-label={t("close")}
+              onClick={closeMobileMenu}
+            >
+              <CloseIcon />
+            </button>
+          </div>
+          <nav aria-label={t("menu")}>
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.key}
+                href={link.href}
+                className={isNavActive(link.href, link.match) ? "cur" : undefined}
+                onClick={closeMobileMenu}
+              >
+                {t(link.key)}
+              </Link>
+            ))}
+          </nav>
+          <div className="mmenu-tools">
+            <div className="hdr-toggle">
+              <ReportToggle />
+            </div>
+            <div className="hdr-toggle">
+              <VersionToggle />
+            </div>
+          </div>
+          <div className="mlg">
+            <button
+              aria-current={language === "en" ? "true" : "false"}
+              onClick={() => { changeLanguage("en"); closeMobileMenu(); }}
+            >
+              EN
+            </button>
+            <span style={{ color: "#DADADA" }}>/</span>
+            <button
+              aria-current={language === "es" ? "true" : "false"}
+              onClick={() => { changeLanguage("es"); closeMobileMenu(); }}
+            >
+              ES
+            </button>
+          </div>
         </div>
       </div>
 

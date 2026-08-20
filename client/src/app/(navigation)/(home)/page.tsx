@@ -6,6 +6,7 @@ import { HomeSectionChapters } from "@/features/home/components/home-section-cha
 import { HomeBanner } from "@/features/home/components/home-banner";
 import { HomeFunnel } from "@/features/home/components/home-funnel";
 import { HomeContinueReading } from "@/features/home/components/home-continue-reading";
+import { HomeChapterNav } from "@/features/home/components/home-chapter-nav";
 import { DownloadReportButtonServer } from "@/features/report-download/components/download-report-button-server";
 
 export const metadata: Metadata = {
@@ -24,6 +25,7 @@ export default function Home() {
       <HomeSectionChapters />
       <HomeBanner />
       <HomeFunnel />
+      <HomeChapterNav />
     </>
   );
 }

@@ -11,33 +11,11 @@ import {
 } from "@/hooks/use-funnel";
 import { useReveal } from "@/hooks/use-reveal";
 import { funnelSteps, lossSources } from "../data/funnel";
-import {
-  downloadFunnelCsv,
-  downloadFunnelPng,
-  downloadFunnelSvg,
-} from "@/lib/figure-downloads";
 
 function ExpandIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M9 4H4v5M15 4h5v5M15 20h5v-5M9 20H4v-5" />
-    </svg>
-  );
-}
-
-function DownloadIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 4v12M7 12l5 5 5-5M5 20h14" />
-    </svg>
-  );
-}
-
-function TableIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="4" y="4" width="16" height="16" rx="2" />
-      <path d="M4 10h16M10 10v10" />
     </svg>
   );
 }
@@ -102,6 +80,47 @@ function FunnelRows({
   );
 }
 
+function FunnelMobile({ animated }: { animated: boolean }) {
+  const t = useTranslations("HomePage");
+  const [open, setOpen] = useState<number | null>(null);
+
+  return (
+    <ol className={`fnm${animated ? " boxin" : ""}`}>
+      {funnelSteps.map((step, i) => (
+        <li
+          key={step.id}
+          className={`${step.key ? "key" : ""}${open === i ? " on" : ""}`}
+        >
+          <button
+            type="button"
+            className="fnm-h"
+            aria-expanded={open === i}
+            onClick={() => setOpen(open === i ? null : i)}
+          >
+            <span className="fnm-n">{step.id}</span>
+            <span className="fnm-t">{t(`${step.tKey}.name`)}</span>
+            <span className="fnm-v">{step.value}</span>
+            <span className="fnm-x" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </span>
+          </button>
+          <div className="fnm-track" style={{ width: step.width }}>
+            <i style={{ "--d": step.delay } as CSSProperties} />
+          </div>
+          <div className="fnm-body">
+            <div className="fnm-in">
+              <p className="fnm-s">{t(`${step.tKey}.desc`)}</p>
+              <p className="fnm-l">{t(`${step.tKey}.caption`)}</p>
+            </div>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 function FunnelFigure({
   expanded,
   fnRef,
@@ -152,6 +171,7 @@ function FunnelFigure({
           onHover={handleHover}
           onLeave={() => setCaption(null)}
         />
+        <FunnelMobile animated={expanded} />
         <div className={`fcap${caption ? " on" : ""}`} id="fcap">
           {caption ? (
             <>
@@ -212,17 +232,6 @@ export function HomeFunnel() {
   useReveal(".phi .rv, .phi .rvs");
   useFunnelAnimation(fnRef);
 
-  const exportRows = funnelSteps.map((step) => ({
-    label: t(`${step.tKey}.name`),
-    value: step.value,
-  }));
-  const sourceText = t("source");
-
-  const handlePng = () => {
-    void downloadFunnelPng(exportRows, sourceText);
-  };
-  const handleSvg = () => downloadFunnelSvg(exportRows, sourceText);
-  const handleTable = () => downloadFunnelCsv(exportRows);
   const handleCite = () => {
     router.push("/report/how-to-cite#figure-01");
   };
@@ -293,22 +302,11 @@ export function HomeFunnel() {
             <div className="s2">{t("version")}</div>
           </div>
           <div className="fdl">
-            <button type="button" onClick={handlePng}>
-              <DownloadIcon />
-              PNG
-            </button>
-            <button type="button" onClick={handleSvg}>
-              <DownloadIcon />
-              SVG
-            </button>
-            <button type="button" onClick={handleTable}>
-              <TableIcon />
-              {t("downloadTable")}
-            </button>
-            <button type="button" onClick={handleCite}>
+            <button type="button" className="fcite" onClick={handleCite}>
               <CiteIcon />
               {t("citeFigure")}
             </button>
+            <span className="soon">{t("downloadsPending")}</span>
           </div>
         </div>
       </div>

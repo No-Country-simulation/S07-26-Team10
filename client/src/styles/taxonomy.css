@@ -158,13 +158,25 @@
   font: inherit;
   font-size: 14px;
   letter-spacing: var(--phi-t1);
-  color: var(--phi-grey);
+  color: var(--phi-dark);
   background: none;
-  border: 1px solid var(--phi-stroke);
+  border: 1px solid var(--phi-dark);
   border-radius: 999px;
-  padding: 8px 15px;
+  padding: 8px 16px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   transition: 0.22s;
+}
+.phi .ft::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.22s, box-shadow 0.22s;
+  flex: none;
 }
 .phi .ft i {
   font-style: normal;
@@ -174,11 +186,22 @@
   margin-left: 5px;
 }
 .phi .ft:hover {
-  border-color: var(--phi-dark);
-  color: var(--phi-dark);
+  border-color: var(--phi-green);
+  color: var(--phi-green);
+}
+.phi .ft:hover::before {
+  background: var(--phi-green);
 }
 .phi .ft.on {
   background: var(--phi-dark);
+  border-color: var(--phi-dark);
+  color: #fff;
+}
+.phi .ft.on::before {
+  background: #3fbf83;
+  box-shadow: 0 0 0 3px rgba(63, 191, 131, 0.22);
+}
+.phi .ft.on:hover {
   border-color: var(--phi-dark);
   color: #fff;
 }
@@ -186,19 +209,28 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  border: 1px solid var(--phi-stroke);
+  border: 1px solid var(--phi-dark);
   border-radius: 999px;
   padding: 8px 16px;
   min-width: 230px;
   background: #fff;
+  transition: border-color 0.22s;
+}
+.phi .fq:focus-within {
+  border-color: var(--phi-green);
+  box-shadow: 0 0 0 3px rgba(0, 96, 58, 0.12);
+}
+.phi .fq:focus-within svg {
+  stroke: var(--phi-green);
 }
 .phi .fq svg {
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   fill: none;
-  stroke: var(--phi-grey);
-  stroke-width: 1.7;
+  stroke: var(--phi-dark);
+  stroke-width: 1.8;
   flex: none;
+  transition: stroke 0.22s;
 }
 .phi .fq input {
   font: inherit;
@@ -216,7 +248,7 @@
   font-family: var(--phi-m);
   font-size: 11px;
   letter-spacing: 0.04em;
-  color: #b4b4b4;
+  color: var(--color-meta);
   line-height: 17px;
 }
 
@@ -340,7 +372,7 @@
   font-family: var(--phi-m);
   font-size: 11px;
   letter-spacing: 0.04em;
-  color: #b4b4b4;
+  color: var(--color-meta);
   padding-top: 3px;
 }
 .phi .f p {
@@ -354,7 +386,7 @@
   font-family: var(--phi-m);
   font-size: 11px;
   letter-spacing: 0.04em;
-  color: #b4b4b4;
+  color: var(--color-meta);
   display: flex;
   gap: 18px;
   align-items: center;
@@ -390,7 +422,7 @@
   font-family: var(--phi-m);
   font-size: 11px;
   letter-spacing: 0.04em;
-  color: #b4b4b4;
+  color: var(--color-meta);
 }
 .phi .toast {
   position: fixed;

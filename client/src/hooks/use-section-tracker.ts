@@ -10,6 +10,12 @@ export function useSectionTracker(selector: string) {
 
   useEffect(() => {
     const sections = document.querySelectorAll<HTMLElement>(selector);
+    const first = sections[0];
+    if (first) {
+      const n = first.getAttribute("data-n") ?? "";
+      const t = first.getAttribute("data-t") ?? "";
+      if (t) setActive({ n, t });
+    }
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {

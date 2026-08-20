@@ -55,12 +55,17 @@ export function BurgerMenu() {
   return (
     <>
       <button
+        type="button"
         className={`burger${isOpen ? " on" : ""}`}
         onClick={() => setIsOpen(!isOpen)}
-        aria-label={t("menu")}
+        aria-label={isOpen ? t("close") : t("menu")}
         aria-expanded={isOpen}
       >
-        <i />
+        <span className="burger-box" aria-hidden="true">
+          <span className="burger-line" />
+          <span className="burger-line" />
+          <span className="burger-line" />
+        </span>
       </button>
 
       <nav className={`mmenu${isOpen ? " on" : ""}`} aria-label={t("menu")}>

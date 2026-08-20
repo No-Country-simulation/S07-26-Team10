@@ -18,6 +18,7 @@
   --m: var(--font-mono), monospace;
   --gut: clamp(20px, 4.4vw, 80px);
   --max: 1280px;
+  --ease-out: cubic-bezier(.22, .61, .36, 1);
 }
 
 
@@ -53,7 +54,7 @@ body:not(:has(.admin-theme)) {
   color: var(--dark);
   font-family: var(--f);
   font-weight: 400;
-  font-size: 16px;
+  font-size: var(--text-body);
   line-height: 24px;
   -webkit-font-smoothing: antialiased
 }
@@ -145,7 +146,7 @@ header.sm .lock .wmk {
 
 .rep {
   font-family: var(--m);
-  font-size: 14px;
+  font-size: var(--text-ui);
   letter-spacing: var(--t3);
   color: var(--grey);
   white-space: nowrap
@@ -159,7 +160,7 @@ header.sm .lock .wmk {
   }
 
   nav a {
-    font-size: 16px;
+    font-size: var(--text-body);
     font-weight: 500;
     letter-spacing: var(--t1);
     color: var(--grey);
@@ -182,24 +183,100 @@ header.sm .lock .wmk {
   display: none;
   width: 44px;
   height: 44px;
-  border: 0;
-  background: none;
+  border: 1px solid var(--stroke);
+  border-radius: 12px;
+  background: var(--off);
   cursor: pointer;
   position: relative;
-  flex: none
+  flex: none;
+  place-items: center;
+  transition: background .22s var(--ease-out), border-color .22s var(--ease-out), box-shadow .22s var(--ease-out), transform .18s var(--ease-out)
 }
 
+.burger:hover {
+  background: var(--light);
+  border-color: rgba(8, 9, 10, .12)
+}
+
+.burger:active {
+  transform: scale(.96)
+}
+
+.burger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 96, 58, .18)
+}
+
+.burger.on {
+  background: var(--dark);
+  border-color: var(--dark)
+}
+
+.burger.on:hover {
+  background: var(--green-dp);
+  border-color: var(--green-dp)
+}
+
+.burger-box {
+  display: block;
+  width: 18px;
+  height: 14px;
+  position: relative
+}
+
+.burger-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--dark);
+  transition: transform .28s var(--ease-out), top .28s var(--ease-out), opacity .18s, background .22s var(--ease-out)
+}
+
+.burger-line:nth-child(1) {
+  top: 0
+}
+
+.burger-line:nth-child(2) {
+  top: 6px
+}
+
+.burger-line:nth-child(3) {
+  top: 12px
+}
+
+.burger.on .burger-line {
+  background: var(--light)
+}
+
+.burger.on .burger-line:nth-child(1) {
+  top: 6px;
+  transform: rotate(45deg)
+}
+
+.burger.on .burger-line:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(.4)
+}
+
+.burger.on .burger-line:nth-child(3) {
+  top: 6px;
+  transform: rotate(-45deg)
+}
+
+/* Legacy markup fallback */
 .burger i,
 .burger i::before,
 .burger i::after {
   content: "";
   position: absolute;
-  left: 12px;
-  right: 12px;
+  left: 13px;
+  right: 13px;
   height: 2px;
-  border-radius: 2px;
+  border-radius: 999px;
   background: var(--dark);
-  transition: transform .25s var(--ease-out-soft, cubic-bezier(.22, .61, .36, 1))
+  transition: transform .28s var(--ease-out), top .28s var(--ease-out), opacity .18s, background .22s var(--ease-out)
 }
 
 .burger i {
@@ -208,11 +285,11 @@ header.sm .lock .wmk {
 }
 
 .burger i::before {
-  top: -7px
+  top: -6px
 }
 
 .burger i::after {
-  top: 7px
+  top: 6px
 }
 
 .burger.on i {
@@ -220,20 +297,113 @@ header.sm .lock .wmk {
 }
 
 .burger.on i::before {
-  transform: translateY(7px) rotate(45deg)
+  top: 0;
+  transform: rotate(45deg);
+  background: var(--light)
 }
 
 .burger.on i::after {
-  transform: translateY(-7px) rotate(-45deg)
+  top: 0;
+  transform: rotate(-45deg);
+  background: var(--light)
 }
 
 .mmenu {
-  display: none;
+  display: block;
   position: fixed;
   inset: 0;
   z-index: 90;
-  background: rgba(8, 9, 10, .4);
-  backdrop-filter: blur(4px)
+  background: rgba(8, 9, 10, .42);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .28s var(--ease-out), visibility .28s var(--ease-out)
+}
+
+.mmenu.on {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto
+}
+
+.mmenu-panel {
+  max-height: min(100%, 100dvh);
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--light);
+  border-bottom: 1px solid var(--stroke);
+  box-shadow: 0 28px 56px -28px rgba(8, 9, 10, .38);
+  transform: translateY(-16px);
+  opacity: 0;
+  transition: transform .34s var(--ease-out), opacity .28s var(--ease-out)
+}
+
+.mmenu.on .mmenu-panel {
+  transform: none;
+  opacity: 1
+}
+
+.mmenu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px var(--gut);
+  background: rgba(255, 255, 255, .94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--stroke);
+  position: sticky;
+  top: 0;
+  z-index: 1
+}
+
+.mmenu-title {
+  font-family: var(--m);
+  font-size: var(--text-ui);
+  letter-spacing: var(--t3);
+  text-transform: uppercase;
+  color: var(--color-meta)
+}
+
+.mmenu-close {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--stroke);
+  border-radius: 999px;
+  background: var(--off);
+  color: var(--dark);
+  cursor: pointer;
+  flex: none;
+  transition: background .2s var(--ease-out), border-color .2s var(--ease-out), transform .18s var(--ease-out), box-shadow .2s var(--ease-out)
+}
+
+.mmenu-close:hover {
+  background: var(--dark);
+  border-color: var(--dark);
+  color: var(--light)
+}
+
+.mmenu-close:active {
+  transform: scale(.94)
+}
+
+.mmenu-close:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 96, 58, .18)
+}
+
+.mmenu-close svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round
 }
 
 .mmenu nav {
@@ -241,23 +411,46 @@ header.sm .lock .wmk {
   flex-direction: column;
   gap: 0;
   margin: 0;
-  padding: 88px var(--gut) 32px;
-  background: var(--light);
-  border-bottom: 1px solid var(--stroke);
-  box-shadow: 0 24px 48px -24px rgba(8, 9, 10, .35)
+  padding: 8px 0 12px;
+  background: var(--light)
 }
 
 .mmenu nav a {
-  font-size: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 18px;
   font-weight: 500;
   letter-spacing: var(--t1);
   color: var(--grey);
-  padding: 16px 0;
-  border-bottom: 1px solid var(--stroke)
+  padding: 16px var(--gut);
+  border-bottom: 1px solid var(--stroke);
+  transition: color .18s, background .18s
+}
+
+.mmenu nav a::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: transparent;
+  flex: none;
+  transition: background .18s, transform .18s
+}
+
+.mmenu nav a:hover {
+  color: var(--dark);
+  background: var(--off)
 }
 
 .mmenu nav a.cur {
-  color: var(--dark)
+  color: var(--dark);
+  background: rgba(0, 96, 58, .05)
+}
+
+.mmenu nav a.cur::before {
+  background: var(--green);
+  transform: scale(1.08)
 }
 
 .mmenu .mlg {
@@ -265,7 +458,7 @@ header.sm .lock .wmk {
   align-items: center;
   gap: 8px;
   font-family: var(--m);
-  font-size: 14px;
+  font-size: var(--text-ui);
   letter-spacing: var(--t3);
   padding: 20px var(--gut) 40px;
   background: var(--light)
@@ -276,7 +469,7 @@ header.sm .lock .wmk {
   background: none;
   cursor: pointer;
   font: inherit;
-  color: #C4C4C4;
+  color: var(--color-meta);
   padding: 6px 4px
 }
 
@@ -284,8 +477,13 @@ header.sm .lock .wmk {
   color: var(--dark)
 }
 
-.mmenu.on {
-  display: block
+.mmenu-tools {
+  display: none;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 18px var(--gut) 20px;
+  background: var(--light);
+  border-bottom: 1px solid var(--stroke)
 }
 
 .tools {
@@ -323,7 +521,7 @@ header.sm .lock .wmk {
   align-items: center;
   gap: 3px;
   font-family: var(--m);
-  font-size: 14px;
+  font-size: var(--text-ui);
   letter-spacing: var(--t3);
   padding: 0 6px
 }
@@ -333,7 +531,7 @@ header.sm .lock .wmk {
   background: none;
   cursor: pointer;
   font: inherit;
-  color: #C4C4C4;
+  color: var(--color-meta);
   padding: 6px 3px
 }
 
@@ -364,14 +562,14 @@ header.sm .sep {
 
 .now .n {
   font-family: var(--m);
-  font-size: 14px;
+  font-size: var(--text-ui);
   letter-spacing: var(--t3);
-  color: #C4C4C4;
+  color: var(--color-meta);
   flex: none
 }
 
 .now .t {
-  font-size: 16px;
+  font-size: var(--text-body);
   font-weight: 500;
   letter-spacing: var(--t1);
   white-space: nowrap;
@@ -472,7 +670,7 @@ header.sm .sep {
 }
 
 .search-main-input::placeholder {
-  color: #c4c4c4;
+  color: var(--color-meta);
 }
 
 .search-clear-btn {
@@ -500,7 +698,7 @@ header.sm .sep {
   border: 1px solid var(--stroke, #e5e7eb);
   border-radius: 4px;
   font-family: var(--m, monospace);
-  font-size: 11px;
+  font-size: var(--text-micro);
   color: var(--grey, #9ca3af);
   background: var(--off, #f9fafb);
   user-select: none;
@@ -562,7 +760,7 @@ header.sm .sep {
 
 .search-pill-count {
   font-family: var(--m, monospace);
-  font-size: 11px;
+  font-size: var(--text-micro);
   opacity: 0.85;
 }
 
@@ -610,7 +808,7 @@ header.sm .sep {
 
 .search-type-label {
   font-family: var(--m, monospace);
-  font-size: 13px;
+  font-size: var(--text-meta);
   letter-spacing: var(--t3, 0.03em);
   color: var(--green, #059669);
   font-weight: 500;
@@ -672,7 +870,7 @@ header.sm .sep {
 }
 
 .search-item-title {
-  font-size: 16px;
+  font-size: var(--text-body);
   font-weight: 600;
   letter-spacing: var(--t1, -0.01em);
   color: var(--dark, #111827);
@@ -681,7 +879,7 @@ header.sm .sep {
 
 .search-matched-field {
   font-family: var(--m, monospace);
-  font-size: 10.5px;
+  font-size: var(--text-micro);
   color: var(--grey, #6b7280);
   background: var(--off, #f3f4f6);
   padding: 1px 6px;
@@ -723,7 +921,7 @@ header.sm .sep {
 }
 
 .search-empty-title {
-  font-size: 17px;
+  font-size: var(--text-card);
   font-weight: 600;
   color: var(--dark, #111827);
   margin-bottom: 6px;
@@ -761,7 +959,7 @@ header.sm .sep {
   border: 1px solid var(--stroke, #e5e7eb);
   border-radius: 9999px;
   padding: 5px 12px;
-  font-size: 12.5px;
+  font-size: var(--text-meta);
   font-weight: 500;
   color: var(--dark, #111827);
   cursor: pointer;
@@ -888,7 +1086,7 @@ header.sm .sep {
   display: flex;
   align-items: center;
   gap: 16px;
-  font-size: 11.5px;
+  font-size: var(--text-micro);
   color: var(--grey, #9ca3af);
   flex-wrap: wrap;
 }
@@ -901,7 +1099,7 @@ header.sm .sep {
 
 .search-hint-item kbd {
   font-family: var(--m, monospace);
-  font-size: 10.5px;
+  font-size: var(--text-micro);
   background: var(--off, #f3f4f6);
   border: 1px solid var(--stroke, #d1d5db);
   border-radius: 3px;
@@ -964,7 +1162,7 @@ header.sm .sep {
   gap: 10px;
   padding: 15px 26px;
   border-radius: 999px;
-  font-size: 16px;
+  font-size: var(--text-body);
   font-weight: 500;
   letter-spacing: -.16px;
   border: 1px solid;
@@ -1022,6 +1220,22 @@ header.sm .sep {
   color: var(--green-dp)
 }
 
+/*  CHAPTER NAV (home)  */
+.chnav.home {
+  padding: clamp(46px, 6vh, 72px) 0;
+  border-top: 1px solid var(--gline)
+}
+
+.chnav.home .in {
+  max-width: var(--max);
+  margin-inline: auto;
+  padding-inline: var(--gut);
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: flex-start
+}
+
 /*  HERO  */
 .hero {
   position: relative;
@@ -1074,7 +1288,7 @@ header.sm .sep {
 }
 
 .hero h1 .soft {
-  color: #B4B4B4
+  color: var(--color-meta)
 }
 
 @keyframes drop {
@@ -1098,7 +1312,7 @@ header.sm .sep {
 
 .htag {
   font-family: var(--m);
-  font-size: 13px;
+  font-size: var(--text-meta);
   letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--green);
@@ -1107,7 +1321,7 @@ header.sm .sep {
 
 .hmono {
   font-family: var(--m);
-  font-size: 13px;
+  font-size: var(--text-meta);
   letter-spacing: .04em;
   color: var(--green);
   margin-top: 46px;
@@ -1140,7 +1354,7 @@ header.sm .sep {
   background: rgba(8, 9, 10, .9);
   backdrop-filter: blur(10px);
   color: #fff;
-  font-size: 15px;
+  font-size: var(--text-sm);
   font-weight: 500;
   letter-spacing: -.16px;
   transition: opacity .35s, transform .35s;
@@ -1174,6 +1388,61 @@ header.sm .sep {
   pointer-events: none
 }
 
+/* back to top: mismo lenguaje que "continue reading" */
+.totop {
+  position: fixed;
+  left: 50%;
+  bottom: 34px;
+  transform: translateX(-50%) translateY(14px);
+  z-index: 64;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 22px;
+  border-radius: 999px;
+  background: rgba(8, 9, 10, .72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: -.16px;
+  border: 0;
+  cursor: pointer;
+  font-family: var(--f);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .35s var(--ease-in-soft), transform .35s var(--ease-in-soft), background .2s
+}
+
+.totop.on {
+  opacity: .55;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto
+}
+
+.totop.on:hover,
+.totop.on:focus-visible {
+  opacity: 1
+}
+
+.totop:hover {
+  background: var(--green)
+}
+
+.totop svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.9;
+  transition: transform .25s
+}
+
+.totop:hover svg {
+  transform: translateY(-3px)
+}
+
 /*  SUPPORTERS  */
 .sup {
   padding: clamp(40px, 5vh, 60px) 0 clamp(38px, 4.6vh, 54px);
@@ -1188,9 +1457,9 @@ header.sm .sep {
   padding-inline: var(--gut);
   text-align: center;
   font-family: var(--m);
-  font-size: 11.5px;
+  font-size: var(--text-micro);
   letter-spacing: .05em;
-  color: #BDBDBD
+  color: var(--color-meta)
 }
 
 .sup .line {
@@ -1205,7 +1474,7 @@ header.sm .sep {
   font-size: 12px;
   line-height: 18px;
   letter-spacing: .04em;
-  color: #B4B4B4;
+  color: var(--color-meta);
   max-width: 52ch
 }
 
@@ -1377,7 +1646,7 @@ section.n.cur .snum {
 }
 
 .banner .tag {
-  font-size: 13px;
+  font-size: var(--text-meta);
   letter-spacing: var(--t1);
   color: #fff;
   font-weight: 500;
@@ -1397,7 +1666,7 @@ section.n.cur .snum {
 
 .banner p {
   color: rgba(255, 255, 255, .88);
-  font-size: 15px;
+  font-size: var(--text-sm);
   line-height: 21px;
   letter-spacing: var(--t1);
   margin: 0;
@@ -1467,7 +1736,7 @@ section.n.cur .snum {
 }
 
 .banner .foot {
-  font-size: 12.5px;
+  font-size: var(--text-meta);
   letter-spacing: var(--t1);
   color: rgba(255, 255, 255, .55);
   margin: 0;
@@ -1528,7 +1797,7 @@ section.n.cur .snum {
 
 .diag text {
   font-family: var(--m);
-  font-size: 9px;
+  font-size: var(--text-micro);
   fill: rgba(240, 237, 228, .55);
   letter-spacing: .04em
 }
@@ -1552,7 +1821,7 @@ section.n.cur .snum {
 
 .fig .fnum {
   font-family: var(--m);
-  font-size: 14px;
+  font-size: var(--text-ui);
   letter-spacing: var(--t3);
   color: var(--green)
 }
@@ -1573,7 +1842,7 @@ section.n.cur .snum {
   border: 1px solid var(--gline);
   border-radius: 999px;
   font-family: var(--m);
-  font-size: 13px;
+  font-size: var(--text-meta);
   letter-spacing: var(--t3);
   color: var(--grey);
   white-space: nowrap
@@ -1598,13 +1867,13 @@ section.n.cur .snum {
 }
 
 .fig .fm .s1 {
-  font-size: 16px;
+  font-size: var(--text-body);
   font-weight: 500
 }
 
 .fig .fm .s2 {
   font-family: var(--m);
-  font-size: 14px;
+  font-size: var(--text-ui);
   letter-spacing: var(--t3);
   color: var(--grey);
   margin-top: 6px
@@ -1627,7 +1896,7 @@ section.n.cur .snum {
   border: 1px solid var(--gline);
   background: transparent;
   font-family: var(--f);
-  font-size: 15px;
+  font-size: var(--text-sm);
   font-weight: 500;
   color: var(--green);
   cursor: pointer;
@@ -1648,6 +1917,37 @@ section.n.cur .snum {
   stroke: currentColor;
   fill: none;
   stroke-width: 1.9
+}
+
+.fdl .fcite {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--gline);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--green);
+  background: none;
+  cursor: pointer;
+  transition: .18s
+}
+
+.fdl .fcite:hover {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff
+}
+
+.fdl .soon {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--m);
+  font-size: var(--text-micro);
+  letter-spacing: .04em;
+  color: var(--color-meta)
 }
 
 .fn .r {
@@ -1671,13 +1971,13 @@ section.n.cur .snum {
 
 .fn .st {
   font-family: var(--m);
-  font-size: 14px;
+  font-size: var(--text-ui);
   letter-spacing: var(--t3);
-  color: #C4C4C4
+  color: var(--color-meta)
 }
 
 .fn .nm {
-  font-size: 16px
+  font-size: var(--text-body)
 }
 
 .fn .bar {
@@ -1782,7 +2082,7 @@ section.n.cur .snum {
 
 .fcap .no {
   font-family: var(--m);
-  font-size: 13px;
+  font-size: var(--text-meta);
   letter-spacing: var(--t3);
   color: var(--green);
   flex: none;
@@ -1791,7 +2091,7 @@ section.n.cur .snum {
 }
 
 .fcap .tx {
-  font-size: 16px;
+  font-size: var(--text-body);
   line-height: 24px;
   color: var(--dark)
 }
@@ -1802,14 +2102,14 @@ section.n.cur .snum {
 
 .fcap .idle {
   font-family: var(--m);
-  font-size: 14px;
+  font-size: var(--text-ui);
   letter-spacing: var(--t3);
   color: var(--grey)
 }
 
 .disc {
   font-family: var(--m);
-  font-size: 14px;
+  font-size: var(--text-ui);
   letter-spacing: var(--t3);
   color: var(--grey);
   margin-top: 16px;
@@ -1833,7 +2133,7 @@ section.n.cur .snum {
   padding: 8px 14px;
   border-radius: 999px;
   border: 1px solid var(--gline);
-  font-size: 14px;
+  font-size: var(--text-ui);
   font-weight: 500;
   color: var(--grey);
   cursor: pointer;
@@ -1884,9 +2184,9 @@ section.n.cur .snum {
 
 .chap a {
   display: grid;
-  grid-template-columns: 32px 1fr 60px;
+  grid-template-columns: 32px 1fr 34px;
   gap: 14px;
-  align-items: baseline;
+  align-items: start;
   padding: 14px 0;
   border-top: 1px solid var(--gline);
   transition: .18s;
@@ -1900,23 +2200,47 @@ section.n.cur .snum {
 
 .chap .n {
   font-family: var(--m);
-  font-size: 13px;
+  font-size: var(--text-meta);
   letter-spacing: var(--t3);
   color: var(--green)
 }
 
 .chap h3 {
-  font-size: 17px;
+  font-size: var(--text-card);
   letter-spacing: var(--t2);
   font-weight: 500
 }
 
-.chap .t {
+.chap .chd {
+  display: block;
   font-family: var(--m);
-  font-size: 13px;
-  letter-spacing: var(--t3);
-  color: #C4C4C4;
-  text-align: right
+  font-size: var(--text-micro);
+  letter-spacing: .04em;
+  color: var(--color-meta);
+  margin-top: 5px
+}
+
+.chap a:hover .chd {
+  color: var(--green)
+}
+
+.chap .chx {
+  justify-self: end;
+  align-self: center
+}
+
+.chap .chx svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--color-meta);
+  stroke-width: 1.9;
+  transition: transform .28s var(--ease-in-soft), stroke .2s
+}
+
+.chap a:hover .chx svg {
+  stroke: var(--green);
+  transform: translate(3px, -3px)
 }
 
 @media(max-width:820px) {
@@ -1956,7 +2280,7 @@ section.n.cur .snum {
 
 .fg h4 {
   font-family: var(--m);
-  font-size: 14px;
+  font-size: var(--text-ui);
   letter-spacing: var(--t3);
   color: var(--grey);
   font-weight: 400;
@@ -1966,7 +2290,7 @@ section.n.cur .snum {
 .fg a,
 .fg li {
   display: block;
-  font-size: 16px;
+  font-size: var(--text-body);
   color: var(--grey);
   line-height: 2;
   list-style: none
@@ -2000,7 +2324,7 @@ section.n.cur .snum {
 }
 
 .fb p {
-  font-size: 16px;
+  font-size: var(--text-body);
   color: var(--grey);
   max-width: 36ch;
   line-height: 24px
@@ -2031,7 +2355,7 @@ section.n.cur .snum {
 .pubmeta b {
   display: block;
   font-family: var(--m);
-  font-size: 13px;
+  font-size: var(--text-meta);
   letter-spacing: var(--t3);
   color: var(--grey);
   font-weight: 400;
@@ -2039,7 +2363,7 @@ section.n.cur .snum {
 }
 
 .pubmeta span {
-  font-size: 15px
+  font-size: var(--text-sm)
 }
 
 .fbot {
@@ -2054,7 +2378,7 @@ section.n.cur .snum {
   gap: 20px;
   flex-wrap: wrap;
   font-family: var(--m);
-  font-size: 14px;
+  font-size: var(--text-ui);
   letter-spacing: var(--t3);
   color: var(--grey)
 }
@@ -2091,6 +2415,15 @@ section.n.cur .snum {
 
   .fn .bar i {
     transform: scaleX(1)
+  }
+
+  .fnm-track i {
+    animation: none;
+    transform: scaleX(1)
+  }
+
+  .fnm-body {
+    transition: none
   }
 
   .hero h1 .ln em {
@@ -2204,7 +2537,7 @@ section.n.cur .snum {
   border-radius: 50%;
   border: 1px solid var(--stroke);
   font-size: 12px;
-  color: #9A9A9A;
+  color: var(--color-meta);
   background: rgba(255, 255, 255, .5)
 }
 
@@ -2220,16 +2553,16 @@ section.n.cur .snum {
 }
 
 .fn .nm b {
-  font-size: 16px;
+  font-size: var(--text-body);
   font-weight: 500;
   letter-spacing: var(--t2)
 }
 
 .fn .nm em {
   font-style: normal;
-  font-size: 12.5px;
+  font-size: var(--text-meta);
   letter-spacing: var(--t1);
-  color: #A0A0A0
+  color: var(--color-meta)
 }
 
 .fn .r.key .nm b {
@@ -2238,7 +2571,7 @@ section.n.cur .snum {
 
 .fn .vl {
   font-family: var(--m);
-  font-size: 14px;
+  font-size: var(--text-ui);
   letter-spacing: var(--t3);
   color: var(--grey);
   text-align: right
@@ -2268,6 +2601,151 @@ section.n.cur .snum {
   }
 }
 
+/*  EMBUDO — versión mobile propia (acordeón)
+    Se muestra a <=900px, donde .fn queda oculto. */
+.fnm {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0
+}
+
+.fnm li {
+  border-top: 1px solid var(--gline);
+  padding-bottom: 20px
+}
+
+.fnm li:first-child {
+  border-top: 0
+}
+
+.fnm-h {
+  display: grid;
+  grid-template-columns: 26px 1fr auto 22px;
+  gap: 10px;
+  align-items: baseline;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+  padding: 20px 0 0;
+  color: inherit
+}
+
+.fnm-n {
+  font-family: var(--m);
+  font-size: var(--text-meta);
+  letter-spacing: var(--t3);
+  color: var(--color-meta)
+}
+
+.fnm-t {
+  font-size: var(--text-card);
+  font-weight: 500;
+  letter-spacing: var(--t2);
+  line-height: 1.2;
+  min-width: 0
+}
+
+.fnm-v {
+  font-family: var(--m);
+  font-size: var(--text-h3-sm);
+  font-weight: 500;
+  letter-spacing: var(--t3);
+  color: var(--dark);
+  text-align: right
+}
+
+.fnm-x {
+  justify-self: end;
+  align-self: center
+}
+
+.fnm-x svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--color-meta);
+  stroke-width: 1.9;
+  transition: transform .3s var(--ease-out)
+}
+
+.fnm li.on .fnm-x svg {
+  transform: rotate(180deg)
+}
+
+.fnm-track {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(8, 9, 10, .07);
+  margin: 13px 0 0;
+  overflow: hidden
+}
+
+.fnm-track i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--dark);
+  opacity: .86;
+  transform: scaleX(0);
+  transform-origin: left;
+  will-change: transform
+}
+
+.fnm.boxin .fnm-track i,
+.fig.boxin .fnm-track i {
+  animation: load .85s cubic-bezier(.22, .61, .36, 1) var(--d, 0s) forwards
+}
+
+.fnm li.key .fnm-t,
+.fnm li.key .fnm-v,
+.fnm li.key .fnm-n {
+  color: var(--green)
+}
+
+.fnm li.key .fnm-track i {
+  background: var(--green);
+  opacity: 1
+}
+
+.fnm-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .34s var(--ease-out)
+}
+
+.fnm li.on .fnm-body {
+  grid-template-rows: 1fr
+}
+
+.fnm-in {
+  overflow: hidden;
+  min-height: 0
+}
+
+.fnm li.on .fnm-in {
+  padding-bottom: 4px
+}
+
+.fnm-s {
+  font-size: var(--text-meta);
+  line-height: 1.4;
+  letter-spacing: var(--t1);
+  color: var(--color-meta);
+  margin: 12px 0 0 36px
+}
+
+.fnm-l {
+  font-size: var(--text-meta);
+  line-height: 1.4;
+  letter-spacing: var(--t1);
+  color: var(--color-meta);
+  margin: 9px 0 0 36px
+}
+
 /* riel derecho */
 .rail {
   display: flex;
@@ -2287,14 +2765,14 @@ section.n.cur .snum {
 .gt {
   display: block;
   font-family: var(--m);
-  font-size: 10.5px;
+  font-size: var(--text-micro);
   letter-spacing: .07em;
   text-transform: uppercase;
   color: var(--green)
 }
 
 .gc p {
-  font-size: 14px;
+  font-size: var(--text-ui);
   line-height: 21px;
   letter-spacing: var(--t1);
   color: var(--grey);
@@ -2303,9 +2781,9 @@ section.n.cur .snum {
 
 .gn {
   font-family: var(--m);
-  font-size: 10.5px;
+  font-size: var(--text-micro);
   letter-spacing: .04em;
-  color: #B4B4B4;
+  color: var(--color-meta);
   margin-top: 14px
 }
 
@@ -2372,15 +2850,15 @@ section.n.cur .snum {
   display: block;
   font-style: normal;
   font-family: var(--m);
-  font-size: 10px;
+  font-size: var(--text-micro);
   letter-spacing: .08em;
   text-transform: uppercase;
-  color: #B4B4B4;
+  color: var(--color-meta);
   margin-top: 5px
 }
 
 .chip.sm {
-  font-size: 11px;
+  font-size: var(--text-micro);
   padding: 5px 11px;
   margin-top: 14px
 }
@@ -2418,7 +2896,7 @@ section.n.cur .snum {
   align-items: center;
   gap: 8px;
   margin-top: 14px;
-  font-size: 14px;
+  font-size: var(--text-ui);
   font-weight: 500;
   color: var(--green)
 }
@@ -2495,14 +2973,14 @@ section.n.cur .snum {
 }
 
 .fmeta .s1 {
-  font-size: 15px;
+  font-size: var(--text-sm);
   font-weight: 500;
   margin-top: 8px
 }
 
 .fmeta .s2 {
   font-family: var(--m);
-  font-size: 12.5px;
+  font-size: var(--text-meta);
   letter-spacing: var(--t3);
   color: var(--grey);
   margin-top: 5px
@@ -2511,7 +2989,7 @@ section.n.cur .snum {
 .disc.open {
   opacity: 1;
   transform: none;
-  font-size: 12.5px;
+  font-size: var(--text-meta);
   margin: 0
 }
 
@@ -2763,9 +3241,9 @@ nav a.cur::after {
   background: none;
   border: 0;
   font: inherit;
-  font-size: 13px;
+  font-size: var(--text-meta);
   letter-spacing: var(--t1);
-  color: #B4B4B4;
+  color: var(--color-meta);
   padding: 0 2px;
   transition: color .2s
 }

@@ -135,51 +135,31 @@
   }
 }
 
-@media(max-width:900px) {
-  .burger {
-    display: flex
+@media(max-width:1100px) and (min-width:901px) {
+  .hr {
+    gap: 16px
   }
 
   header nav {
-    display: none
+    gap: 18px
   }
 
-  .hr .sep,
-  .hr .rep,
-  .hr .now {
-    display: none
-  }
-
-  .hr {
-    gap: 12px;
-    padding: 12px var(--gut);
-    position: relative;
-    justify-content: flex-end;
-    min-height: 56px
-  }
-
-  .hr .lock {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    margin: 0
-  }
-
-  .lock .wmk {
-    display: none
-  }
-
-  .lock .iso {
-    height: 40px
-  }
-
-  header.sm .lock .iso {
-    height: 34px
+  header nav a {
+    font-size: var(--text-sm)
   }
 
   .tools {
-    margin-left: auto
+    gap: 4px
+  }
+
+  .hdr-toggle button {
+    max-width: 132px
+  }
+
+  .hdr-toggle button span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap
   }
 }
 
@@ -323,25 +303,94 @@
 }
 
 @media(max-width:900px) {
+  .burger {
+    display: flex
+  }
+
+  header nav {
+    display: none
+  }
+
+  .hr .sep,
+  .hr .rep,
+  .hr .now {
+    display: none
+  }
+
   .hr {
-    flex-wrap: nowrap !important;
+    display: grid;
+    grid-template-columns: 44px 1fr auto;
+    align-items: center;
+    gap: 8px;
+    padding: 12px var(--gut);
+    min-height: 56px;
     min-width: 0
+  }
+
+  .burger {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start
+  }
+
+  .hr .lock {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: center;
+    position: static;
+    transform: none;
+    margin: 0;
+    min-width: 0;
+    flex: 0 1 auto;
+    overflow: hidden
+  }
+
+  .lock .wmk {
+    display: none
+  }
+
+  .lock .iso {
+    height: 40px
+  }
+
+  header.sm .lock .iso {
+    height: 34px
+  }
+
+  .tools {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+    margin-left: 0;
+    min-width: 0;
+    gap: 2px;
+    flex: none
   }
 
   .hr .lgs {
     display: none
   }
 
-  .lock {
-    flex: 0 1 auto;
-    min-width: 0;
-    overflow: hidden
+  .hdr-toggle button>span:last-child {
+    display: none
   }
 
-  .tools {
-    margin-left: auto;
-    gap: 4px;
-    flex: none
+  header .tools .hdr-toggle button {
+    width: 40px;
+    min-width: 40px;
+    padding-inline: 0;
+    justify-content: center
+  }
+
+  .mmenu-tools .hdr-toggle button>span:last-child {
+    display: inline
+  }
+
+  .mmenu-tools .hdr-toggle button {
+    width: auto;
+    min-width: 0;
+    padding-inline: 12px;
+    justify-content: flex-start
   }
 
   .ic {
@@ -351,6 +400,24 @@
 
   header.sm .hr {
     padding-block: 10px
+  }
+
+  .mmenu-tools {
+    display: flex
+  }
+}
+
+@media(max-width:520px) {
+  .tools .hdr-toggle {
+    display: none
+  }
+
+  .hr {
+    grid-template-columns: 44px 1fr 44px
+  }
+
+  .tools {
+    gap: 0
   }
 }
 
