@@ -67,59 +67,6 @@
   color: var(--color-meta);
 }
 
-/* ===== THREE CONDITIONS ===== */
-.phi .cond {
-  margin-top: clamp(44px, 6vh, 72px);
-}
-.phi .ch {
-  display: grid;
-  grid-template-columns: 220px 1fr;
-  gap: 30px;
-  align-items: baseline;
-  padding-bottom: 26px;
-  border-bottom: 1px solid var(--phi-stroke);
-}
-.phi .cn {
-  font-family: var(--phi-m);
-  font-size: 12px;
-  letter-spacing: 0.05em;
-  color: var(--phi-green);
-}
-.phi .ch p {
-  font-size: 17px;
-  line-height: 25px;
-  letter-spacing: var(--phi-t1);
-  color: var(--phi-grey);
-  max-width: 52ch;
-  margin: 0;
-}
-.phi .cg {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 30px;
-  margin-top: 30px;
-}
-.phi .ci {
-  font-family: var(--phi-m);
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  color: var(--color-meta);
-}
-.phi .cc h3 {
-  font-size: 20px;
-  letter-spacing: var(--phi-t2);
-  font-weight: 500;
-  margin-top: 12px;
-}
-.phi .cc p {
-  font-size: 15.5px;
-  line-height: 23px;
-  letter-spacing: var(--phi-t1);
-  color: var(--phi-grey);
-  margin-top: 12px;
-  max-width: 36ch;
-}
-
 /* ===== "NOT-TABLE" ROWS ===== */
 .phi .ntable {
   margin-top: 44px;
@@ -270,6 +217,137 @@
   transform: translate(3px, -3px);
 }
 
+/* ===== RIEL DE LECTURA ===== */
+.rail-read {
+  position: sticky;
+  top: 70px;
+  z-index: 30;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--phi-stroke);
+}
+.rail-read .in {
+  max-width: var(--phi-max);
+  margin-inline: auto;
+  padding: 0 var(--phi-gut);
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.rail-read .in::-webkit-scrollbar {
+  display: none;
+}
+.rr {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 20px 12px;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+  color: var(--color-meta);
+}
+.rr:first-child {
+  padding-left: 0;
+}
+.rr b {
+  font-family: var(--phi-m);
+  font-size: var(--text-meta);
+  font-weight: 500;
+  letter-spacing: var(--phi-t3);
+}
+.rr span {
+  font-size: var(--text-sm);
+  letter-spacing: var(--phi-t1);
+}
+.rr:hover {
+  color: var(--color-ink);
+}
+.rr.on {
+  color: var(--color-ink);
+  border-bottom-color: var(--phi-green);
+}
+.rr.on b {
+  color: var(--phi-green);
+}
+@media (max-width: 760px) {
+  .rr span {
+    display: none;
+  }
+  .rr {
+    padding: 12px 14px;
+  }
+}
+
+/* ===== DECLARACIÓN ===== */
+.phi .stmt {
+  padding-left: clamp(20px, 2.2vw, 32px);
+  border-left: 2px solid var(--phi-green);
+}
+.phi .stmt-t {
+  font-size: var(--text-quote);
+  line-height: 1.24;
+  letter-spacing: var(--phi-t2);
+  font-weight: 500;
+  max-width: 32ch;
+}
+.phi .stmt-t b {
+  font-weight: 500;
+  color: var(--phi-green);
+}
+.phi .strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  margin-top: clamp(30px, 4vh, 46px);
+  border-top: 1px solid var(--phi-stroke);
+}
+.phi .strip > div {
+  padding: 18px 26px 16px 0;
+  border-right: 1px solid var(--phi-stroke);
+}
+.phi .strip > div:last-child {
+  border-right: 0;
+  padding-right: 0;
+}
+.phi .strip span {
+  display: block;
+  font-family: var(--phi-m);
+  font-size: var(--text-micro);
+  letter-spacing: 0.04em;
+  color: var(--color-meta);
+}
+.phi .strip b {
+  display: block;
+  font-size: var(--text-h3);
+  letter-spacing: var(--phi-t2);
+  font-weight: 500;
+  margin-top: 9px;
+  color: var(--color-ink);
+}
+.phi .strip.words b {
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--color-grey);
+  line-height: 20px;
+  max-width: 22ch;
+}
+.phi .strip.words span {
+  font-size: var(--text-card);
+  font-family: var(--phi-f);
+  font-weight: 500;
+  color: var(--color-ink);
+  letter-spacing: var(--phi-t2);
+}
+.phi .stmt-src {
+  margin-top: 26px;
+  font-family: var(--phi-m);
+  font-size: var(--text-micro);
+  letter-spacing: 0.04em;
+  color: var(--color-meta);
+}
+
 /* ===== CHAPTER NAV ===== */
 .phi .chnav {
   padding: clamp(46px, 6vh, 72px) 0;
@@ -328,7 +406,6 @@
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 980px) {
-  .phi .cg,
   .phi .wg,
   .phi .lay {
     grid-template-columns: 1fr;
@@ -336,10 +413,6 @@
   .phi .nt {
     grid-template-columns: 1fr;
     gap: 16px;
-  }
-  .phi .ch {
-    grid-template-columns: 1fr;
-    gap: 12px;
   }
   .phi .chnav .in {
     flex-direction: column;
