@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl"
 import { useReveal } from "@/hooks/use-reveal"
 import { ChapterMasthead } from "@/components/report/chapter/ChapterMasthead"
 import { ReadingRail } from "@/components/report/chapter/ReadingRail"
+import { Statement } from "@/components/report/chapter/Statement"
 
 interface ARow {
   t: string
@@ -25,17 +26,11 @@ interface ALayer {
   href: string
 }
 
-interface AStrip {
-  t: string
-  d: string
-}
-
 export function DefinitionChapter() {
   const t = useTranslations("Report")
 
   useReveal(".rv, .rvs")
 
-  const strip = t.raw("def.stmtStrip") as AStrip[]
   const notRows = t.raw("def.not") as ARow[]
   const why = t.raw("def.why") as ACard[]
   const layers = t.raw("def.where") as ALayer[]
@@ -56,22 +51,14 @@ export function DefinitionChapter() {
 
       <section className="dfn">
         <div className="in">
-          <div className="stmt rv">
-            <p className="stmt-t">
-              {t.rich("def.cardQuote", {
-                b: (chunks) => <b>{chunks}</b>,
-              })}
-            </p>
-            <div className="strip words">
-              {strip.map((s) => (
-                <div key={s.t}>
-                  <span>{s.t}</span>
-                  <b>{s.d}</b>
-                </div>
-              ))}
-            </div>
-            <div className="stmt-src">{t("def.src")}</div>
-          </div>
+          <Statement
+            quote={t.rich("def.cardQuote", {
+              b: (chunks) => <b>{chunks}</b>,
+            })}
+            strip={t.raw("def.stmtStrip")}
+            src={t("def.src")}
+            words
+          />
         </div>
       </section>
 
